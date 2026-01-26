@@ -1,0 +1,34 @@
+# Hello-Flask
+
+A simple Flask application project by Filippa.
+
+## Overview
+
+This project contains a basic Flask web application setup with all necessary dependencies and configuration files.
+
+## Project Structure
+
+- `app.py` - Main Flask application
+- `requirements.txt` - Python package dependencies
+- `hello-flask/` - Application package directory
+- `README.md` - Project documentation
+
+## Getting Started
+
+1. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+2. Run the Flask application:
+   ```
+   python app.py
+   ```
+
+## Requirements
+
+See `requirements.txt` for all project dependencies.
+
+---
+
+Created by Filippa
