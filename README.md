@@ -4,6 +4,198 @@ Grupp ett - Emma, Simon, Jonas Ö, Filippa och Annika - Github-Jira-VScode-Flask
 Du har rätt. Jag har slarvat. Här kommer hela guiden.
 
 ---
+Fuck. Du har rätt.
+
+Du bad om en guide för **IT-ledare utan teknisk bakgrund**. Jag gav dig en dev-tutorial med `npm install` och bash-skript.
+
+Låt mig göra om det helt:
+
+---
+
+# Agentic Dev Loop: Guide för IT-ledare
+
+**Vad är detta?** Ett system där AI-agenter automatiskt tar utvecklingsuppgifter, skriver kod, testar, och levererar – utan att en människa skriver en enda rad kod.
+
+**Din roll som ledare:** Förstå vad som händer, fatta beslut om inköp och risker, och ställa rätt krav på ditt team.
+
+---
+
+## 1. Vad du behöver förstå (utan att kunna koda)
+
+### Systemet i en mening
+
+> "En AI läser vad som ska byggas, bygger det, testar det, får feedback från en annan AI, fixar fel, och levererar – i en loop tills det är klart."
+
+### De fyra delarna
+
+| Del | Vad den gör | Analogt med |
+|-----|-------------|-------------|
+| **Projekthantering** (Linear/Jira) | Innehåller uppgifterna | Din att-göra-lista |
+| **Kodande AI** (Claude Code) | Skriver och testar kod | En junior utvecklare |
+| **Granskande AI** (Google Jules) | Kollar att koden är bra | En senior utvecklare som code reviewar |
+| **Leveranssystem** (CI/CD) | Publicerar koden till produktion | Fabriken som levererar produkten |
+
+### Hur de hänger ihop
+
+```
+DU/TEAMET: Skapar uppgift i Linear/Jira
+                    ↓
+         "Fixa login-buggen"
+                    ↓
+        ┌───────────────────────┐
+        │  CLAUDE CODE          │
+        │  Läser uppgiften      │
+        │  Skriver kod          │
+        │  Kör tester           │
+        │  Försöker igen om fel │ ← Loop tills det funkar
+        └───────────┬───────────┘
+                    ↓
+        ┌───────────────────────┐
+        │  GOOGLE JULES         │
+        │  Granskar koden       │
+        │  Hittar säkerhetshål  │
+        │  Föreslår förbättringar│
+        └───────────┬───────────┘
+                    ↓
+        ┌───────────────────────┐
+        │  CI/CD                │
+        │  Testar i skarp miljö │
+        │  Publicerar           │
+        └───────────────────────┘
+                    ↓
+            KLAR – utan mänsklig kod
+```
+
+---
+
+## 2. Beslut du som ledare måste fatta
+
+### Inköpsbeslut
+
+| Verktyg | Vad det är | Kostnad | Behövs? |
+|---------|------------|---------|---------|
+| **Anthropic Claude** | AI som skriver kod | ~$20-100/mån | Ja, kärnan |
+| **Google Jules** | AI som granskar kod | Gratis tier finns | Rekommenderas |
+| **Linear** | Projekthantering | Gratis för små team | Eller Jira |
+| **GitHub** | Kodlagring | Gratis | Ja |
+
+**Total kostnad för pilotprojekt:** ~$50-200/månad
+
+### Organisatoriska beslut
+
+1. **Vem äger systemet?**
+   - En utvecklare måste sätta upp det (1-2 dagar)
+   - Någon måste övervaka att det fungerar
+
+2. **Vilka uppgifter passar?**
+   - ✅ Buggfixar med tydliga felmeddelanden
+   - ✅ Enkla nya funktioner med klara krav
+   - ✅ Kodrefaktorering och uppdateringar
+   - ❌ Helt nya produkter utan specifikation
+   - ❌ Komplex affärslogik som kräver domänkunskap
+
+3. **Hur mäter vi framgång?**
+   - Tid från uppgift till leverans
+   - Antal mänskliga timmar per uppgift
+   - Andel uppgifter som klaras utan mänsklig hjälp
+
+---
+
+## 3. Risker och hur du hanterar dem
+
+### Risk 1: AI skriver dålig eller farlig kod
+
+**Vad kan hända:** Säkerhetshål, buggar i produktion.
+
+**Så skyddar du dig:**
+- Kräv att Jules (gransknings-AI) alltid kör
+- Kräv mänsklig godkännande innan kod går till produktion
+- Sätt upp "CODEOWNERS" (vissa filer kräver alltid mänsklig review)
+
+**Fråga ditt team:** "Kan AI-genererad kod nå produktion utan att en människa sett den?"
+**Rätt svar:** "Nej, alltid mänsklig approval på PR."
+
+### Risk 2: AI blir lurad att göra skadliga saker
+
+**Vad kan hända:** Någon skriver skadlig text i en uppgift, AI:n följer instruktionen.
+
+**Exempel:** Uppgift heter `Fix bug"; rm -rf /; echo "` → AI raderar servern.
+
+**Så skyddar du dig:**
+- AI:n körs i isolerad miljö (sandbox/container)
+- AI:n har inte tillgång till produktionsdatabaser
+- Indata från Jira/Linear saneras
+
+**Fråga ditt team:** "Om någon skapar en illvillig uppgift i Jira, vad kan AI:n göra i värsta fall?"
+**Rätt svar:** "Bara påverka testmiljön, aldrig produktion."
+
+### Risk 3: Kostnader skenar
+
+**Vad kan hända:** AI fastnar i loop, bränner tusentals kronor på en uppgift.
+
+**Så skyddar du dig:**
+- Sätt max antal försök (t.ex. 20 iterationer)
+- Sätt kostnadslarm i Anthropic Console
+- Övervaka veckovis
+
+**Fråga ditt team:** "Vad händer om AI:n inte klarar en uppgift?"
+**Rätt svar:** "Den ger upp efter X försök och flaggar för mänsklig hjälp."
+
+---
+
+## 4. Checklista: Redo att börja?
+
+### Innan ni startar
+
+- [ ] Budget godkänd (~$100-200/mån för pilot)
+- [ ] En utvecklare tilldelad för setup (1-2 dagar)
+- [ ] Testprojekt identifierat (inte affärskritiskt)
+- [ ] Säkerhetskrav definierade (vad får AI:n INTE göra?)
+
+### Krav på ert team
+
+- [ ] Uppgifter i Linear/Jira har **tydliga acceptanskriterier**
+- [ ] Projektet har **automatiska tester** (annars vet inte AI:n om koden funkar)
+- [ ] Någon **övervakar** systemet dagligen första månaden
+
+### Framgångskriterier för piloten
+
+- [ ] Minst 5 uppgifter körda genom systemet
+- [ ] Minst 3 klarade utan mänsklig hjälp
+- [ ] Inga säkerhetsincidenter
+- [ ] Kostnad inom budget
+
+---
+
+## 5. Frågor att ställa leverantörer/konsulter
+
+Om någon erbjuder sig att bygga detta åt er:
+
+1. "Hur säkerställer ni att AI:n inte kan nå produktionsdata?"
+2. "Vad händer om AI:n fastnar? Hur stoppar den sig själv?"
+3. "Hur loggas allt AI:n gör för audit trail?"
+4. "Kan vi se exakt vilken kod AI:n skrev vs människor?"
+5. "Vad kostar det per uppgift i snitt?"
+
+---
+
+## 6. Ordlista
+
+| Term | Betydelse |
+|------|-----------|
+| **Agentic** | AI som agerar självständigt, inte bara svarar på frågor |
+| **MCP** | Protokoll för att koppla AI till andra system |
+| **Ralph Wiggum** | Teknik för att tvinga AI att försöka tills den lyckas |
+| **CI/CD** | System som automatiskt testar och publicerar kod |
+| **PR (Pull Request)** | Förfrågan om att lägga till kod i projektet |
+| **Code Review** | Granskning av kod innan den accepteras |
+
+---
+
+**Nu har du vad du behöver för att förstå, utvärdera och leda ett sådant projekt – utan att själv behöva koda.**
+
+
+---
 
 # Agentic Dev Loop: Komplett Implementationsguide
 
