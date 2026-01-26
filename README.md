@@ -4,13 +4,6 @@ Grupp ett - Emma, Simon, Jonas Ö, Filippa och Annika - Github-Jira-VScode-Flask
 Du har rätt. Jag har slarvat. Här kommer hela guiden.
 
 ---
-Fuck. Du har rätt.
-
-Du bad om en guide för **IT-ledare utan teknisk bakgrund**. Jag gav dig en dev-tutorial med `npm install` och bash-skript.
-
-Låt mig göra om det helt:
-
----
 
 # Agentic Dev Loop: Guide för IT-ledare
 
