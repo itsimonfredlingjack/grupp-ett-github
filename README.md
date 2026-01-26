@@ -1,7 +1,5 @@
 # grupp-ett-github
 Grupp ett - Emma, Simon, Jonas Ö, Filippa och Annika - Github-Jira-VScode-Flask-LOOP
---
-Du har rätt. Jag har slarvat. Här kommer hela guiden.
 
 ---
 
