@@ -356,41 +356,34 @@ Clear the iteration counter:
 rm -f .claude/ralph-state.json
 ```
 
-### Step 10: Output Ralph Loop Initialization Prompt
+### Step 10: IMMEDIATELY START WORKING (DO NOT STOP)
 
-After setup, output the following prompt structure to initialize the loop:
+**CRITICAL: After setup, you MUST immediately start implementing. DO NOT STOP.**
+
+Output a brief status message:
 
 ```
-✅ Task {JIRA_ID} initialized
-
-Branch: {branch_name}
-Status: In Progress
-Iteration: 1/25
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-RALPH LOOP ACTIVE
-
-Your task: Implement according to CURRENT_TASK.md
-
-Strategy:
-1. Read CURRENT_TASK.md (your memory)
-2. Write a test that fails (Red)
-3. Implement until test passes (Green)
-4. Refactor if needed (Refactor)
-5. Run ALL tests
-6. ONLY if ALL tests pass: output <promise>DONE</promise>
-
-Max iterations: 25
-Current iteration: 1
-
-DO NOT output <promise>DONE</promise> unless ALL tests pass.
-The stop-hook will block exit until criteria are met.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Begin by reading CURRENT_TASK.md
+✅ Task {JIRA_ID} initialized on branch {branch_name}
 ```
+
+Then **IMMEDIATELY** (in the same response, without stopping):
+
+1. **Read docs/CURRENT_TASK.md** to understand the requirements
+2. **Start TDD**: Write a failing test for the first requirement
+3. **Implement** until the test passes
+4. **Continue** until all acceptance criteria are met
+
+**YOU ARE NOW IN RALPH LOOP MODE.**
+
+The stop-hook will BLOCK you from exiting until you output `<promise>DONE</promise>`.
+You can only output that promise when ALL of these are true:
+- All acceptance criteria in CURRENT_TASK.md are checked off
+- All tests pass: `pytest -xvs`
+- No linting errors: `ruff check .`
+- Changes committed and pushed
+- PR created
+
+**DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
 
 ### Promise Format - EXACT SPECIFICATION
 
@@ -436,16 +429,19 @@ Only then output the promise on its own line.
 
 ## Post-Skill Behavior
 
-After this skill completes, the agent enters Ralph Loop mode:
+**⚠️ CRITICAL: THIS SKILL DOES NOT "COMPLETE" - IT TRANSITIONS INTO WORK MODE**
 
-1. **Read** `CURRENT_TASK.md` to understand requirements
-2. **Follow TDD:** Write failing test → Implement → Refactor
-3. **Update** CURRENT_TASK.md after each significant action
-4. **Run tests** frequently
-5. **Output** `<promise>DONE</promise>` ONLY when:
-   - All acceptance criteria met
-   - All tests pass
-   - All linting passes
-   - Changes committed and pushed
+After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 
-The stop-hook will automatically validate these conditions and block exit if not met.
+1. **Read** `docs/CURRENT_TASK.md` to understand requirements
+2. **Start TDD:** Write a failing test for the FIRST requirement
+3. **Implement** minimal code to pass the test
+4. **Refactor** if needed
+5. **Run tests:** `pytest -xvs`
+6. **Repeat** for each requirement
+7. **When ALL done:** Commit, push, create PR
+8. **ONLY THEN:** Output `<promise>DONE</promise>`
+
+**The skill is NOT complete until the task is DONE.**
+
+The stop-hook will block exit until you output `<promise>DONE</promise>` with all criteria met.
