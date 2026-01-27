@@ -28,15 +28,23 @@ git branch --show-current
 **Pass if:** Output is `main` or `master`
 **Fail if:** Different branch
 
-### 3. Jira MCP Available
+### 3. Jira API Available
 
 ```bash
-# Test Jira connection
-jira_search_issues(jql="ORDER BY created DESC LIMIT 1")
+source venv/bin/activate && python3 -c "
+from dotenv import load_dotenv
+load_dotenv()
+from src.grupp_ett.jira_client import get_jira_client
+client = get_jira_client()
+if client.test_connection():
+    print('✅ Jira connection OK')
+else:
+    print('❌ Jira connection FAILED')
+"
 ```
 
-**Pass if:** Returns issue list
-**Fail if:** Connection error or "MCP not available"
+**Pass if:** Output shows "✅ Jira connection OK"
+**Fail if:** Connection error or "❌ Jira connection FAILED"
 
 ### 4. GitHub Auth (can push)
 
@@ -64,7 +72,7 @@ PREFLIGHT CHECKS
 
 [✅] Git working tree clean
 [✅] On main branch
-[✅] Jira MCP responding
+[✅] Jira API responding
 [✅] GitHub auth working
 [✅] Environment configured
 
@@ -79,9 +87,9 @@ PREFLIGHT CHECKS
 ═════════════════════════════════════════
 
 [✅] Git working tree clean
-[❌] Jira MCP responding
-     └─ Error: Connection refused
-        Action: Check Jira MCP plugin auth
+[❌] Jira API responding
+     └─ Error: Connection failed
+        Action: Check .env file (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)
 [✅] GitHub auth working
 [⚠️]  CURRENT_TASK.md has active task
      └─ Warning: Old task still active

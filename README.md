@@ -175,7 +175,7 @@ Om någon erbjuder sig att bygga detta åt er:
 | Term | Betydelse |
 |------|-----------|
 | **Agentic** | AI som agerar självständigt, inte bara svarar på frågor |
-| **MCP** | Protokoll för att koppla AI till andra system |
+| **REST API** | Standardprotokoll för att kommunicera med webbtjänster som Jira |
 | **Ralph Wiggum** | Teknik för att tvinga AI att försöka tills den lyckas |
 | **CI/CD** | System som automatiskt testar och publicerar kod |
 | **PR (Pull Request)** | Förfrågan om att lägga till kod i projektet |
@@ -235,63 +235,43 @@ jq --version
 
 ---
 
-## DEL 2: Koppla projekthantering (Linear/Jira) till Claude
+## DEL 2: Koppla projekthantering (Jira) till Claude
 
-### 2.1 Skapa MCP-konfigurationsfil
+### 2.1 Konfigurera Jira API (Direkt REST API)
 
-Skapa mappen och filen:
+**OBS: Detta projekt använder INTE MCP för Jira.** Istället används en direkt REST API-klient.
+
+Skapa `.env` fil i projektroten:
 
 ```bash
-mkdir -p ~/.claude
-nano ~/.claude/mcp.json
+# .env - LÄGG INTE TILL I GIT!
+JIRA_URL=https://ditt-foretag.atlassian.net
+JIRA_EMAIL=din@email.com
+JIRA_API_TOKEN=ATAT...ditt-api-token...
 ```
 
-Klistra in (för **Linear**):
-
-```json
-{
-  "mcpServers": {
-    "linear": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-linear"],
-      "env": {
-        "LINEAR_API_KEY": "lin_api_XXXXXXXXX"
-      }
-    },
-    "git": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-git"]
-    }
-  }
-}
-```
-
-**För Jira** – byt ut linear-blocket mot:
-
-```json
-{
-  "mcpServers": {
-    "jira": {
-      "command": "npx",
-      "args": ["-y", "mcp-atlassian"],
-      "env": {
-        "JIRA_URL": "https://ditt-foretag.atlassian.net",
-        "JIRA_USERNAME": "din@email.com",
-        "JIRA_API_TOKEN": "ATAT..."
-      }
-    }
-  }
-}
-```
+**Skaffa API-token:**
+1. Gå till https://id.atlassian.com/manage-profile/security/api-tokens
+2. Klicka "Create API token"
+3. Namnge den (t.ex. "Claude Code")
+4. Kopiera token till `.env`
 
 ### 2.2 Testa kopplingen
 
 ```bash
-claude
-> Visa mina öppna uppgifter i Linear
+source venv/bin/activate && python3 -c "
+from dotenv import load_dotenv
+load_dotenv()
+from src.grupp_ett.jira_client import get_jira_client
+client = get_jira_client()
+if client.test_connection():
+    print('✅ Jira connection OK!')
+else:
+    print('❌ Jira connection failed')
+"
 ```
 
-Om du ser en lista → fungerar. Om fel → kolla API-nyckeln.
+Om du ser "✅ Jira connection OK!" → fungerar. Om fel → kolla `.env`-filen.
 
 ---
 
@@ -797,7 +777,7 @@ NÄR ALLA TESTER PASSERAR:
 - [ ] Ralph Wiggum plugin (`/plugins` visar det)
 
 ### Konfigurationsfiler
-- [ ] `~/.claude/mcp.json` med Linear/Jira
+- [ ] `.env` med Jira-credentials (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)
 - [ ] `CURRENT_TASK.md` mall i projektet
 - [ ] `.git/hooks/prepare-commit-msg` (optional)
 
@@ -809,7 +789,7 @@ NÄR ALLA TESTER PASSERAR:
 - [ ] Branch protection på `main`
 
 ### Testat
-- [ ] Claude kan hämta uppgifter från Linear/Jira
+- [ ] Jira API fungerar (kör testkommandot ovan)
 - [ ] Ralph-loop fungerar (testat med enkel uppgift)
 - [ ] Jules kommenterar på PRs
 - [ ] Self-heal triggas vid build-failure
@@ -820,7 +800,7 @@ NÄR ALLA TESTER PASSERAR:
 
 | Problem | Orsak | Lösning |
 |---------|-------|---------|
-| "MCP server not found" | Fel sökväg eller saknad nyckel | Kolla `~/.claude/mcp.json` |
+| "Jira connection failed" | Fel credentials | Kolla `.env` (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN) |
 | Ralph-loopen stannar inte | Completion promise matchar inte | Exakt sträng, case-sensitive |
 | Jules triggas inte | Workflow-fil inte pushad | `git status` → pusha filen |
 | Self-heal skapar ingen fix | Fel för komplext | Kräver manuell fix |

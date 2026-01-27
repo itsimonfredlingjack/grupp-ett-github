@@ -91,21 +91,44 @@ Implements {JIRA_ID}
 
 ### Step 7: Update Jira
 
+**IMPORTANT: Use direct Jira API, NOT MCP tools.**
+
 Transition to "In Review":
 
-```
-jira_transition_issue(issue_key="{JIRA_ID}", transition="In Review")
+```bash
+source venv/bin/activate && python3 -c "
+from dotenv import load_dotenv
+load_dotenv()
+from src.grupp_ett.jira_client import get_jira_client
+client = get_jira_client()
+try:
+    client.transition_issue('{JIRA_ID}', 'In Review')
+    print('✅ Transitioned to In Review')
+except Exception as e:
+    print(f'⚠️ Could not transition: {e}')
+"
 ```
 
 Add completion comment:
 
-```
-jira_add_comment(issue_key="{JIRA_ID}", body="🤖 Implementation complete!
+```bash
+source venv/bin/activate && python3 -c "
+from dotenv import load_dotenv
+load_dotenv()
+from src.grupp_ett.jira_client import get_jira_client
+client = get_jira_client()
+comment = '''🤖 Implementation complete!
 
-**Branch:** `{branch_name}`
+**Branch:** {branch_name}
 **PR:** {pr_url}
 
-All tests pass. Ready for review.")
+All tests pass. Ready for review.'''
+try:
+    client.add_comment('{JIRA_ID}', comment)
+    print('✅ Added comment to Jira')
+except Exception as e:
+    print(f'⚠️ Could not add comment: {e}')
+"
 ```
 
 ### Step 8: Update CURRENT_TASK.md
