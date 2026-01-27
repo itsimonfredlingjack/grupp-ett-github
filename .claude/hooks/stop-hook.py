@@ -236,7 +236,7 @@ def main():
         # Check 2: Flag file (PRIMARY - source of truth)
         if check_promise_flag_file(completion_promise):
             with open(debug_file, "a") as f:
-                f.write("Decision: ALLOW EXIT - promise flag file found (primary)\n")
+                f.write("Decision: ALLOW EXIT [FLAG_PRIMARY]\n")
             sys.exit(0)
 
         # Check 3: Transcript content (SECONDARY - fallback/diagnostics)
@@ -244,7 +244,7 @@ def main():
         transcript = hook_input.get("transcript", "")
         if check_promise_in_transcript(transcript, completion_promise):
             with open(debug_file, "a") as f:
-                f.write("Decision: ALLOW EXIT - promise in transcript string\n")
+                f.write("Decision: ALLOW EXIT [TRANSCRIPT_INLINE]\n")
             sys.exit(0)
 
         # Try reading from transcript_path if provided
@@ -253,7 +253,7 @@ def main():
             transcript_content = read_transcript_from_path(transcript_path)
             if check_promise_in_transcript(transcript_content, completion_promise):
                 with open(debug_file, "a") as f:
-                    f.write("Decision: ALLOW EXIT - promise in transcript file\n")
+                    f.write("Decision: ALLOW EXIT [TRANSCRIPT_PATH]\n")
                 sys.exit(0)
 
         # Promise not found - block exit and provide guidance
