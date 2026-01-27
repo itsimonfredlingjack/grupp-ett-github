@@ -8,6 +8,24 @@ args: JIRA_ID (e.g., PROJ-123)
 
 This skill initializes the Ralph Loop for a new Jira task.
 
+## ⚠️ CRITICAL: Jira Access Method
+
+**DO NOT use MCP tools for Jira (jira_get_issue, readMcpResource, etc.).**
+
+This project uses a **direct Jira REST API client** located at `src/grupp_ett/jira_client.py`.
+All Jira operations MUST be performed via Bash commands running Python code.
+
+Example:
+```bash
+source venv/bin/activate && python3 -c "
+from dotenv import load_dotenv; load_dotenv()
+from src.grupp_ett.jira_client import get_jira_client
+client = get_jira_client()
+issue = client.get_issue('GE-5')
+print(issue.summary)
+"
+```
+
 ## Prerequisites
 
 - Jira credentials must be set in `.env` file (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)
@@ -70,21 +88,21 @@ This tells the stop-hook to enforce exit criteria. Without this file, the stop-h
 
 Before attempting to fetch, validate Jira API is accessible using the direct client.
 
-**Run this Python code to test:**
+**IMPORTANT: DO NOT use MCP tools for Jira. Use the direct API client via Bash.**
 
-```python
-import sys
-sys.path.insert(0, ".")
+**Run this Bash command to test the connection:**
+
+```bash
+source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-
 from src.grupp_ett.jira_client import get_jira_client
-
 client = get_jira_client()
 if client.test_connection():
-    print("✅ Jira connection successful!")
+    print('✅ Jira connection successful!')
 else:
-    print("❌ Jira connection failed!")
+    print('❌ Jira connection failed!')
+"
 ```
 
 **If this fails:**
@@ -116,25 +134,25 @@ fi
 
 ### Step 2: Fetch Jira Ticket
 
-Use the direct Jira API client to fetch the ticket:
+**IMPORTANT: DO NOT use MCP tools. Use the direct Jira API via Bash command.**
 
-```python
-import sys
-sys.path.insert(0, ".")
+Run this Bash command to fetch the ticket (replace `{JIRA_ID}` with actual ID):
+
+```bash
+source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-
 from src.grupp_ett.jira_client import get_jira_client
-
 client = get_jira_client()
-issue = client.get_issue("{JIRA_ID}")
-
-print(f"Key: {issue.key}")
-print(f"Summary: {issue.summary}")
-print(f"Type: {issue.issue_type}")
-print(f"Status: {issue.status}")
-print(f"Priority: {issue.priority}")
-print(f"Description: {issue.description}")
+issue = client.get_issue('{JIRA_ID}')
+print(f'Key: {issue.key}')
+print(f'Summary: {issue.summary}')
+print(f'Type: {issue.issue_type}')
+print(f'Status: {issue.status}')
+print(f'Priority: {issue.priority}')
+print(f'Description: {issue.description}')
+print(f'Labels: {issue.labels}')
+"
 ```
 
 **If this fails:**
@@ -148,13 +166,13 @@ print(f"Description: {issue.description}")
 
 Then wrap in `<jira_data>` tags and proceed.
 
-Extract from the JiraIssue object:
-- `issue.summary` - Ticket title
-- `issue.description` - Full description
-- `issue.issue_type` - Issue type (Bug, Story, Task, etc.)
-- `issue.priority` - Priority level
-- `issue.status` - Current status
-- `issue.labels` - Labels/tags
+Extract from the output:
+- `Summary` - Ticket title
+- `Description` - Full description
+- `Type` - Issue type (Bug, Story, Task, etc.)
+- `Priority` - Priority level
+- `Status` - Current status
+- `Labels` - Labels/tags
 
 ### Step 3: Sanitize External Data (SECURITY)
 
@@ -289,39 +307,46 @@ This guarantees:
 
 ### Step 7: Transition Jira Status
 
-Transition the Jira ticket to "In Progress" using the direct API:
+Transition the Jira ticket to "In Progress" using the direct API via Bash:
 
-```python
+```bash
+source venv/bin/activate && python3 -c "
+from dotenv import load_dotenv
+load_dotenv()
 from src.grupp_ett.jira_client import get_jira_client
-
 client = get_jira_client()
 try:
-    client.transition_issue("{JIRA_ID}", "In Progress")
-    print("✅ Transitioned to In Progress")
+    client.transition_issue('{JIRA_ID}', 'In Progress')
+    print('✅ Transitioned to In Progress')
 except Exception as e:
-    print(f"⚠️ Could not transition: {e}")
-    # Continue anyway - status update is not critical
+    print(f'⚠️ Could not transition: {e}')
+"
 ```
+
+Note: Continue even if transition fails - it's not critical.
 
 ### Step 8: Add Jira Comment
 
-Log that the agent has started work using the direct API:
+Log that the agent has started work using the direct API via Bash:
 
-```python
+```bash
+source venv/bin/activate && python3 -c "
 from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()
 from src.grupp_ett.jira_client import get_jira_client
-
 client = get_jira_client()
 timestamp = datetime.now().isoformat()
-comment = f"🤖 Claude Code agent started work on this ticket.\n\nBranch: {branch_name}\nTimestamp: {timestamp}"
-
+comment = '🤖 Claude Code agent started work on this ticket.\n\nBranch: {branch_name}\nTimestamp: ' + timestamp
 try:
-    client.add_comment("{JIRA_ID}", comment)
-    print("✅ Added comment to Jira")
+    client.add_comment('{JIRA_ID}', comment)
+    print('✅ Added comment to Jira')
 except Exception as e:
-    print(f"⚠️ Could not add comment: {e}")
-    # Continue anyway - comment is not critical
+    print(f'⚠️ Could not add comment: {e}')
+"
 ```
+
+Note: Continue even if comment fails - it's not critical.
 
 ### Step 9: Reset Ralph State
 
