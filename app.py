@@ -9,7 +9,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, Response, jsonify, request
 
 from src.grupp_ett.admin_auth import AdminAuthService
 from src.grupp_ett.subscriber_service import SubscriberService
