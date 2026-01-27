@@ -5,8 +5,9 @@ This is a minimal Flask app used to demonstrate the TDD workflow
 and test infrastructure of the project.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from flask import Flask, jsonify, request, Response
 
