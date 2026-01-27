@@ -1,7 +1,6 @@
 """Tests for Jira API client."""
 
-import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -258,6 +257,8 @@ class TestJiraAPIError:
 
     def test_error_with_response(self) -> None:
         """Error should include response body."""
-        error = JiraAPIError("Test error", status_code=400, response='{"error": "Bad request"}')
+        error = JiraAPIError(
+            "Test error", status_code=400, response='{"error": "Bad request"}'
+        )
 
         assert error.response == '{"error": "Bad request"}'

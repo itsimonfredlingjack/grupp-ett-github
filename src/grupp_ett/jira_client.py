@@ -84,9 +84,21 @@ class JiraIssue:
             description=fields.get("description"),
             issue_type=fields.get("issuetype", {}).get("name", "Unknown"),
             status=fields.get("status", {}).get("name", "Unknown"),
-            priority=fields.get("priority", {}).get("name") if fields.get("priority") else None,
-            assignee=fields.get("assignee", {}).get("displayName") if fields.get("assignee") else None,
-            reporter=fields.get("reporter", {}).get("displayName") if fields.get("reporter") else None,
+            priority=(
+                fields.get("priority", {}).get("name")
+                if fields.get("priority")
+                else None
+            ),
+            assignee=(
+                fields.get("assignee", {}).get("displayName")
+                if fields.get("assignee")
+                else None
+            ),
+            reporter=(
+                fields.get("reporter", {}).get("displayName")
+                if fields.get("reporter")
+                else None
+            ),
             labels=fields.get("labels", []),
             raw=data,
         )
@@ -321,7 +333,8 @@ if __name__ == "__main__":
                 print(f"  Summary: {issue.summary}")
                 print(f"  Type: {issue.issue_type}")
                 print(f"  Status: {issue.status}")
-                print(f"  Description: {issue.description[:200] if issue.description else 'None'}...")
+                desc = issue.description[:200] if issue.description else "None"
+                print(f"  Description: {desc}...")
         else:
             print("❌ Jira connection failed!")
             sys.exit(1)
