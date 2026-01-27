@@ -105,26 +105,97 @@ def create_app() -> Flask:
         }), 200
 
     # Subscriber management endpoints
-    @app.route("/admin/subscribers", methods=["GET"])
+    @app.route("/admin/subscribers", methods=["GET", "POST"])
     @require_admin_token
-    def list_subscribers():
-        """List all subscribers.
+    def manage_subscribers():
+        """Manage subscribers - list or create.
 
         Returns:
-            Response: JSON with subscriber list.
+            Response: JSON with subscriber list or created subscriber.
         """
-        subscribers = SubscriberService.list_subscribers()
-        subscriber_dicts = [
-            {
-                "id": s.id,
-                "email": s.email,
-                "name": s.name,
-                "subscribed_date": s.subscribed_date,
-                "active": s.active
-            }
-            for s in subscribers
-        ]
-        return jsonify({"subscribers": subscriber_dicts}), 200
+        if request.method == "GET":
+            subscribers = SubscriberService.list_subscribers()
+            subscriber_dicts = [
+                {
+                    "id": s.id,
+                    "email": s.email,
+                    "name": s.name,
+                    "subscribed_date": s.subscribed_date,
+                    "active": s.active
+                }
+                for s in subscribers
+            ]
+            return jsonify({"subscribers": subscriber_dicts}), 200
+
+        # POST - Create new subscriber
+        data = request.get_json()
+        if not data or "email" not in data or "name" not in data or "subscribed_date" not in data:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        subscriber = SubscriberService.add_subscriber(
+            email=data["email"],
+            name=data["name"],
+            subscribed_date=data["subscribed_date"]
+        )
+        return jsonify({
+            "id": subscriber.id,
+            "email": subscriber.email,
+            "name": subscriber.name,
+            "subscribed_date": subscriber.subscribed_date,
+            "active": subscriber.active
+        }), 201
+
+    @app.route("/admin/subscribers/<int:subscriber_id>", methods=["GET", "PUT", "DELETE"])
+    @require_admin_token
+    def manage_subscriber(subscriber_id: int):
+        """Manage a specific subscriber - get, update, or delete.
+
+        Args:
+            subscriber_id: Subscriber ID.
+
+        Returns:
+            Response: JSON with subscriber data or status.
+        """
+        if request.method == "GET":
+            subscriber = SubscriberService.get_subscriber(subscriber_id)
+            if not subscriber:
+                return jsonify({"error": "Subscriber not found"}), 404
+            return jsonify({
+                "id": subscriber.id,
+                "email": subscriber.email,
+                "name": subscriber.name,
+                "subscribed_date": subscriber.subscribed_date,
+                "active": subscriber.active
+            }), 200
+
+        if request.method == "PUT":
+            subscriber = SubscriberService.get_subscriber(subscriber_id)
+            if not subscriber:
+                return jsonify({"error": "Subscriber not found"}), 404
+
+            data = request.get_json()
+            updated = SubscriberService.update_subscriber(
+                subscriber_id,
+                email=data.get("email"),
+                name=data.get("name"),
+                active=data.get("active")
+            )
+            if not updated:
+                return jsonify({"error": "Failed to update subscriber"}), 400
+
+            return jsonify({
+                "id": updated.id,
+                "email": updated.email,
+                "name": updated.name,
+                "subscribed_date": updated.subscribed_date,
+                "active": updated.active
+            }), 200
+
+        if request.method == "DELETE":
+            deleted = SubscriberService.delete_subscriber(subscriber_id)
+            if not deleted:
+                return jsonify({"error": "Subscriber not found"}), 404
+            return jsonify({"message": "Subscriber deleted"}), 204
 
     @app.route("/admin/subscribers/search", methods=["GET"])
     @require_admin_token
