@@ -16,8 +16,8 @@ The hook reads JSON from stdin and writes feedback to stderr.
 
 import json
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Flag file that indicates we're in an active Ralph loop
 # Only /start-task creates this file, utility commands don't
@@ -94,21 +94,52 @@ def increment_iteration():
     return state["iterations"]
 
 
-def check_promise_in_transcript(transcript: str, promise: str, scan_length: int = None) -> bool:
-    """Check if completion promise exists in entire transcript.
+def check_promise_in_transcript(transcript: str, promise: str) -> bool:
+    """Check if completion promise exists in transcript string.
 
     Args:
-        transcript: Full session transcript
+        transcript: Transcript content as string
         promise: Promise string to search for
-        scan_length: Ignored (for backwards compatibility)
 
     Returns:
         True if promise found anywhere in transcript
     """
     if not transcript:
         return False
-    # Search ENTIRE transcript, not just tail
     return promise in transcript
+
+
+def read_transcript_from_path(transcript_path: str) -> str:
+    """Read transcript content from a JSONL file path.
+
+    Args:
+        transcript_path: Path to the transcript JSONL file
+
+    Returns:
+        Concatenated transcript content, or empty string on error
+    """
+    try:
+        path = Path(transcript_path)
+        if not path.exists():
+            return ""
+
+        content_parts = []
+        with open(path) as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    # Extract text content from various message formats
+                    if isinstance(entry, dict):
+                        if "content" in entry:
+                            content_parts.append(str(entry["content"]))
+                        if "message" in entry:
+                            content_parts.append(str(entry["message"]))
+                except json.JSONDecodeError:
+                    continue
+
+        return "\n".join(content_parts)
+    except Exception:
+        return ""
 
 
 def check_promise_flag_file(promise: str) -> bool:
@@ -126,7 +157,7 @@ def check_promise_flag_file(promise: str) -> bool:
         return False
 
     try:
-        with open(flag_file, 'r') as f:
+        with open(flag_file) as f:
             content = f.read().strip()
         return content == promise
     except Exception:
@@ -183,35 +214,47 @@ def main():
         # Load configuration
         config = load_config()
 
-        # Get values from input and config
-        transcript = hook_input.get("transcript", "")
+        # Get values from config
         completion_promise = config.get("completion_promise", "<promise>DONE</promise>")
         max_iterations = config.get("max_iterations", 25)
-        scan_length = config.get("scan_length", 5000)
 
         # Increment iteration counter
         current_iteration = increment_iteration()
 
-        # Check 1: Max iterations exceeded
+        # Check 1: Max iterations exceeded - force exit
         if current_iteration >= max_iterations:
+            with open(debug_file, "a") as f:
+                f.write("Decision: ALLOW EXIT - max iterations reached\n")
             response = build_continue_message(
                 f"Max iterations ({max_iterations}) reached. Forcing exit.",
                 ["Review the task manually", "Check for infinite loops in logic"]
             )
             json.dump(response, sys.stderr)
-            sys.exit(0)  # Allow exit on max iterations
+            sys.exit(0)
 
-        # Check 2: Promise found in transcript (search ENTIRE transcript)
-        if check_promise_in_transcript(transcript, completion_promise, scan_length):
-            with open(debug_file, "a") as f:
-                f.write(f"Decision: ALLOW EXIT - promise found in transcript\n")
-            sys.exit(0)  # Allow exit
-
-        # Check 3: Promise flag file exists and is valid
+        # ===== HYBRID POLICY =====
+        # Check 2: Flag file (PRIMARY - source of truth)
         if check_promise_flag_file(completion_promise):
             with open(debug_file, "a") as f:
-                f.write(f"Decision: ALLOW EXIT - promise flag file found\n")
-            sys.exit(0)  # Allow exit
+                f.write("Decision: ALLOW EXIT - promise flag file found (primary)\n")
+            sys.exit(0)
+
+        # Check 3: Transcript content (SECONDARY - fallback/diagnostics)
+        # Try direct transcript string first
+        transcript = hook_input.get("transcript", "")
+        if check_promise_in_transcript(transcript, completion_promise):
+            with open(debug_file, "a") as f:
+                f.write("Decision: ALLOW EXIT - promise in transcript string\n")
+            sys.exit(0)
+
+        # Try reading from transcript_path if provided
+        transcript_path = hook_input.get("transcript_path", "")
+        if transcript_path:
+            transcript_content = read_transcript_from_path(transcript_path)
+            if check_promise_in_transcript(transcript_content, completion_promise):
+                with open(debug_file, "a") as f:
+                    f.write("Decision: ALLOW EXIT - promise in transcript file\n")
+                sys.exit(0)
 
         # Promise not found - block exit and provide guidance
         suggestions = [
@@ -222,14 +265,17 @@ def main():
         ]
 
         # Add iteration info
-        reason = f"Completion criteria not met (iteration {current_iteration}/{max_iterations})"
+        reason = (
+            f"Completion criteria not met "
+            f"(iteration {current_iteration}/{max_iterations})"
+        )
 
         response = build_continue_message(reason, suggestions)
         json.dump(response, sys.stderr)
 
         # Debug: Log blocking decision
         with open(debug_file, "a") as f:
-            f.write(f"Decision: BLOCK EXIT - promise not found\n")
+            f.write("Decision: BLOCK EXIT - promise not found\n")
             f.write(f"Iteration: {current_iteration}/{max_iterations}\n")
 
         # Exit 2 blocks the agent from exiting
