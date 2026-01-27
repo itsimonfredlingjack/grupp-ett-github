@@ -154,9 +154,21 @@ def build_continue_message(reason: str, suggestions: list) -> dict:
 
 def main():
     """Main hook logic."""
+    # Debug: Log that hook was called
+    debug_file = Path.cwd() / ".claude" / "stop-hook-debug.log"
+    debug_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(debug_file, "a") as f:
+        f.write(f"\n--- Hook called at {datetime.now().isoformat()} ---\n")
+
     try:
         # Read input from stdin
         input_data = sys.stdin.read()
+
+        # Debug: Log input
+        with open(debug_file, "a") as f:
+            f.write(f"Input length: {len(input_data)}\n")
+            f.write(f"Input preview: {input_data[:500]}...\n")
 
         if not input_data.strip():
             # No input, allow exit
@@ -191,10 +203,14 @@ def main():
 
         # Check 2: Promise found in transcript (search ENTIRE transcript)
         if check_promise_in_transcript(transcript, completion_promise, scan_length):
+            with open(debug_file, "a") as f:
+                f.write(f"Decision: ALLOW EXIT - promise found in transcript\n")
             sys.exit(0)  # Allow exit
 
         # Check 3: Promise flag file exists and is valid
         if check_promise_flag_file(completion_promise):
+            with open(debug_file, "a") as f:
+                f.write(f"Decision: ALLOW EXIT - promise flag file found\n")
             sys.exit(0)  # Allow exit
 
         # Promise not found - block exit and provide guidance
@@ -210,6 +226,11 @@ def main():
 
         response = build_continue_message(reason, suggestions)
         json.dump(response, sys.stderr)
+
+        # Debug: Log blocking decision
+        with open(debug_file, "a") as f:
+            f.write(f"Decision: BLOCK EXIT - promise not found\n")
+            f.write(f"Iteration: {current_iteration}/{max_iterations}\n")
 
         # Exit 2 blocks the agent from exiting
         sys.exit(2)

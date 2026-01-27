@@ -1,0 +1,6 @@
+
+--- Hook called at 2026-01-27T16:04:19.703595 ---
+Input length: 299
+Input preview: {"session_id":"0bb322ee-2212-4b82-a769-ed07a2e1375f","transcript_path":"/home/aidev/.claude/projects/-home-aidev-grupp-ett-github/0bb322ee-2212-4b82-a769-ed07a2e1375f.jsonl","cwd":"/home/aidev/grupp-ett-github","permission_mode":"bypassPermissions","hook_event_name":"Stop","stop_hook_active":false}...
+Decision: BLOCK EXIT - promise not found
+Iteration: 1/25

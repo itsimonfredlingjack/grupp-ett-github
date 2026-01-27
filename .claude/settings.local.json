@@ -16,7 +16,9 @@
       "Bash(python3:*)",
       "Bash(source:*)",
       "Bash(pip install:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(echo:*)",
+      "Bash(bash -c 'echo \"\"{\\\\\"\"transcript\\\\\"\": \\\\\"\"<promise>DONE</promise>\\\\\"\"}\"\" | python3 .claude/hooks/stop-hook.py; echo \"\"Exit code: $?\"\"')"
     ],
     "deny": [
       "Bash(rm -rf /:*)",
@@ -26,6 +28,17 @@
     ]
   },
   "hooks": {
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/stop-hook.py"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
