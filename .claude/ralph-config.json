@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "description": "Ralph Loop exit policy configuration for grupp-ett-github",
+
+  "active_profile": "code_repo",
+
+  "profiles": {
+    "template_repo": {
+      "description": "For documentation and template repos (no code tests)",
+      "exit_policy": {
+        "completion_promise": "<promise>DONE</promise>",
+        "max_iterations": 25,
+        "scan_length": 5000,
+        "requirements": {
+          "tests_must_pass": false,
+          "lint_must_pass": true,
+          "markdown_lint": true,
+          "structure_validation": true
+        }
+      }
+    },
+
+    "code_repo": {
+      "description": "For code repos with test frameworks",
+      "exit_policy": {
+        "completion_promise": "<promise>DONE</promise>",
+        "max_iterations": 25,
+        "scan_length": 5000,
+        "requirements": {
+          "tests_must_pass": true,
+          "lint_must_pass": true,
+          "coverage_threshold": 80
+        }
+      }
+    }
+  },
+
+  "task_memory": {
+    "file": "CURRENT_TASK.md",
+    "read_on_start": true,
+    "update_on_iteration": true
+  },
+
+  "traceability": {
+    "branch_pattern": "{type}/{JIRA_ID}-{slug}",
+    "commit_pattern": "{JIRA_ID}: {description}",
+    "allowed_types": ["feature", "bugfix", "hotfix", "refactor", "docs"]
+  },
+
+  "self_healing": {
+    "enabled": true,
+    "max_retries": 3,
+    "retry_on": ["test_failure", "lint_failure", "ci_failure"]
+  },
+
+  "logging": {
+    "level": "info",
+    "log_iterations": true,
+    "log_file": ".claude/ralph-loop.log"
+  }
+}

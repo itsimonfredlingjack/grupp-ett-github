@@ -1,0 +1,21 @@
+[project]
+name = "grupp-ett-github"
+version = "0.1.0"
+description = "Agentic Dev Loop - skolprojekt"
+requires-python = ">=3.10"
+
+[tool.ruff]
+exclude = [
+    ".claude/hooks/*",
+    "venv",
+    ".venv",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
