@@ -104,6 +104,17 @@ def create_app() -> Flask:
             "statistics": stats
         }), 200
 
+    @app.route("/admin/statistics", methods=["GET"])
+    @require_admin_token
+    def admin_statistics():
+        """Admin statistics endpoint.
+
+        Returns:
+            Response: JSON with statistics data.
+        """
+        stats = SubscriberService.get_statistics()
+        return jsonify(stats), 200
+
     # Subscriber management endpoints
     @app.route("/admin/subscribers", methods=["GET", "POST"])
     @require_admin_token
