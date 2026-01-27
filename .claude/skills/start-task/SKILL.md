@@ -376,12 +376,21 @@ Then **IMMEDIATELY** (in the same response, without stopping):
 **YOU ARE NOW IN RALPH LOOP MODE.**
 
 The stop-hook will BLOCK you from exiting until you output `<promise>DONE</promise>`.
-You can only output that promise when ALL of these are true:
-- All acceptance criteria in CURRENT_TASK.md are checked off
-- All tests pass: `pytest -xvs`
-- No linting errors: `ruff check .`
-- Changes committed and pushed
-- PR created
+
+**⚠️ CRITICAL: When implementation is complete, you MUST run `/finish-task` skill.**
+
+DO NOT output `<promise>DONE</promise>` directly. The `/finish-task` skill will:
+1. Verify all tests pass
+2. Commit and push changes
+3. Create the PR
+4. Update Jira status to "In Review"
+5. Add completion comment to Jira
+6. Output the promise for you
+
+**WORKFLOW:**
+1. Implement until all acceptance criteria are met
+2. Run `/finish-task` ← THIS HANDLES EVERYTHING INCLUDING JIRA COMMENT
+3. Stop-hook allows exit
 
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
 
@@ -410,14 +419,19 @@ When your task is complete and ALL exit criteria are met:
 
 This exact format is detected by the stop-hook. Any deviation and exit will be blocked.
 
-**Before outputting the promise, verify:**
-1. [ ] All acceptance criteria met
-2. [ ] All tests passing
-3. [ ] All linting passing
-4. [ ] Changes committed
-5. [ ] Branch pushed to remote
+**Before running /finish-task, verify:**
 
-Only then output the promise on its own line.
+1. [ ] All acceptance criteria in CURRENT_TASK.md are implemented
+2. [ ] All tests passing: `pytest -xvs`
+3. [ ] All linting passing: `ruff check .`
+
+**Then run `/finish-task` which will:**
+- Commit and push
+- Create PR
+- Transition Jira to "In Review"
+- Add Jira completion comment
+- Output `<promise>DONE</promise>`
+- Remove the Ralph Loop flag
 
 ## Error Handling
 
@@ -438,9 +452,16 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 3. **Implement** minimal code to pass the test
 4. **Refactor** if needed
 5. **Run tests:** `pytest -xvs`
-6. **Repeat** for each requirement
-7. **When ALL done:** Commit, push, create PR
-8. **ONLY THEN:** Output `<promise>DONE</promise>`
+6. **Repeat** for each requirement until ALL acceptance criteria are met
+7. **RUN `/finish-task`** ← THIS IS MANDATORY
+
+**DO NOT manually:**
+- Push code
+- Create PR
+- Update Jira
+- Output the promise
+
+**The `/finish-task` skill handles ALL of this automatically, including the Jira completion comment.**
 
 **The skill is NOT complete until the task is DONE.**
 
