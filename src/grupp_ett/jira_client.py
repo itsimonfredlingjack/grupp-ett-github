@@ -316,6 +316,7 @@ if __name__ == "__main__":
     # Load .env file if python-dotenv is available
     try:
         from dotenv import load_dotenv
+
         load_dotenv()
     except ImportError:
         pass

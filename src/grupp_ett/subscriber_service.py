@@ -36,10 +36,7 @@ class SubscriberService:
             Subscriber: Created subscriber.
         """
         subscriber = Subscriber(
-            id=cls._next_id,
-            email=email,
-            name=name,
-            subscribed_date=subscribed_date
+            id=cls._next_id, email=email, name=name, subscribed_date=subscribed_date
         )
         cls._subscribers[cls._next_id] = subscriber
         cls._next_id += 1
@@ -68,8 +65,11 @@ class SubscriberService:
 
     @classmethod
     def update_subscriber(
-        cls, subscriber_id: int, email: str | None = None,
-        name: str | None = None, active: bool | None = None
+        cls,
+        subscriber_id: int,
+        email: str | None = None,
+        name: str | None = None,
+        active: bool | None = None,
     ) -> Subscriber | None:
         """Update a subscriber.
 
@@ -122,7 +122,8 @@ class SubscriberService:
         """
         query_lower = query.lower()
         return [
-            s for s in cls._subscribers.values()
+            s
+            for s in cls._subscribers.values()
             if query_lower in s.email.lower() or query_lower in s.name.lower()
         ]
 
@@ -135,8 +136,7 @@ class SubscriberService:
         """
         output = io.StringIO()
         writer = csv.DictWriter(
-            output,
-            fieldnames=["id", "email", "name", "subscribed_date", "active"]
+            output, fieldnames=["id", "email", "name", "subscribed_date", "active"]
         )
         writer.writeheader()
         for subscriber in cls._subscribers.values():
@@ -165,5 +165,5 @@ class SubscriberService:
         return {
             "total_subscribers": total,
             "active_subscribers": active,
-            "inactive_subscribers": total - active
+            "inactive_subscribers": total - active,
         }

@@ -29,8 +29,7 @@ def login_admin(client: FlaskClient) -> str:
         str: Authentication token.
     """
     response = client.post(
-        "/admin/login",
-        json={"username": "admin", "password": "admin123"}
+        "/admin/login", json={"username": "admin", "password": "admin123"}
     )
     data = response.get_json()
     return data.get("token", "")
@@ -47,9 +46,9 @@ class TestAdminSubscriberCreate:
             json={
                 "email": "test@example.com",
                 "name": "Test User",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code != 404
 
@@ -60,8 +59,8 @@ class TestAdminSubscriberCreate:
             json={
                 "email": "test@example.com",
                 "name": "Test User",
-                "subscribed_date": "2026-01-27"
-            }
+                "subscribed_date": "2026-01-27",
+            },
         )
         assert response.status_code in (401, 302, 403)
 
@@ -73,9 +72,9 @@ class TestAdminSubscriberCreate:
             json={
                 "email": "newuser@example.com",
                 "name": "New User",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 201
         data = response.get_json()
@@ -89,7 +88,7 @@ class TestAdminSubscriberCreate:
         response = client.post(
             "/admin/subscribers",
             json={"email": "test@example.com"},
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 400
 
@@ -101,8 +100,7 @@ class TestAdminSubscriberRead:
         """Test that the get subscriber endpoint exists."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers/1",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers/1", headers={"Authorization": f"Bearer {token}"}
         )
         # Should either return 200 or 404, not refuse to exist
         assert response.status_code != 405
@@ -116,8 +114,7 @@ class TestAdminSubscriberRead:
         """Test getting a nonexistent subscriber."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers/999",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers/999", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 404
 
@@ -131,16 +128,16 @@ class TestAdminSubscriberRead:
             json={
                 "email": "read@example.com",
                 "name": "Read Test",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         subscriber_id = create_response.get_json()["id"]
 
         # Now get it
         response = client.get(
             f"/admin/subscribers/{subscriber_id}",
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -156,7 +153,7 @@ class TestAdminSubscriberUpdate:
         response = client.put(
             "/admin/subscribers/1",
             json={"email": "updated@example.com"},
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         # Should either return 200/404, not refuse to exist
         assert response.status_code != 405
@@ -164,8 +161,7 @@ class TestAdminSubscriberUpdate:
     def test_update_subscriber_requires_auth(self, client: FlaskClient) -> None:
         """Test that update requires authentication."""
         response = client.put(
-            "/admin/subscribers/1",
-            json={"email": "updated@example.com"}
+            "/admin/subscribers/1", json={"email": "updated@example.com"}
         )
         assert response.status_code in (401, 302, 403)
 
@@ -175,7 +171,7 @@ class TestAdminSubscriberUpdate:
         response = client.put(
             "/admin/subscribers/999",
             json={"email": "updated@example.com"},
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404
 
@@ -189,20 +185,17 @@ class TestAdminSubscriberUpdate:
             json={
                 "email": "original@example.com",
                 "name": "Original Name",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         subscriber_id = create_response.get_json()["id"]
 
         # Update it
         response = client.put(
             f"/admin/subscribers/{subscriber_id}",
-            json={
-                "email": "updated@example.com",
-                "name": "Updated Name"
-            },
-            headers={"Authorization": f"Bearer {token}"}
+            json={"email": "updated@example.com", "name": "Updated Name"},
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -217,8 +210,7 @@ class TestAdminSubscriberDelete:
         """Test that the delete subscriber endpoint exists."""
         token = login_admin(client)
         response = client.delete(
-            "/admin/subscribers/1",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers/1", headers={"Authorization": f"Bearer {token}"}
         )
         # Should either return 200/204/404, not refuse to exist
         assert response.status_code != 405
@@ -232,8 +224,7 @@ class TestAdminSubscriberDelete:
         """Test deleting a nonexistent subscriber."""
         token = login_admin(client)
         response = client.delete(
-            "/admin/subscribers/999",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers/999", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 404
 
@@ -247,22 +238,22 @@ class TestAdminSubscriberDelete:
             json={
                 "email": "delete@example.com",
                 "name": "Delete Test",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         subscriber_id = create_response.get_json()["id"]
 
         # Delete it
         response = client.delete(
             f"/admin/subscribers/{subscriber_id}",
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code in (200, 204)
 
         # Verify it's gone
         get_response = client.get(
             f"/admin/subscribers/{subscriber_id}",
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert get_response.status_code == 404
