@@ -10,7 +10,7 @@ This skill initializes the Ralph Loop for a new Jira task.
 
 ## Prerequisites
 
-- Jira MCP server must be configured with valid credentials
+- Jira credentials must be set in `.env` file (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)
 - Git repository must be clean (no uncommitted changes)
 - Must be on main/master branch
 
@@ -68,21 +68,31 @@ This tells the stop-hook to enforce exit criteria. Without this file, the stop-h
 
 ### Step 1A: Validate Jira Connection (SAFETY)
 
-Before attempting to fetch, validate Jira MCP is available.
+Before attempting to fetch, validate Jira API is accessible using the direct client.
 
-**Run this command to test:**
+**Run this Python code to test:**
 
-```bash
-# Test Jira connection (will error if unavailable)
-jira_search_issues(jql="project = YOUR_PROJECT LIMIT 1")
+```python
+import sys
+sys.path.insert(0, ".")
+from dotenv import load_dotenv
+load_dotenv()
+
+from src.grupp_ett.jira_client import get_jira_client
+
+client = get_jira_client()
+if client.test_connection():
+    print("✅ Jira connection successful!")
+else:
+    print("❌ Jira connection failed!")
 ```
 
-**If this fails with "Connection refused" or "MCP not available":**
+**If this fails:**
 - **STOP IMMEDIATELY**
-- Output: "❌ Jira MCP is not available. Cannot fetch ticket details."
+- Output: "❌ Jira API is not available. Cannot fetch ticket details."
 - Ask user to:
-  1. Check `.env` file has `JIRA_URL` and `JIRA_TOKEN`
-  2. Restart Claude Code session
+  1. Check `.env` file has `JIRA_URL`, `JIRA_EMAIL`, and `JIRA_API_TOKEN`
+  2. Verify the API token is valid
   3. Or run `/preflight` to validate setup
 - **DO NOT PROCEED without real Jira data**
 - **DO NOT INVENT ticket details**
@@ -106,14 +116,29 @@ fi
 
 ### Step 2: Fetch Jira Ticket
 
-Use the Jira MCP tools to fetch the ticket:
+Use the direct Jira API client to fetch the ticket:
 
-```
-jira_get_issue(issue_key="{JIRA_ID}")
+```python
+import sys
+sys.path.insert(0, ".")
+from dotenv import load_dotenv
+load_dotenv()
+
+from src.grupp_ett.jira_client import get_jira_client
+
+client = get_jira_client()
+issue = client.get_issue("{JIRA_ID}")
+
+print(f"Key: {issue.key}")
+print(f"Summary: {issue.summary}")
+print(f"Type: {issue.issue_type}")
+print(f"Status: {issue.status}")
+print(f"Priority: {issue.priority}")
+print(f"Description: {issue.description}")
 ```
 
 **If this fails:**
-- The Jira MCP is not properly configured
+- The Jira API credentials may be invalid
 - **DO NOT GUESS or INVENT**
 - Output error message and **STOP**
 - Ask user to manually provide:
@@ -123,13 +148,13 @@ jira_get_issue(issue_key="{JIRA_ID}")
 
 Then wrap in `<jira_data>` tags and proceed.
 
-Extract from the successful response:
-- `summary` - Ticket title
-- `description` - Full description
-- `issuetype.name` - Issue type (Bug, Story, Task, etc.)
-- `priority.name` - Priority level
-- `status.name` - Current status
-- `customfield_*` - Acceptance criteria (if configured)
+Extract from the JiraIssue object:
+- `issue.summary` - Ticket title
+- `issue.description` - Full description
+- `issue.issue_type` - Issue type (Bug, Story, Task, etc.)
+- `issue.priority` - Priority level
+- `issue.status` - Current status
+- `issue.labels` - Labels/tags
 
 ### Step 3: Sanitize External Data (SECURITY)
 
@@ -264,18 +289,38 @@ This guarantees:
 
 ### Step 7: Transition Jira Status
 
-Transition the Jira ticket to "In Progress":
+Transition the Jira ticket to "In Progress" using the direct API:
 
-```
-jira_transition_issue(issue_key="{JIRA_ID}", transition="In Progress")
+```python
+from src.grupp_ett.jira_client import get_jira_client
+
+client = get_jira_client()
+try:
+    client.transition_issue("{JIRA_ID}", "In Progress")
+    print("✅ Transitioned to In Progress")
+except Exception as e:
+    print(f"⚠️ Could not transition: {e}")
+    # Continue anyway - status update is not critical
 ```
 
 ### Step 8: Add Jira Comment
 
-Log that the agent has started work:
+Log that the agent has started work using the direct API:
 
-```
-jira_add_comment(issue_key="{JIRA_ID}", body="🤖 Claude Code agent started work on this ticket.\n\nBranch: `{branch_name}`\nTimestamp: {timestamp}")
+```python
+from datetime import datetime
+from src.grupp_ett.jira_client import get_jira_client
+
+client = get_jira_client()
+timestamp = datetime.now().isoformat()
+comment = f"🤖 Claude Code agent started work on this ticket.\n\nBranch: {branch_name}\nTimestamp: {timestamp}"
+
+try:
+    client.add_comment("{JIRA_ID}", comment)
+    print("✅ Added comment to Jira")
+except Exception as e:
+    print(f"⚠️ Could not add comment: {e}")
+    # Continue anyway - comment is not critical
 ```
 
 ### Step 9: Reset Ralph State
@@ -361,7 +406,8 @@ Only then output the promise on its own line.
 - **Jira ticket not found:** Exit with error, do not create branch
 - **Branch already exists:** Ask user whether to switch to existing branch
 - **Uncommitted changes:** Abort and ask user to commit or stash
-- **MCP server unavailable:** Fall back to manual mode (ask user for ticket details)
+- **Jira API unavailable:** Fall back to manual mode (ask user for ticket details)
+- **Invalid credentials:** Ask user to check `.env` file (JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN)
 
 ## Post-Skill Behavior
 
