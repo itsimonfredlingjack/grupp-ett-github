@@ -6,9 +6,11 @@
 ## Active Task
 
 **Jira ID:** GE-5
-**Status:** In Progress
+**Status:** COMPLETED ✅
 **Branch:** feature/GE-5-skapa-adminfunktion
+**PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/1
 **Started:** 2026-01-27
+**Completed:** 2026-01-27
 
 ## Task Summary
 
