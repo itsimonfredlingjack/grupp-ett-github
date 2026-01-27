@@ -1,7 +1,6 @@
 """Admin authentication module."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -48,7 +47,7 @@ class AdminAuthService:
         return f"token_{username}_{hash(username) % 10000}"
 
     @staticmethod
-    def validate_session_token(token: Optional[str]) -> bool:
+    def validate_session_token(token: str | None) -> bool:
         """Validate a session token.
 
         Args:

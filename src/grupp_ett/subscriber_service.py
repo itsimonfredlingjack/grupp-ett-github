@@ -3,7 +3,6 @@
 import csv
 import io
 from dataclasses import asdict, dataclass
-from typing import Optional
 
 
 @dataclass
@@ -56,22 +55,22 @@ class SubscriberService:
         return list(cls._subscribers.values())
 
     @classmethod
-    def get_subscriber(cls, subscriber_id: int) -> Optional[Subscriber]:
+    def get_subscriber(cls, subscriber_id: int) -> Subscriber | None:
         """Get a subscriber by ID.
 
         Args:
             subscriber_id: Subscriber ID.
 
         Returns:
-            Optional[Subscriber]: Subscriber or None if not found.
+            Subscriber | None: Subscriber or None if not found.
         """
         return cls._subscribers.get(subscriber_id)
 
     @classmethod
     def update_subscriber(
-        cls, subscriber_id: int, email: Optional[str] = None,
-        name: Optional[str] = None, active: Optional[bool] = None
-    ) -> Optional[Subscriber]:
+        cls, subscriber_id: int, email: str | None = None,
+        name: str | None = None, active: bool | None = None
+    ) -> Subscriber | None:
         """Update a subscriber.
 
         Args:
@@ -81,7 +80,7 @@ class SubscriberService:
             active: New active status (optional).
 
         Returns:
-            Optional[Subscriber]: Updated subscriber or None if not found.
+            Subscriber | None: Updated subscriber or None if not found.
         """
         subscriber = cls._subscribers.get(subscriber_id)
         if not subscriber:
