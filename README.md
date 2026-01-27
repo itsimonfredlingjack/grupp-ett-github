@@ -1,216 +1,244 @@
-# grupp-ett-github
-Grupp ett - Emma, Simon, Jonas Ö, Filippa och Annika - Github-Jira-VScode-Flask-LOOP
+# Agentic Dev Loop
+
+**Grupp Ett** - Emma, Simon, Jonas Ö, Filippa och Annika
 
 ---
 
-# Agentic Dev Loop: Guide för IT-ledare
+## Vad är det här projektet?
 
-**Vad är detta?** Ett system där AI-agenter automatiskt tar utvecklingsuppgifter, skriver kod, testar, och levererar – utan att en människa skriver en enda rad kod.
+Det här projektet visar hur man kan låta AI-assistenter automatiskt ta hand om programmeringsuppgifter - från idé till färdig funktion. Tänk dig att du skriver "fixa inloggningsproblemet" i en att-göra-lista, och systemet automatiskt:
 
-**Din roll som ledare:** Förstå vad som händer, fatta beslut om inköp och risker, och ställa rätt krav på ditt team.
+1. Läser vad som behöver göras
+2. Skriver koden
+3. Testar att det fungerar
+4. Ber en annan AI dubbelkolla
+5. Levererar den färdiga lösningen
+
+**Ingen människa behöver skriva en enda rad kod.**
 
 ---
 
-## 1. Vad du behöver förstå (utan att kunna koda)
+## Innehåll
 
-### Systemet i en mening
+| Avsnitt | Beskrivning | Passar för |
+|---------|-------------|------------|
+| [Del A: Guide för beslutsfattare](#del-a-guide-för-beslutsfattare) | Förstå systemet, fatta beslut, hantera risker | IT-ledare, chefer, projektledare |
+| [Del B: Teknisk implementation](#del-b-teknisk-implementation) | Steg-för-steg installation och konfiguration | Utvecklare, tekniker |
 
-> "En AI läser vad som ska byggas, bygger det, testar det, får feedback från en annan AI, fixar fel, och levererar – i en loop tills det är klart."
+---
 
-### De fyra delarna
+# Del A: Guide för beslutsfattare
 
-| Del | Vad den gör | Analogt med |
-|-----|-------------|-------------|
-| **Projekthantering** (Linear/Jira) | Innehåller uppgifterna | Din att-göra-lista |
-| **Kodande AI** (Claude Code) | Skriver och testar kod | En junior utvecklare |
-| **Granskande AI** (Google Jules) | Kollar att koden är bra | En senior utvecklare som code reviewar |
-| **Leveranssystem** (CI/CD) | Publicerar koden till produktion | Fabriken som levererar produkten |
+*Den här delen är skriven för dig som behöver förstå vad systemet gör och vilka beslut som behövs - utan att behöva kunna programmera.*
 
-### Hur de hänger ihop
+---
+
+## Systemet förklarat enkelt
+
+### I en mening
+
+> "En AI läser vad som ska byggas, bygger det, testar det, får feedback från en annan AI, fixar fel, och levererar - i en slinga tills det är klart."
+
+### De fyra byggstenarna
+
+| Byggsten | Vad den gör | Tänk det som... |
+|----------|-------------|-----------------|
+| **Projekthantering** (Linear/Jira) | Lagrar uppgifterna som ska göras | Din digitala att-göra-lista |
+| **Kodande AI** (Claude Code) | Skriver och testar programkod | En junior programmerare |
+| **Granskande AI** (Google Jules) | Kontrollerar att koden håller kvalitet | En erfaren programmerare som dubbelkollar |
+| **Leveranssystem** (CI/CD) | Publicerar koden så användare kan använda den | Fabriken som levererar slutprodukten |
+
+### Hur delarna samarbetar (flödesschema)
 
 ```
-DU/TEAMET: Skapar uppgift i Linear/Jira
-                    ↓
-         "Fixa login-buggen"
-                    ↓
-        ┌───────────────────────┐
-        │  CLAUDE CODE          │
-        │  Läser uppgiften      │
-        │  Skriver kod          │
-        │  Kör tester           │
-        │  Försöker igen om fel │ ← Loop tills det funkar
-        └───────────┬───────────┘
-                    ↓
-        ┌───────────────────────┐
-        │  GOOGLE JULES         │
-        │  Granskar koden       │
-        │  Hittar säkerhetshål  │
-        │  Föreslår förbättringar│
-        └───────────┬───────────┘
-                    ↓
-        ┌───────────────────────┐
-        │  CI/CD                │
-        │  Testar i skarp miljö │
-        │  Publicerar           │
-        └───────────────────────┘
-                    ↓
-            KLAR – utan mänsklig kod
+DU/TEAMET: Skapar uppgift
+                ↓
+       "Fixa login-buggen"
+                ↓
+    ┌─────────────────────────┐
+    │      CLAUDE CODE        │
+    │  ────────────────────   │
+    │  1. Läser uppgiften     │
+    │  2. Skriver kod         │
+    │  3. Kör tester          │
+    │  4. Försöker igen       │ ← Upprepar tills det fungerar
+    │     vid fel             │
+    └───────────┬─────────────┘
+                ↓
+    ┌─────────────────────────┐
+    │     GOOGLE JULES        │
+    │  ────────────────────   │
+    │  Granskar koden         │
+    │  Letar säkerhetshål     │
+    │  Föreslår förbättringar │
+    └───────────┬─────────────┘
+                ↓
+    ┌─────────────────────────┐
+    │        CI/CD            │
+    │  ────────────────────   │
+    │  Testar i skarp miljö   │
+    │  Publicerar             │
+    └───────────┬─────────────┘
+                ↓
+        KLART - utan mänsklig kod
 ```
 
 ---
 
-## 2. Beslut du som ledare måste fatta
+## Beslut du behöver fatta
 
-### Inköpsbeslut
+### Vilka verktyg behövs och vad kostar de?
 
-| Verktyg | Vad det är | Kostnad | Behövs? |
-|---------|------------|---------|---------|
-| **Anthropic Claude** | AI som skriver kod | ~$20-100/mån | Ja, kärnan |
-| **Google Jules** | AI som granskar kod | Gratis tier finns | Rekommenderas |
-| **Linear** | Projekthantering | Gratis för små team | Eller Jira |
-| **GitHub** | Kodlagring | Gratis | Ja |
+| Verktyg | Vad det gör | Kostnad per månad | Nödvändigt? |
+|---------|-------------|-------------------|-------------|
+| **Anthropic Claude** | AI som skriver kod | ca 200-1000 kr | Ja - kärnan i systemet |
+| **Google Jules** | AI som granskar kod | Gratis (grundversion) | Starkt rekommenderat |
+| **Linear** | Projekthantering | Gratis för små team | Ja (eller Jira) |
+| **GitHub** | Lagring av kod | Gratis | Ja |
 
-**Total kostnad för pilotprojekt:** ~$50-200/månad
+**Uppskattad totalkostnad för ett pilotprojekt:** 500-2000 kr/månad
 
-### Organisatoriska beslut
+### Organisatoriska frågor att ta ställning till
 
-1. **Vem äger systemet?**
-   - En utvecklare måste sätta upp det (1-2 dagar)
-   - Någon måste övervaka att det fungerar
+**1. Vem ansvarar för systemet?**
+- En utvecklare behöver ca 1-2 dagar för att sätta upp systemet
+- Någon behöver sedan övervaka att det fungerar som det ska
 
-2. **Vilka uppgifter passar?**
-   - ✅ Buggfixar med tydliga felmeddelanden
-   - ✅ Enkla nya funktioner med klara krav
-   - ✅ Kodrefaktorering och uppdateringar
-   - ❌ Helt nya produkter utan specifikation
-   - ❌ Komplex affärslogik som kräver domänkunskap
+**2. Vilka typer av uppgifter passar för AI-automation?**
 
-3. **Hur mäter vi framgång?**
-   - Tid från uppgift till leverans
-   - Antal mänskliga timmar per uppgift
-   - Andel uppgifter som klaras utan mänsklig hjälp
+| Passar bra | Passar inte |
+|------------|-------------|
+| Buggfixar med tydliga felmeddelanden | Helt nya produkter utan specifikation |
+| Enkla funktioner med klara krav | Komplex affärslogik som kräver djup kunskap |
+| Koduppdateringar och modernisering | Uppgifter som kräver kreativa beslut |
+
+**3. Hur vet ni om det fungerar?**
+- Mät tiden från uppgift till leverans
+- Räkna antalet timmar människor lägger per uppgift
+- Se hur stor andel uppgifter som klaras utan hjälp
 
 ---
 
-## 3. Risker och hur du hanterar dem
+## Risker och skydd
 
-### Risk 1: AI skriver dålig eller farlig kod
+### Risk 1: AI skriver dålig eller osäker kod
 
-**Vad kan hända:** Säkerhetshål, buggar i produktion.
+**Vad kan hända:** Säkerhetshål eller buggar hamnar i den färdiga produkten.
 
-**Så skyddar du dig:**
-- Kräv att Jules (gransknings-AI) alltid kör
-- Kräv mänsklig godkännande innan kod går till produktion
-- Sätt upp "CODEOWNERS" (vissa filer kräver alltid mänsklig review)
+**Så skyddar ni er:**
+- Se till att gransknings-AI:n (Jules) alltid körs
+- Kräv att en människa godkänner innan kod publiceras
+- Markera känsliga filer så att de alltid kräver mänsklig granskning
 
-**Fråga ditt team:** "Kan AI-genererad kod nå produktion utan att en människa sett den?"
-**Rätt svar:** "Nej, alltid mänsklig approval på PR."
+**Fråga ert team:** "Kan AI-genererad kod nå användarna utan att en människa sett den?"
+
+**Rätt svar:** "Nej, en människa måste alltid godkänna först."
+
+---
 
 ### Risk 2: AI blir lurad att göra skadliga saker
 
-**Vad kan hända:** Någon skriver skadlig text i en uppgift, AI:n följer instruktionen.
+**Vad kan hända:** Någon skriver skadliga instruktioner gömda i en uppgift, och AI:n följer dem.
 
-**Exempel:** Uppgift heter `Fix bug"; rm -rf /; echo "` → AI raderar servern.
+**Så skyddar ni er:**
+- AI:n körs i en isolerad miljö (kan inte påverka riktiga system)
+- AI:n har inte tillgång till verklig kunddata
+- All indata kontrolleras innan AI:n får se den
 
-**Så skyddar du dig:**
-- AI:n körs i isolerad miljö (sandbox/container)
-- AI:n har inte tillgång till produktionsdatabaser
-- Indata från Jira/Linear saneras
+**Fråga ert team:** "Om någon skapar en skadlig uppgift, vad kan AI:n göra som värst?"
 
-**Fråga ditt team:** "Om någon skapar en illvillig uppgift i Jira, vad kan AI:n göra i värsta fall?"
-**Rätt svar:** "Bara påverka testmiljön, aldrig produktion."
+**Rätt svar:** "Bara påverka testmiljön, aldrig riktiga system eller data."
 
-### Risk 3: Kostnader skenar
+---
 
-**Vad kan hända:** AI fastnar i loop, bränner tusentals kronor på en uppgift.
+### Risk 3: Kostnaderna skenar
 
-**Så skyddar du dig:**
-- Sätt max antal försök (t.ex. 20 iterationer)
-- Sätt kostnadslarm i Anthropic Console
-- Övervaka veckovis
+**Vad kan hända:** AI:n fastnar i en loop och använder resurser för tusentals kronor på en uppgift.
 
-**Fråga ditt team:** "Vad händer om AI:n inte klarar en uppgift?"
+**Så skyddar ni er:**
+- Sätt en maxgräns för hur många försök AI:n får göra (t.ex. 20 gånger)
+- Aktivera kostnadslarm hos leverantören
+- Granska kostnader varje vecka
+
+**Fråga ert team:** "Vad händer om AI:n inte klarar en uppgift?"
+
 **Rätt svar:** "Den ger upp efter X försök och flaggar för mänsklig hjälp."
 
 ---
 
-## 4. Checklista: Redo att börja?
+## Checklista innan start
 
-### Innan ni startar
+### Innan ni börjar
 
-- [ ] Budget godkänd (~$100-200/mån för pilot)
-- [ ] En utvecklare tilldelad för setup (1-2 dagar)
-- [ ] Testprojekt identifierat (inte affärskritiskt)
-- [ ] Säkerhetskrav definierade (vad får AI:n INTE göra?)
+- [ ] Budget godkänd (ca 1000-2000 kr/månad för pilot)
+- [ ] En utvecklare tilldelad för installation (1-2 dagar)
+- [ ] Testprojekt valt (välj något som inte är affärskritiskt)
+- [ ] Säkerhetskrav definierade (vad får AI:n absolut INTE göra?)
 
-### Krav på ert team
+### Krav på ert arbetssätt
 
-- [ ] Uppgifter i Linear/Jira har **tydliga acceptanskriterier**
-- [ ] Projektet har **automatiska tester** (annars vet inte AI:n om koden funkar)
-- [ ] Någon **övervakar** systemet dagligen första månaden
+- [ ] Uppgifter har tydliga krav och mål
+- [ ] Projektet har automatiska tester (annars vet inte AI:n om koden fungerar)
+- [ ] Någon övervakar systemet dagligen den första månaden
 
-### Framgångskriterier för piloten
+### Mål för piloten
 
 - [ ] Minst 5 uppgifter körda genom systemet
-- [ ] Minst 3 klarade utan mänsklig hjälp
+- [ ] Minst 3 av dem klarade utan mänsklig hjälp
 - [ ] Inga säkerhetsincidenter
 - [ ] Kostnad inom budget
 
 ---
 
-## 5. Frågor att ställa leverantörer/konsulter
+## Frågor att ställa till leverantörer
 
-Om någon erbjuder sig att bygga detta åt er:
+Om någon erbjuder sig att bygga detta åt er, ställ dessa frågor:
 
-1. "Hur säkerställer ni att AI:n inte kan nå produktionsdata?"
+1. "Hur säkerställer ni att AI:n inte kan nå riktig kunddata?"
 2. "Vad händer om AI:n fastnar? Hur stoppar den sig själv?"
-3. "Hur loggas allt AI:n gör för audit trail?"
-4. "Kan vi se exakt vilken kod AI:n skrev vs människor?"
-5. "Vad kostar det per uppgift i snitt?"
+3. "Hur loggas allt AI:n gör så vi kan granska efteråt?"
+4. "Kan vi se exakt vilken kod AI:n skrev jämfört med människor?"
+5. "Vad kostar det i snitt per uppgift?"
 
 ---
 
-## 6. Ordlista
+## Ordlista
 
-| Term | Betydelse |
-|------|-----------|
-| **Agentic** | AI som agerar självständigt, inte bara svarar på frågor |
-| **MCP** | Protokoll för att koppla AI till andra system |
-| **Ralph Wiggum** | Teknik för att tvinga AI att försöka tills den lyckas |
-| **CI/CD** | System som automatiskt testar och publicerar kod |
-| **PR (Pull Request)** | Förfrågan om att lägga till kod i projektet |
-| **Code Review** | Granskning av kod innan den accepteras |
-
----
-
-**Nu har du vad du behöver för att förstå, utvärdera och leda ett sådant projekt – utan att själv behöva koda.**
-
+| Begrepp | Förklaring |
+|---------|------------|
+| **Agentic** | AI som agerar självständigt och tar egna initiativ, inte bara svarar på frågor |
+| **MCP** | Ett sätt att koppla ihop AI med andra system (Model Context Protocol) |
+| **CI/CD** | System som automatiskt testar och publicerar kod (Continuous Integration/Deployment) |
+| **PR (Pull Request)** | En förfrågan om att lägga till ny kod i projektet, som kan granskas |
+| **Code Review** | Granskning av kod innan den accepteras in i projektet |
+| **Branch** | En "gren" av koden där man kan jobba utan att påverka huvudversionen |
+| **Sandbox** | En isolerad testmiljö där AI:n kan experimentera utan att orsaka skada |
 
 ---
 
-# Agentic Dev Loop: Komplett Implementationsguide
+# Del B: Teknisk implementation
 
-**Mål:** Ett system där AI automatiskt tar uppgifter från projekthantering, skriver kod, testar, får review, fixar fel, och levererar – i en oändlig loop tills jobbet är klart.
+*Den här delen är skriven för utvecklare som ska sätta upp och konfigurera systemet.*
 
 ---
 
-## DEL 1: Förberedelser
+## Förberedelser
 
-### 1.1 Skaffa konton och nycklar
+### Skaffa konton och API-nycklar
 
 | Tjänst | Vad du behöver | Var du hittar det | Kostnad |
 |--------|----------------|-------------------|---------|
 | **Anthropic** | API-nyckel | console.anthropic.com → API Keys | ~$20/mån |
 | **GitHub** | Konto + repo | github.com | Gratis |
 | **Linear** | API-nyckel | linear.app → Settings → API → Personal API keys | Gratis |
-| **Google Jules** | API-nyckel | jules.google → Settings → Create API Key | Gratis tier finns |
+| **Google Jules** | API-nyckel | jules.google → Settings → Create API Key | Gratis tier |
 
-**Spara alla nycklar i en säker fil.** Du kommer behöva dem flera gånger.
+**Spara alla nycklar säkert - du behöver dem flera gånger.**
 
-### 1.2 Installera verktyg på din dator
+### Installera lokala verktyg
 
 ```bash
-# 1. Node.js (krävs för allt annat)
+# 1. Node.js
 # Mac:
 brew install node
 
@@ -228,25 +256,23 @@ brew install jq
 # Ubuntu:
 sudo apt install jq
 
-# 4. Verifiera
+# 4. Verifiera installation
 claude --version
 jq --version
 ```
 
 ---
 
-## DEL 2: Koppla projekthantering (Linear/Jira) till Claude
+## Koppla projekthantering till Claude
 
-### 2.1 Skapa MCP-konfigurationsfil
-
-Skapa mappen och filen:
+### Skapa MCP-konfiguration
 
 ```bash
 mkdir -p ~/.claude
 nano ~/.claude/mcp.json
 ```
 
-Klistra in (för **Linear**):
+**För Linear:**
 
 ```json
 {
@@ -266,7 +292,7 @@ Klistra in (för **Linear**):
 }
 ```
 
-**För Jira** – byt ut linear-blocket mot:
+**För Jira:**
 
 ```json
 {
@@ -284,40 +310,31 @@ Klistra in (för **Linear**):
 }
 ```
 
-### 2.2 Testa kopplingen
+### Testa kopplingen
 
 ```bash
 claude
 > Visa mina öppna uppgifter i Linear
 ```
 
-Om du ser en lista → fungerar. Om fel → kolla API-nyckeln.
-
 ---
 
-## DEL 3: Installera Ralph Wiggum (iterationsloopen)
+## Ralph Wiggum - Iterationsloopen
 
-### 3.1 Installera pluginet
+### Installation
 
 ```bash
 claude
 > /plugin install ralph-wiggum
+> /plugins  # Verifiera att den syns
 ```
 
-### 3.2 Verifiera
-
-```bash
-> /plugins
-```
-
-Du ska se `ralph-wiggum` i listan.
-
-### 3.3 Förstå hur det fungerar
+### Så fungerar det
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  DU: /ralph-loop "Fixa bugg X" --completion-promise "DONE" │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│  DU: /ralph-loop "Fixa bugg X" --completion-promise "DONE"    │
+└───────────────────────────────────────────────────────────────┘
                             │
                             ▼
               ┌─────────────────────────┐
@@ -327,13 +344,8 @@ Du ska se `ralph-wiggum` i listan.
                           │
                           ▼
               ┌─────────────────────────┐
-              │  Claude säger "klar"    │
-              └───────────┬─────────────┘
-                          │
-                          ▼
-              ┌─────────────────────────┐
-              │  STOP HOOK kollar:      │
-              │  Skrev Claude "DONE"?   │
+              │  Kontroll: Skrev        │
+              │  Claude "DONE"?         │
               └───────────┬─────────────┘
                           │
             ┌─────────────┴─────────────┐
@@ -341,25 +353,18 @@ Du ska se `ralph-wiggum` i listan.
             ▼                           ▼
     ┌───────────────┐          ┌───────────────┐
     │  JA → Avsluta │          │  NEJ → Tvinga │
-    │               │          │  Claude att   │
     │               │          │  fortsätta    │
     └───────────────┘          └───────┬───────┘
                                        │
-                                       ▼
+                                       ↓
                                (Tillbaka till start)
 ```
 
 ---
 
-## DEL 4: Skapa CURRENT_TASK.md för minneshantering
+## CURRENT_TASK.md - AI:ns externa minne
 
-### 4.1 Varför detta behövs
-
-Claude "glömmer" efter långa sessioner. Filen `CURRENT_TASK.md` är agentens externa minne.
-
-### 4.2 Skapa mall i ditt projekt
-
-Skapa filen `CURRENT_TASK.md` i projektets rot:
+Claude "glömmer" under långa sessioner. Skapa denna fil i projektets rot:
 
 ```markdown
 # Aktuell uppgift
@@ -369,9 +374,8 @@ Skapa filen `CURRENT_TASK.md` i projektets rot:
 - **Status:** In Progress
 
 ## Krav
-1. [Krav 1 från ticket]
-2. [Krav 2 från ticket]
-3. [Krav 3 från ticket]
+1. [Krav från ticket]
+2. [Krav från ticket]
 
 ## Acceptanskriterier
 - [ ] Alla tester passerar
@@ -381,125 +385,23 @@ Skapa filen `CURRENT_TASK.md` i projektets rot:
 ## Framsteg
 - [ ] Steg 1
 - [ ] Steg 2
-- [ ] Steg 3
 
 ## Anteckningar
 (Claude skriver här vad den försökt och vad som misslyckats)
 ```
 
-### 4.3 Instruera Claude att använda filen
-
-I din Ralph-loop prompt:
-
-```
-/ralph-loop "
-INNAN DU GÖR NÅGOT: Läs CURRENT_TASK.md
-
-Din uppgift: Implementera [X]
-
-EFTER VARJE ITERATION:
-1. Uppdatera CURRENT_TASK.md med vad du gjort
-2. Kryssa i avklarade steg
-3. Skriv i Anteckningar vad som gick fel
-
-NÄR ALLT ÄR KLART:
-1. Alla checkboxar i Acceptanskriterier måste vara ikryssade
-2. Skriv DONE
-" --completion-promise "DONE" --max-iterations 20
-```
-
 ---
 
-## DEL 5: Automatisk branch-namngivning
+## Google Jules - Kodgranskning
 
-### 5.1 Varför
+### GitHub Secret
 
-Branch-namnet kopplar koden till uppgiften. Format: `feature/LIN-123-beskrivning`
-
-### 5.2 Skapa ett Claude-alias
-
-Lägg till i `~/.claude/config.json`:
-
-```json
-{
-  "aliases": {
-    "start": "/mcp linear get_issue $1 | create-branch-from-ticket"
-  }
-}
-```
-
-### 5.3 Alternativ: Git hook
-
-Skapa `.git/hooks/prepare-commit-msg`:
-
-```bash
-#!/bin/bash
-
-# Hämta branch-namn
-BRANCH=$(git symbolic-ref --short HEAD)
-
-# Extrahera ticket-ID (t.ex. LIN-123)
-TICKET=$(echo "$BRANCH" | grep -oE '[A-Z]+-[0-9]+')
-
-# Om ticket hittades, lägg till i commit-meddelande
-if [ -n "$TICKET" ]; then
-    echo "$TICKET: $(cat $1)" > $1
-fi
-```
-
-Gör körbar:
-
-```bash
-chmod +x .git/hooks/prepare-commit-msg
-```
-
----
-
-## DEL 6: Smart Commits (status tillbaka till Linear/Jira)
-
-### 6.1 För Jira
-
-Jira läser commit-meddelanden automatiskt om du konfigurerat GitHub-koppling.
-
-Format:
-```
-PROJ-123 #comment Implementerade login-logik #in-progress
-```
-
-Instruera Claude i prompten:
-```
-Varje commit ska ha formatet:
-LIN-XXX #comment [vad du gjorde] #[status]
-
-Exempel:
-LIN-123 #comment Lade till enhetstest för auth #in-progress
-```
-
-### 6.2 För Linear
-
-Linear har inte Smart Commits, men du kan använda Linear MCP för att uppdatera status:
-
-```
-Efter varje lyckad commit, kör:
-mcp linear update_issue LIN-123 --state "In Progress"
-
-När uppgiften är klar:
-mcp linear update_issue LIN-123 --state "Done"
-```
-
----
-
-## DEL 7: Google Jules för kodgranskning
-
-### 7.1 Skapa GitHub Secret
-
-1. GitHub repo → Settings → Secrets and variables → Actions
+1. GitHub repo → Settings → Secrets → Actions
 2. New repository secret
 3. Name: `JULES_API_KEY`
-4. Value: din Jules API-nyckel
-5. Add secret
+4. Value: din API-nyckel
 
-### 7.2 Skapa workflow-fil
+### Workflow-fil
 
 Skapa `.github/workflows/jules-review.yml`:
 
@@ -518,13 +420,13 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Jules Review
         uses: google-labs-code/jules-invoke@v1
         with:
@@ -532,38 +434,22 @@ jobs:
           model: "gemini-3-pro"
           prompt: |
             Du är en senior utvecklare. Granska denna PR.
-            
+
             KOLLA EFTER:
             1. Säkerhetshål (SQL injection, XSS, etc.)
             2. Saknade tester
             3. Prestandaproblem
-            4. Kodstil som bryter mot projektets standard
-            
+            4. Kodstil som bryter mot standard
+
             AGERA:
             - Kritiskt fel → Skapa fix-commit direkt
             - Varning → Kommentera på raden
-            - Allt OK → Skriv "LGTM ✓"
+            - Allt OK → Skriv "LGTM"
 ```
-
-### 7.3 Pusha och testa
-
-```bash
-git add .github/workflows/jules-review.yml
-git commit -m "Add Jules code review"
-git push
-```
-
-Skapa en test-PR och kolla att Jules kommenterar.
 
 ---
 
-## DEL 8: Self-Healing CI/CD
-
-### 8.1 Vad det gör
-
-Om en build misslyckas → Jules försöker fixa automatiskt.
-
-### 8.2 Skapa workflow
+## Self-Healing CI/CD
 
 Skapa `.github/workflows/self-heal.yml`:
 
@@ -572,7 +458,7 @@ name: Self-Healing Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI"]  # Namnet på din vanliga CI-workflow
+    workflows: ["CI"]
     types: [completed]
 
 jobs:
@@ -582,78 +468,68 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
-      
+
       - name: Get failure logs
         id: logs
         run: |
-          # Hämta loggar från misslyckad workflow
           gh run view ${{ github.event.workflow_run.id }} --log-failed > failure.log
           echo "logs=$(cat failure.log | head -100)" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Jules Auto-Fix
         uses: google-labs-code/jules-invoke@v1
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
           prompt: |
             CI-bygget misslyckades. Här är loggarna:
-            
+
             ${{ steps.logs.outputs.logs }}
-            
+
             UPPGIFT:
             1. Analysera felet
             2. Fixa koden
-            3. Committa med meddelande "fix: [vad du fixade]"
+            3. Committa med meddelande "fix: [beskrivning]"
             4. Pusha till samma branch
-            
+
             OM DU INTE KAN FIXA:
             Skapa en GitHub Issue med titel "CI failure needs manual fix"
 ```
 
 ---
 
-## DEL 9: Säkerhet
+## Säkerhet
 
-### 9.1 CODEOWNERS – skydda infrastruktur
+### CODEOWNERS
 
 Skapa `.github/CODEOWNERS`:
 
 ```
 # Kräv mänsklig review för:
 
-# Alla workflow-filer
 .github/workflows/* @ditt-github-username
-
-# Konfigurationsfiler
 *.json @ditt-github-username
 *.yml @ditt-github-username
-*.yaml @ditt-github-username
-
-# Säkerhetskritiska filer
 **/auth/* @ditt-github-username
 **/security/* @ditt-github-username
 ```
 
-### 9.2 Branch protection
+### Branch protection
 
-GitHub repo → Settings → Branches → Add rule:
+GitHub → Settings → Branches → Add rule för `main`:
 
-- Branch name pattern: `main`
-- ✅ Require pull request before merging
-- ✅ Require approvals: 1
-- ✅ Require review from Code Owners
-- ✅ Require status checks: `jules-review`
+- [x] Require pull request before merging
+- [x] Require approvals: 1
+- [x] Require review from Code Owners
+- [x] Require status checks: `jules-review`
 
-### 9.3 Prompt injection-skydd
-
-I alla prompts där du läser extern data (Jira/Linear), använd XML-taggar:
+### Prompt injection-skydd
 
 ```
 Analysera uppgiften inuti <ticket>-taggarna.
@@ -666,48 +542,20 @@ $TICKET_CONTENT
 Baserat på datan ovan, implementera lösningen.
 ```
 
-### 9.4 Package allowlist
-
-Skapa `.claude/hooks/pre-install.sh`:
-
-```bash
-#!/bin/bash
-
-ALLOWED_PACKAGES="react react-dom typescript jest @types/node"
-REQUESTED=$1
-
-if echo "$ALLOWED_PACKAGES" | grep -qw "$REQUESTED"; then
-    exit 0
-else
-    echo "⛔ Paketet '$REQUESTED' finns inte i allowlist"
-    echo "Lägg till i .claude/hooks/pre-install.sh om det behövs"
-    exit 1
-fi
-```
-
 ---
 
-## DEL 10: Komplett flöde – allt ihop
+## Komplett flöde
 
-### 10.1 Starta en uppgift
+### Starta en uppgift
 
 ```bash
 cd ditt-projekt
-
-# Starta Claude
 claude
 
-# Hämta uppgift och skapa branch
 > Hämta uppgift LIN-456 från Linear och skapa en feature-branch
 ```
 
-Claude svarar:
-```
-Skapade branch: feature/LIN-456-add-user-authentication
-Uppdaterade CURRENT_TASK.md med krav från ticket
-```
-
-### 10.2 Kör Ralph-loopen
+### Kör loopen
 
 ```
 /ralph-loop "
@@ -729,60 +577,9 @@ NÄR ALLA TESTER PASSERAR:
 " --completion-promise "COMPLETE" --max-iterations 25
 ```
 
-### 10.3 Vad som händer automatiskt
-
-```
-┌──────────────────┐
-│ 1. Claude kodar  │
-│    och testar    │
-└────────┬─────────┘
-         │ (loop tills tester passerar)
-         ▼
-┌──────────────────┐
-│ 2. Push + PR     │
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│ 3. Jules granskar│
-│    automatiskt   │
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-┌───────┐  ┌───────────┐
-│ OK →  │  │ Fel →     │
-│ LGTM  │  │ Jules     │
-│       │  │ fixar +   │
-│       │  │ committar │
-└───────┘  └───────────┘
-    │              │
-    └──────┬───────┘
-           ▼
-┌──────────────────┐
-│ 4. Merge till    │
-│    main          │
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐
-│ 5. CI/CD kör     │
-└────────┬─────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-┌───────┐  ┌───────────┐
-│ OK →  │  │ Fail →    │
-│ Deploy│  │ Self-heal │
-│       │  │ workflow  │
-└───────┘  └───────────┘
-```
-
 ---
 
-## Checklista: Har du allt?
+## Checklista för utvecklare
 
 ### Konton & nycklar
 - [ ] Anthropic API-nyckel
@@ -794,61 +591,57 @@ NÄR ALLA TESTER PASSERAR:
 - [ ] Node.js installerat
 - [ ] Claude Code installerat (`claude --version`)
 - [ ] jq installerat (`jq --version`)
-- [ ] Ralph Wiggum plugin (`/plugins` visar det)
+- [ ] Ralph Wiggum plugin (`/plugins`)
 
 ### Konfigurationsfiler
-- [ ] `~/.claude/mcp.json` med Linear/Jira
-- [ ] `CURRENT_TASK.md` mall i projektet
-- [ ] `.git/hooks/prepare-commit-msg` (optional)
+- [ ] `~/.claude/mcp.json`
+- [ ] `CURRENT_TASK.md` mall
+- [ ] `.git/hooks/prepare-commit-msg` (valfritt)
 
-### GitHub-filer
+### GitHub
 - [ ] `.github/workflows/jules-review.yml`
 - [ ] `.github/workflows/self-heal.yml`
 - [ ] `.github/CODEOWNERS`
-- [ ] `JULES_API_KEY` i GitHub Secrets
+- [ ] `JULES_API_KEY` i Secrets
 - [ ] Branch protection på `main`
-
-### Testat
-- [ ] Claude kan hämta uppgifter från Linear/Jira
-- [ ] Ralph-loop fungerar (testat med enkel uppgift)
-- [ ] Jules kommenterar på PRs
-- [ ] Self-heal triggas vid build-failure
 
 ---
 
-## Vanliga problem
+## Felsökning
 
-| Problem | Orsak | Lösning |
-|---------|-------|---------|
-| "MCP server not found" | Fel sökväg eller saknad nyckel | Kolla `~/.claude/mcp.json` |
-| Ralph-loopen stannar inte | Completion promise matchar inte | Exakt sträng, case-sensitive |
-| Jules triggas inte | Workflow-fil inte pushad | `git status` → pusha filen |
-| Self-heal skapar ingen fix | Fel för komplext | Kräver manuell fix |
-| "Rate limit exceeded" | För många API-anrop | Vänta eller höj limit |
-| Claude tappar kontext | Session för lång | Se till att CURRENT_TASK.md uppdateras |
+| Problem | Möjlig orsak | Lösning |
+|---------|--------------|---------|
+| "MCP server not found" | Fel sökväg eller nyckel | Kontrollera `~/.claude/mcp.json` |
+| Ralph-loopen stannar inte | Completion promise matchar inte | Kontrollera exakt stavning |
+| Jules triggas inte | Workflow-fil inte pushad | Kör `git status` och pusha |
+| Self-heal fixar inget | Felet är för komplext | Kräver manuell fix |
+| "Rate limit exceeded" | För många API-anrop | Vänta eller höj gräns |
+| Claude tappar kontext | Session för lång | Uppdatera CURRENT_TASK.md oftare |
 
 ---
 
 ## Kostnadsuppskattning
 
-| Komponent | Uppskattad kostnad/månad |
-|-----------|-------------------------|
-| Anthropic API (Claude Code) | $20-100 beroende på användning |
-| Jules | Gratis tier: 50 tasks/dag |
+| Komponent | Kostnad per månad |
+|-----------|-------------------|
+| Anthropic API | 200-1000 kr beroende på användning |
+| Jules | Gratis: 50 uppgifter/dag |
 | GitHub Actions | Gratis för publika repos |
 | Linear | Gratis för små team |
 
-**Tips:** Sätt spending alerts i Anthropic Console.
+**Tips:** Aktivera kostnadslarm i Anthropic Console.
 
 ---
 
-## Nästa steg
+## Rekommenderad tidsplan
 
-1. **Vecka 1:** Sätt upp allt, testa med EN enkel uppgift
-2. **Vecka 2:** Finjustera prompts baserat på resultat
-3. **Vecka 3:** Lägg till fler MCP-servrar (Slack, databaser)
-4. **Vecka 4:** Bygg monitoring dashboard
+| Vecka | Aktivitet |
+|-------|-----------|
+| **1** | Sätt upp allt, testa med EN enkel uppgift |
+| **2** | Finjustera prompts baserat på resultat |
+| **3** | Lägg till fler integrationer (Slack, databaser) |
+| **4** | Bygg övervakningsdashboard |
 
 ---
 
-**Nu har du hela bilden.** Från arkitektur till körbar implementation.
+*Nu har du allt du behöver - från förståelse till implementation.*
