@@ -1,9 +1,9 @@
 """Subscriber management service."""
 
-from dataclasses import dataclass, asdict
-from typing import Optional, List
 import csv
 import io
+from dataclasses import asdict, dataclass
+from typing import Optional
 
 
 @dataclass
@@ -47,11 +47,11 @@ class SubscriberService:
         return subscriber
 
     @classmethod
-    def list_subscribers(cls) -> List[Subscriber]:
+    def list_subscribers(cls) -> list[Subscriber]:
         """List all subscribers.
 
         Returns:
-            List[Subscriber]: List of subscribers.
+            list[Subscriber]: List of subscribers.
         """
         return list(cls._subscribers.values())
 
@@ -112,14 +112,14 @@ class SubscriberService:
         return False
 
     @classmethod
-    def search_subscribers(cls, query: str) -> List[Subscriber]:
+    def search_subscribers(cls, query: str) -> list[Subscriber]:
         """Search subscribers by email or name.
 
         Args:
             query: Search query.
 
         Returns:
-            List[Subscriber]: Matching subscribers.
+            list[Subscriber]: Matching subscribers.
         """
         query_lower = query.lower()
         return [
