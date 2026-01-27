@@ -5,6 +5,7 @@ description = "Agentic Dev Loop - skolprojekt"
 requires-python = ">=3.10"
 dependencies = [
     "flask>=3.0.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
