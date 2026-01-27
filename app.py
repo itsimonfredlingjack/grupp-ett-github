@@ -140,7 +140,8 @@ def create_app() -> Flask:
 
         # POST - Create new subscriber
         data = request.get_json()
-        if not data or "email" not in data or "name" not in data or "subscribed_date" not in data:
+        required_fields = {"email", "name", "subscribed_date"}
+        if not data or not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
         subscriber = SubscriberService.add_subscriber(
@@ -156,7 +157,10 @@ def create_app() -> Flask:
             "active": subscriber.active
         }), 201
 
-    @app.route("/admin/subscribers/<int:subscriber_id>", methods=["GET", "PUT", "DELETE"])
+    @app.route(
+        "/admin/subscribers/<int:subscriber_id>",
+        methods=["GET", "PUT", "DELETE"]
+    )
     @require_admin_token
     def manage_subscriber(subscriber_id: int):
         """Manage a specific subscriber - get, update, or delete.
