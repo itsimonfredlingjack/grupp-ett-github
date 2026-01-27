@@ -1,0 +1,79 @@
+"""Tests for the Flask application."""
+
+import pytest
+from flask.testing import FlaskClient
+
+from app import create_app
+
+
+@pytest.fixture
+def client() -> FlaskClient:
+    """Create a test client for the Flask application.
+
+    Returns:
+        FlaskClient: Test client instance.
+    """
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        yield client
+
+
+class TestHelloEndpoint:
+    """Tests for the root endpoint."""
+
+    def test_hello_returns_200(self, client: FlaskClient) -> None:
+        """Test that the root endpoint returns 200 OK."""
+        response = client.get("/")
+        assert response.status_code == 200
+
+    def test_hello_returns_json(self, client: FlaskClient) -> None:
+        """Test that the root endpoint returns JSON."""
+        response = client.get("/")
+        assert response.content_type == "application/json"
+
+    def test_hello_returns_message(self, client: FlaskClient) -> None:
+        """Test that the root endpoint returns expected message."""
+        response = client.get("/")
+        data = response.get_json()
+        assert "message" in data
+        assert data["message"] == "Hello, Agentic Dev Loop!"
+
+
+class TestHealthEndpoint:
+    """Tests for the health check endpoint."""
+
+    def test_health_returns_200(self, client: FlaskClient) -> None:
+        """Test that the health endpoint returns 200 OK."""
+        response = client.get("/health")
+        assert response.status_code == 200
+
+    def test_health_returns_json(self, client: FlaskClient) -> None:
+        """Test that the health endpoint returns JSON."""
+        response = client.get("/health")
+        assert response.content_type == "application/json"
+
+    def test_health_returns_healthy_status(self, client: FlaskClient) -> None:
+        """Test that the health endpoint returns healthy status."""
+        response = client.get("/health")
+        data = response.get_json()
+        assert "status" in data
+        assert data["status"] == "healthy"
+
+
+class TestAppCreation:
+    """Tests for app factory function."""
+
+    def test_create_app_returns_flask_instance(self) -> None:
+        """Test that create_app returns a Flask instance."""
+        from flask import Flask
+
+        app = create_app()
+        assert isinstance(app, Flask)
+
+    def test_create_app_has_routes(self) -> None:
+        """Test that created app has expected routes."""
+        app = create_app()
+        rules = [rule.rule for rule in app.url_map.iter_rules()]
+        assert "/" in rules
+        assert "/health" in rules

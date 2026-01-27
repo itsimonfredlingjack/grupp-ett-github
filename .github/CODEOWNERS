@@ -1,0 +1,49 @@
+# CODEOWNERS - Skydda känsliga filer
+# Dessa filer kräver human review innan merge
+# Dokumentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ============================================
+# Claude Configuration - Förhindrar att agenten
+# modifierar sina egna regler
+# ============================================
+.claude/CLAUDE.md @itsimonfredlingjack
+.claude/hooks/** @itsimonfredlingjack
+.claude/settings.local.json @itsimonfredlingjack
+
+# ============================================
+# Git Hooks - Förhindrar att bypass av
+# pre-commit/pre-push checks
+# ============================================
+.git/hooks/** @itsimonfredlingjack
+
+# ============================================
+# GitHub Configuration
+# ============================================
+.github/** @itsimonfredlingjack
+.github/CODEOWNERS @itsimonfredlingjack
+.github/workflows/** @itsimonfredlingjack
+
+# ============================================
+# Säkerhetskritiska filer
+# ============================================
+**/auth/** @itsimonfredlingjack
+**/security/** @itsimonfredlingjack
+**/*secret* @itsimonfredlingjack
+**/*credential* @itsimonfredlingjack
+**/*password* @itsimonfredlingjack
+
+# ============================================
+# Environment och konfiguration
+# ============================================
+.env @itsimonfredlingjack
+.env.* @itsimonfredlingjack
+*.env @itsimonfredlingjack
+config/production.* @itsimonfredlingjack
+
+# ============================================
+# Package management
+# ============================================
+requirements.txt @itsimonfredlingjack
+pyproject.toml @itsimonfredlingjack
+package.json @itsimonfredlingjack
+package-lock.json @itsimonfredlingjack
