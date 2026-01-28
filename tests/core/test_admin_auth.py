@@ -29,8 +29,7 @@ def login_admin(client: FlaskClient) -> str:
         str: Authentication token.
     """
     response = client.post(
-        "/admin/login",
-        json={"username": "admin", "password": "admin123"}
+        "/admin/login", json={"username": "admin", "password": "admin123"}
     )
     data = response.get_json()
     return data.get("token", "")
@@ -53,8 +52,7 @@ class TestAdminLoginEndpoint:
     def test_admin_login_with_valid_credentials(self, client: FlaskClient) -> None:
         """Test successful admin login with valid credentials."""
         response = client.post(
-            "/admin/login",
-            json={"username": "admin", "password": "admin123"}
+            "/admin/login", json={"username": "admin", "password": "admin123"}
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -63,16 +61,14 @@ class TestAdminLoginEndpoint:
     def test_admin_login_with_invalid_credentials(self, client: FlaskClient) -> None:
         """Test admin login rejection with invalid credentials."""
         response = client.post(
-            "/admin/login",
-            json={"username": "admin", "password": "wrong"}
+            "/admin/login", json={"username": "admin", "password": "wrong"}
         )
         assert response.status_code == 401
 
     def test_admin_login_returns_json(self, client: FlaskClient) -> None:
         """Test that login endpoint returns JSON."""
         response = client.post(
-            "/admin/login",
-            json={"username": "admin", "password": "admin123"}
+            "/admin/login", json={"username": "admin", "password": "admin123"}
         )
         assert response.content_type == "application/json"
 
@@ -98,10 +94,7 @@ class TestAdminDashboardEndpoint:
         assert token
 
         # Access dashboard with token
-        response = client.get(
-            "/admin",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+        response = client.get("/admin", headers={"Authorization": f"Bearer {token}"})
         assert response.status_code == 200
 
     def test_admin_dashboard_returns_json(self, client: FlaskClient) -> None:
@@ -109,10 +102,7 @@ class TestAdminDashboardEndpoint:
         token = login_admin(client)
         assert token
 
-        response = client.get(
-            "/admin",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+        response = client.get("/admin", headers={"Authorization": f"Bearer {token}"})
         if response.status_code == 200:
             assert response.content_type == "application/json"
             data = response.get_json()
