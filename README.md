@@ -51,12 +51,14 @@ graph TD
 
 ### 🤖 Agentic Workflow
 -   **Jira Integration**: Direct API client to fetch tasks and update statuses (`src/sejfa/integrations/jira_client.py`).
--   **Ralph Prompts**: Pre-configured prompts for TDD, Bugfixes, and Refactoring (`agent/ralph-prompts.md`).
+-   **Ralph Skills**: Specialized skills in `.claude/skills` for starting and finishing tasks (`start-task`, `finish-task`).
+-   **Ralph Loop Enforcement**: A strict stop-hook (`.claude/hooks/stop-hook.py`) that prevents task completion until all quality gates pass (tests, linting, formatting).
 -   **Memory Management**: Structured `CURRENT_TASK.md` for agent context retention.
 
 ### 🛡 Quality Assurance
 -   **Automated Testing**: Comprehensive `pytest` suite.
--   **Linting**: Strict code style enforcement with `ruff`.
+-   **Linting**: Strict code style enforcement with `ruff check`.
+-   **Formatting**: Automated code formatting with `ruff format`.
 -   **Security**: Dependency scanning with `safety`.
 -   **CI/CD**: GitHub Actions workflows for continuous integration (`.github/workflows/ci.yml`).
 
@@ -107,15 +109,23 @@ pytest -v
 
 ## 🤖 Agentic Development Guide
 
-To use the autonomous development features, refer to the **Ralph Prompts** in `agent/ralph-prompts.md`.
+To use the autonomous development features, use the **Ralph Skills** located in `.claude/skills`.
 
-### Basic Loop
-1.  Pick a task from Jira.
-2.  Initialize `CURRENT_TASK.md` with ticket details.
-3.  Run the Ralph Loop:
+### Basic Workflow
+1.  **Start a Task**:
     ```bash
-    claude -p "Your Ralph Prompt here..."
+    claude -i start-task <JIRA-ID>
     ```
+    This initializes `CURRENT_TASK.md` and creates the branch.
+
+2.  **Run the Loop**:
+    The agent will work autonomously. The stop-hook will enforce quality gates.
+
+3.  **Finish Task**:
+    ```bash
+    claude -i finish-task
+    ```
+    This runs verification, commits, pushes, and updates Jira.
 
 ---
 
@@ -123,10 +133,13 @@ To use the autonomous development features, refer to the **Ralph Prompts** in `a
 
 ```
 .
+├── .claude/                # Agent Configuration & Skills
+│   ├── hooks/              # Git/Loop Hooks (stop-hook)
+│   └── skills/             # Agent Skills (start-task, finish-task)
 ├── app.py                  # Flask Application Entry Point
 ├── CURRENT_TASK.md         # Agent Context Memory
 ├── agent/                  # Agent Prompts & Plans
-│   └── ralph-prompts.md    # Ralph Loop Templates
+│   └── ralph-prompts.md    # Ralph Loop Templates (Legacy)
 ├── src/                    # Source Code
 │   └── sejfa/              # Main Package
 │       ├── core/           # Business Logic
