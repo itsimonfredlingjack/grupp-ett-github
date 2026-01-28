@@ -29,8 +29,7 @@ def login_admin(client: FlaskClient) -> str:
         str: Authentication token.
     """
     response = client.post(
-        "/admin/login",
-        json={"username": "admin", "password": "admin123"}
+        "/admin/login", json={"username": "admin", "password": "admin123"}
     )
     data = response.get_json()
     return data.get("token", "")
@@ -43,8 +42,7 @@ class TestAdminSubscribersList:
         """Test that the subscribers list endpoint exists."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code != 404
 
@@ -57,8 +55,7 @@ class TestAdminSubscribersList:
         """Test that subscribers list returns JSON."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 200
         assert response.content_type == "application/json"
@@ -67,8 +64,7 @@ class TestAdminSubscribersList:
         """Test that subscribers list returns an array."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers", headers={"Authorization": f"Bearer {token}"}
         )
         data = response.get_json()
         assert "subscribers" in data
@@ -83,7 +79,7 @@ class TestAdminSubscriberSearch:
         token = login_admin(client)
         response = client.get(
             "/admin/subscribers/search?q=test",
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code != 404
 
@@ -97,7 +93,7 @@ class TestAdminSubscriberSearch:
         token = login_admin(client)
         response = client.get(
             "/admin/subscribers/search?q=test",
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -111,8 +107,7 @@ class TestAdminSubscriberExport:
         """Test that the export endpoint exists."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers/export",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers/export", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code != 404
 
@@ -125,8 +120,7 @@ class TestAdminSubscriberExport:
         """Test that export returns CSV data."""
         token = login_admin(client)
         response = client.get(
-            "/admin/subscribers/export",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/subscribers/export", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 200
         assert "text/csv" in response.content_type or "csv" in response.content_type

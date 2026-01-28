@@ -1,6 +1,5 @@
 """Tests for security utilities."""
 
-
 from src.sejfa.utils.security import (
     detect_prompt_injection_patterns,
     sanitize_branch_name,

@@ -76,6 +76,9 @@ git branch --show-current
 **Activate Ralph Loop:**
 
 ```bash
+# Clear any stale completion flag from a previous task
+rm -f .claude/.promise_done
+
 # Create flag file to signal stop-hook that we're in an active task
 touch .claude/.ralph_loop_active
 ```
@@ -354,6 +357,7 @@ Clear the iteration counter:
 
 ```bash
 rm -f .claude/ralph-state.json
+rm -f .claude/.promise_done
 ```
 
 ### Step 10: IMMEDIATELY START WORKING (DO NOT STOP)
@@ -368,7 +372,7 @@ Output a brief status message:
 
 Then **IMMEDIATELY** (in the same response, without stopping):
 
-1. **Read docs/CURRENT_TASK.md** to understand the requirements
+1. **Read CURRENT_TASK.md** to understand the requirements
 2. **Start TDD**: Write a failing test for the first requirement
 3. **Implement** until the test passes
 4. **Continue** until all acceptance criteria are met
@@ -433,7 +437,7 @@ Only then output the promise on its own line.
 
 After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 
-1. **Read** `docs/CURRENT_TASK.md` to understand requirements
+1. **Read** `CURRENT_TASK.md` to understand requirements
 2. **Start TDD:** Write a failing test for the FIRST requirement
 3. **Implement** minimal code to pass the test
 4. **Refactor** if needed
