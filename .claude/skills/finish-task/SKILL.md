@@ -34,6 +34,9 @@ pytest -xvs
 
 # Check linting
 ruff check .
+
+# Check formatting
+ruff format --check .
 ```
 
 If any check fails, DO NOT proceed. Fix the issues first.
@@ -155,7 +158,9 @@ Only after ALL steps are verified:
 
 ### Step 10: Deactivate Ralph Loop
 
-Remove the loop flag file to allow normal exit:
+Remove the loop flag file to allow normal exit.
+
+**Important:** Never remove `.claude/.ralph_loop_active` before `<promise>DONE</promise>` is output — the stop-hook fails open when the loop flag is missing, which disables enforcement early.
 
 ```bash
 rm -f .claude/.ralph_loop_active
