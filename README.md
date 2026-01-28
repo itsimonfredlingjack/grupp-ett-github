@@ -59,6 +59,46 @@ DU/TEAMET: Skapar uppgift i Linear/Jira
 
 ---
 
+## ⚠️ FUCKA INTE DETTA
+
+### Ralph Loop Överlevnadsregler
+
+1. **Hook MÅSTE hantera `transcript_path`**
+   Inte bara `transcript` som sträng. Claude skickar en SÖKVÄG, din hook ska LÄSA filen. Annars: fucked.
+
+2. **Exit 2 = BLOCK, inget jävla annat**
+   Exit 0 = släpp igenom. Exit 2 = fortsätt jobba din lansen AI. Stderr ska ha JSON. Punkt slut.
+
+3. **Runtime-filer ska ALDRIG NÅGONSIN vara tracked**
+   `.claude/ralph-state.json`, `.promise_done`, `.ralph_loop_active`, `stop-hook-debug.log`
+   Om du ser dessa i `git ls-files`: `git rm --cached` DIREKT. Annars: skit i repot för evigt.
+
+4. **CURRENT_TASK.md är SANNINGEN**
+   Chatthistorik compactas. Context försvinner. CURRENT_TASK.md överlever.
+   Läs den. Uppdatera den. Lita på den. Inte på ditt jävla minne.
+
+5. **Agenten MÅSTE logga varje iteration**
+   En agent som bara läser men aldrig skriver = blind = kaos.
+   Varje iteration ska agenten skriva in vad den gjorde och hur den verifierade det.
+
+### Iteration Log Mall (copy-paste till CURRENT_TASK.md)
+
+```markdown
+## Iteration Log
+
+### Iteration N
+**Change:** `src/fil.py` – kort beskrivning (kopplat till ACx)
+**Verify:**
+- `pytest -q` → PASS (154 passed)
+- `ruff check .` → PASS
+**Next:** nästa minimala steg (en rad)
+```
+
+**Varför?** Det är en minimal, spårbar diff av verkligheten: ändring + bevis + nästa.
+Utan detta börjar agenten gissa, och då blir det kaos igen.
+
+---
+
 ## 2. Beslut du som ledare måste fatta
 
 ### Inköpsbeslut
