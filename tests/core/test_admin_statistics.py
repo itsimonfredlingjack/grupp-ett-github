@@ -29,8 +29,7 @@ def login_admin(client: FlaskClient) -> str:
         str: Authentication token.
     """
     response = client.post(
-        "/admin/login",
-        json={"username": "admin", "password": "admin123"}
+        "/admin/login", json={"username": "admin", "password": "admin123"}
     )
     data = response.get_json()
     return data.get("token", "")
@@ -43,8 +42,7 @@ class TestAdminStatistics:
         """Test that the statistics endpoint exists."""
         token = login_admin(client)
         response = client.get(
-            "/admin/statistics",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/statistics", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code != 404
 
@@ -57,8 +55,7 @@ class TestAdminStatistics:
         """Test that statistics returns JSON."""
         token = login_admin(client)
         response = client.get(
-            "/admin/statistics",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/statistics", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 200
         assert response.content_type == "application/json"
@@ -67,8 +64,7 @@ class TestAdminStatistics:
         """Test that statistics contains subscriber count."""
         token = login_admin(client)
         response = client.get(
-            "/admin/statistics",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/statistics", headers={"Authorization": f"Bearer {token}"}
         )
         data = response.get_json()
         assert "total_subscribers" in data
@@ -77,8 +73,7 @@ class TestAdminStatistics:
         """Test that statistics contains active subscriber count."""
         token = login_admin(client)
         response = client.get(
-            "/admin/statistics",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/statistics", headers={"Authorization": f"Bearer {token}"}
         )
         data = response.get_json()
         assert "active_subscribers" in data
@@ -89,8 +84,7 @@ class TestAdminStatistics:
 
         # Get initial stats
         response1 = client.get(
-            "/admin/statistics",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/statistics", headers={"Authorization": f"Bearer {token}"}
         )
         initial_count = response1.get_json()["total_subscribers"]
 
@@ -100,15 +94,14 @@ class TestAdminStatistics:
             json={
                 "email": "stats@example.com",
                 "name": "Stats Test",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         # Get updated stats
         response2 = client.get(
-            "/admin/statistics",
-            headers={"Authorization": f"Bearer {token}"}
+            "/admin/statistics", headers={"Authorization": f"Bearer {token}"}
         )
         updated_count = response2.get_json()["total_subscribers"]
 
@@ -129,16 +122,13 @@ class TestDashboardWithStatistics:
             json={
                 "email": "dash@example.com",
                 "name": "Dashboard Test",
-                "subscribed_date": "2026-01-27"
+                "subscribed_date": "2026-01-27",
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         # Get dashboard
-        response = client.get(
-            "/admin",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+        response = client.get("/admin", headers={"Authorization": f"Bearer {token}"})
         data = response.get_json()
         assert "statistics" in data
 
@@ -153,16 +143,13 @@ class TestDashboardWithStatistics:
                 json={
                     "email": f"user{i}@example.com",
                     "name": f"User {i}",
-                    "subscribed_date": "2026-01-27"
+                    "subscribed_date": "2026-01-27",
                 },
-                headers={"Authorization": f"Bearer {token}"}
+                headers={"Authorization": f"Bearer {token}"},
             )
 
         # Get dashboard
-        response = client.get(
-            "/admin",
-            headers={"Authorization": f"Bearer {token}"}
-        )
+        response = client.get("/admin", headers={"Authorization": f"Bearer {token}"})
         data = response.get_json()
         stats = data.get("statistics", {})
 

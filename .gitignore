@@ -56,3 +56,10 @@ Thumbs.db
 *password*
 *.pem
 *.key
+
+# Claude/Ralph Loop runtime files (never commit these!)
+.claude/ralph-state.json
+.claude/stop-hook-debug.log
+.claude/.ralph_loop_active
+.claude/.promise_done
+.claude/reviews/

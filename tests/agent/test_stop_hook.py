@@ -196,12 +196,10 @@ class TestConfigLoading:
                     "exit_policy": {
                         "completion_promise": "<promise>DONE</promise>",
                         "max_iterations": 25,
-                        "requirements": {
-                            "tests_must_pass": True
-                        }
+                        "requirements": {"tests_must_pass": True},
                     }
                 }
-            }
+            },
         }
         config_file.write_text(json.dumps(config))
 
@@ -221,7 +219,7 @@ class TestConfigLoading:
         config = {
             "exit_policy": {
                 "completion_promise": "<promise>LEGACY</promise>",
-                "max_iterations": 10
+                "max_iterations": 10,
             }
         }
         config_file.write_text(json.dumps(config))
@@ -237,10 +235,7 @@ class TestConfigLoading:
             "completion_promise": "<promise>DONE</promise>",
             "max_iterations": 25,
             "scan_length": 5000,
-            "requirements": {
-                "tests_must_pass": False,
-                "lint_must_pass": True
-            }
+            "requirements": {"tests_must_pass": False, "lint_must_pass": True},
         }
 
         assert default["completion_promise"] == "<promise>DONE</promise>"
@@ -254,11 +249,7 @@ class TestConfigLoading:
 
         config: dict[str, Any] = {
             "active_profile": "nonexistent",
-            "profiles": {
-                "code_repo": {
-                    "exit_policy": {"max_iterations": 25}
-                }
-            }
+            "profiles": {"code_repo": {"exit_policy": {"max_iterations": 25}}},
         }
         config_file.write_text(json.dumps(config))
 
@@ -310,7 +301,7 @@ class TestContinueMessage:
             "action": "continue",
             "reason": "Test reason",
             "suggestions": ["suggestion 1", "suggestion 2"],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         assert message["action"] == "continue"
@@ -332,10 +323,9 @@ class TestHookInputParsing:
 
     def test_valid_json_input(self) -> None:
         """Valid JSON should parse correctly."""
-        input_data = json.dumps({
-            "transcript": "Some transcript text",
-            "session_id": "test-123"
-        })
+        input_data = json.dumps(
+            {"transcript": "Some transcript text", "session_id": "test-123"}
+        )
 
         parsed = json.loads(input_data)
         assert parsed["transcript"] == "Some transcript text"
@@ -388,13 +378,7 @@ class TestMaxIterations:
 
         config: dict[str, Any] = {
             "active_profile": "strict",
-            "profiles": {
-                "strict": {
-                    "exit_policy": {
-                        "max_iterations": 5
-                    }
-                }
-            }
+            "profiles": {"strict": {"exit_policy": {"max_iterations": 5}}},
         }
         config_file.write_text(json.dumps(config))
 
@@ -440,7 +424,7 @@ class TestSecurityConsiderations:
 
     def test_unicode_in_transcript(self) -> None:
         """Unicode characters should be handled."""
-        transcript = "Emoji: \U0001F600 and promise: <promise>DONE</promise>"
+        transcript = "Emoji: \U0001f600 and promise: <promise>DONE</promise>"
         promise = "<promise>DONE</promise>"
 
         assert promise in transcript
@@ -454,7 +438,7 @@ class TestFailOpenBehavior:
         # Simulate error response structure
         error_response = {
             "error": "Some error occurred",
-            "action": "allow_exit_on_error"
+            "action": "allow_exit_on_error",
         }
 
         assert error_response["action"] == "allow_exit_on_error"
@@ -463,7 +447,7 @@ class TestFailOpenBehavior:
         """Config read errors should fall back to defaults."""
         default = {
             "completion_promise": "<promise>DONE</promise>",
-            "max_iterations": 25
+            "max_iterations": 25,
         }
 
         # When config fails, defaults should be used
