@@ -34,7 +34,7 @@ git branch --show-current
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 if client.test_connection():
     print('✅ Jira connection OK')

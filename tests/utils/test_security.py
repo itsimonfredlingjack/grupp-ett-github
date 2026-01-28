@@ -1,7 +1,7 @@
 """Tests for security utilities."""
 
 
-from src.grupp_ett.security import (
+from src.sejfa.utils.security import (
     detect_prompt_injection_patterns,
     sanitize_branch_name,
     sanitize_xml_content,

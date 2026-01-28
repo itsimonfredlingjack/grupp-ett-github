@@ -99,7 +99,7 @@ Transition to "In Review":
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 try:
     client.transition_issue('{JIRA_ID}', 'In Review')
@@ -115,7 +115,7 @@ Add completion comment:
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 comment = '''🤖 Implementation complete!
 
