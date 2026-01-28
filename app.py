@@ -100,10 +100,7 @@ def create_app() -> Flask:
             Response: JSON with dashboard data.
         """
         stats = SubscriberService.get_statistics()
-        return jsonify({
-            "dashboard": "admin",
-            "statistics": stats
-        }), 200
+        return jsonify({"dashboard": "admin", "statistics": stats}), 200
 
     @app.route("/admin/statistics", methods=["GET"])
     @require_admin_token
@@ -133,7 +130,7 @@ def create_app() -> Flask:
                     "email": s.email,
                     "name": s.name,
                     "subscribed_date": s.subscribed_date,
-                    "active": s.active
+                    "active": s.active,
                 }
                 for s in subscribers
             ]
@@ -148,19 +145,20 @@ def create_app() -> Flask:
         subscriber = SubscriberService.add_subscriber(
             email=data["email"],
             name=data["name"],
-            subscribed_date=data["subscribed_date"]
+            subscribed_date=data["subscribed_date"],
         )
-        return jsonify({
-            "id": subscriber.id,
-            "email": subscriber.email,
-            "name": subscriber.name,
-            "subscribed_date": subscriber.subscribed_date,
-            "active": subscriber.active
-        }), 201
+        return jsonify(
+            {
+                "id": subscriber.id,
+                "email": subscriber.email,
+                "name": subscriber.name,
+                "subscribed_date": subscriber.subscribed_date,
+                "active": subscriber.active,
+            }
+        ), 201
 
     @app.route(
-        "/admin/subscribers/<int:subscriber_id>",
-        methods=["GET", "PUT", "DELETE"]
+        "/admin/subscribers/<int:subscriber_id>", methods=["GET", "PUT", "DELETE"]
     )
     @require_admin_token
     def manage_subscriber(subscriber_id: int):
@@ -176,13 +174,15 @@ def create_app() -> Flask:
             subscriber = SubscriberService.get_subscriber(subscriber_id)
             if not subscriber:
                 return jsonify({"error": "Subscriber not found"}), 404
-            return jsonify({
-                "id": subscriber.id,
-                "email": subscriber.email,
-                "name": subscriber.name,
-                "subscribed_date": subscriber.subscribed_date,
-                "active": subscriber.active
-            }), 200
+            return jsonify(
+                {
+                    "id": subscriber.id,
+                    "email": subscriber.email,
+                    "name": subscriber.name,
+                    "subscribed_date": subscriber.subscribed_date,
+                    "active": subscriber.active,
+                }
+            ), 200
 
         if request.method == "PUT":
             subscriber = SubscriberService.get_subscriber(subscriber_id)
@@ -194,18 +194,20 @@ def create_app() -> Flask:
                 subscriber_id,
                 email=data.get("email"),
                 name=data.get("name"),
-                active=data.get("active")
+                active=data.get("active"),
             )
             if not updated:
                 return jsonify({"error": "Failed to update subscriber"}), 400
 
-            return jsonify({
-                "id": updated.id,
-                "email": updated.email,
-                "name": updated.name,
-                "subscribed_date": updated.subscribed_date,
-                "active": updated.active
-            }), 200
+            return jsonify(
+                {
+                    "id": updated.id,
+                    "email": updated.email,
+                    "name": updated.name,
+                    "subscribed_date": updated.subscribed_date,
+                    "active": updated.active,
+                }
+            ), 200
 
         if request.method == "DELETE":
             deleted = SubscriberService.delete_subscriber(subscriber_id)
@@ -232,7 +234,7 @@ def create_app() -> Flask:
                 "email": s.email,
                 "name": s.name,
                 "subscribed_date": s.subscribed_date,
-                "active": s.active
+                "active": s.active,
             }
             for s in results
         ]
@@ -250,7 +252,7 @@ def create_app() -> Flask:
         return Response(
             csv_data,
             mimetype="text/csv",
-            headers={"Content-Disposition": "attachment;filename=subscribers.csv"}
+            headers={"Content-Disposition": "attachment;filename=subscribers.csv"},
         )
 
     return app

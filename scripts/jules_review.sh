@@ -21,12 +21,13 @@ mkdir -p "$REVIEW_DIR"
 
 # Collect context
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-DIFF="$(git diff --unified=3 HEAD~1 2>/dev/null || git diff --unified=3 HEAD)"
+# Truncate diff to 500 lines to avoid pipefail issues
+DIFF="$(git diff --unified=3 HEAD~1 2>/dev/null | head -500 || git diff --unified=3 HEAD | head -500 || true)"
 
 echo "== Jules Review Request ==" >&2
 echo "Branch: $BRANCH" >&2
 
-# Build request
+# Build request (avoid pipes inside brace block due to pipefail)
 {
   echo "# CODE REVIEW REQUEST"
   echo
@@ -39,7 +40,7 @@ echo "Branch: $BRANCH" >&2
   echo
   echo "## Changes (Diff)"
   echo '```diff'
-  echo "$DIFF" | head -500
+  printf '%s\n' "$DIFF"
   echo '```'
 } > "$REQUEST_FILE"
 

@@ -37,9 +37,7 @@ def sanitize_xml_content(raw_text: str | None) -> str:
 
 
 def wrap_jira_data(
-    raw_content: str,
-    field_name: str = "data",
-    include_warning: bool = True
+    raw_content: str, field_name: str = "data", include_warning: bool = True
 ) -> str:
     """Wrap Jira data in protective XML tags with encoding.
 

@@ -1,6 +1,5 @@
 """Tests for security utilities."""
 
-
 from src.grupp_ett.security import (
     detect_prompt_injection_patterns,
     sanitize_branch_name,
