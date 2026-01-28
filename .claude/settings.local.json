@@ -28,6 +28,17 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/prevent-push.py"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": ".*",

@@ -32,6 +32,7 @@ LOOP_FLAG = Path.cwd() / ".claude" / ".ralph_loop_active"
 STATE_FILE = Path.cwd() / ".claude" / "ralph-state.json"
 PROMISE_FLAG_FILE = Path.cwd() / ".claude" / ".promise_done"
 DEBUG_LOG = Path.cwd() / ".claude" / "stop-hook-debug.log"
+GIT_GUARD_FILE = Path.cwd() / ".git" / "info" / "ralph-loop-active.json"
 
 
 def _debug(msg: str) -> None:
@@ -40,6 +41,93 @@ def _debug(msg: str) -> None:
     DEBUG_LOG.parent.mkdir(parents=True, exist_ok=True)
     with open(DEBUG_LOG, "a") as f:
         f.write(msg.rstrip() + "\n")
+
+
+def _repo_id() -> str:
+    try:
+        return str(Path.cwd().resolve())
+    except Exception:
+        return str(Path.cwd())
+
+
+def _read_json_dict(path: Path) -> dict[str, Any]:
+    try:
+        if not path.exists():
+            return {}
+        with open(path) as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _write_json_dict(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2)
+    tmp.replace(path)
+
+
+def loop_guard_active() -> bool:
+    """True if a loop has been activated and not cleared.
+
+    This is intentionally independent of `.claude/.ralph_loop_active` so deleting
+    that file cannot bypass enforcement once the loop has started.
+    """
+    state = _read_json_dict(STATE_FILE)
+    if state.get("loop_active") is True:
+        return True
+
+    guard = _read_json_dict(GIT_GUARD_FILE)
+    return guard.get("repo_id") == _repo_id() and guard.get("loop_active") is True
+
+
+def ensure_loop_guard(hook_input: dict[str, Any]) -> None:
+    """Persist loop-active state in STATE_FILE and (when available) GIT_GUARD_FILE."""
+    state = _read_json_dict(STATE_FILE)
+    state.setdefault("started_at", datetime.now().isoformat())
+    state["loop_active"] = True
+    transcript_path = hook_input.get("transcript_path") or hook_input.get("transcriptPath")
+    if isinstance(transcript_path, str) and transcript_path:
+        state["last_seen_transcript_path"] = transcript_path
+    _write_json_dict(STATE_FILE, state)
+
+    if GIT_GUARD_FILE.parent.exists():
+        _write_json_dict(
+            GIT_GUARD_FILE,
+            {
+                "repo_id": _repo_id(),
+                "loop_active": True,
+                "updated_at": datetime.now().isoformat(),
+            },
+        )
+
+    # If the primary flag was deleted mid-loop, recreate it to prevent bypass.
+    if not LOOP_FLAG.exists():
+        try:
+            LOOP_FLAG.parent.mkdir(parents=True, exist_ok=True)
+            LOOP_FLAG.touch(exist_ok=True)
+        except Exception:
+            pass
+
+
+def clear_loop_guard() -> None:
+    """Clear persisted loop-active state after completion (or timeout)."""
+    state = _read_json_dict(STATE_FILE)
+    if state:
+        state["loop_active"] = False
+        state["completed_at"] = datetime.now().isoformat()
+        _write_json_dict(STATE_FILE, state)
+
+    for path in (GIT_GUARD_FILE, LOOP_FLAG, PROMISE_FLAG_FILE):
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+        except Exception:
+            # Cleanup is best-effort; never block exit due to cleanup failures.
+            pass
 
 
 def load_config() -> tuple[dict[str, Any], bool]:
@@ -109,6 +197,10 @@ def get_git_branch() -> str | None:
 
 def should_enforce_exit_policy(hook_input: dict[str, Any]) -> bool:
     """Return True if enforcement should be active."""
+    # Strongest signal: a persisted guard from an active loop.
+    if loop_guard_active():
+        return True
+
     # Strong signal that we're inside a loop: the hook input includes a completion promise.
     if hook_input.get("completion_promise"):
         return True
@@ -138,7 +230,9 @@ def get_transcript_text(hook_input: dict[str, Any], scan_length: int) -> str:
         return ""
 
     try:
-        path = Path(transcript_path)
+        path = Path(str(transcript_path)).expanduser()
+        if not path.is_absolute():
+            path = (Path.cwd() / path).resolve()
         if not path.exists() or not path.is_file():
             return ""
 
@@ -190,19 +284,12 @@ def resolve_tools() -> dict[str, list[str]]:
 
 
 def increment_iteration() -> int:
-    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    state: dict[str, Any] = {"iterations": 0, "started_at": datetime.now().isoformat()}
-    if STATE_FILE.exists():
-        with open(STATE_FILE) as f:
-            state = json.load(f)
-
-    state["iterations"] = int(state.get("iterations", 0)) + 1
+    state = _read_json_dict(STATE_FILE)
+    state.setdefault("started_at", datetime.now().isoformat())
+    state["loop_active"] = True
+    state["iterations"] = int(state.get("iterations", 0) or 0) + 1
     state["last_check"] = datetime.now().isoformat()
-
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2)
-
+    _write_json_dict(STATE_FILE, state)
     return int(state["iterations"])
 
 
@@ -234,15 +321,34 @@ def main() -> None:
     try:
         input_data = sys.stdin.read()
         if not input_data.strip():
+            # If a loop is already active, missing input must not allow a bypass.
+            if loop_guard_active() or LOOP_FLAG.exists():
+                response = build_continue_message(
+                    "Stop-hook invoked without input while loop is active.",
+                    ["Try again and ensure a transcript is available."],
+                )
+                json.dump(response, sys.stderr)
+                sys.exit(2)
             sys.exit(0)
 
         try:
             hook_input = json.loads(input_data)
         except json.JSONDecodeError:
+            if loop_guard_active() or LOOP_FLAG.exists():
+                response = build_continue_message(
+                    "Stop-hook received invalid JSON while loop is active.",
+                    ["Try again; do not attempt to bypass by breaking hook input."],
+                )
+                json.dump(response, sys.stderr)
+                sys.exit(2)
             sys.exit(0)
 
         if not should_enforce_exit_policy(hook_input):
             sys.exit(0)
+
+        active_loop = bool(loop_guard_active() or LOOP_FLAG.exists() or hook_input.get("completion_promise"))
+        if active_loop:
+            ensure_loop_guard(hook_input)
 
         config, has_explicit_config = load_config()
         requirements = (config.get("requirements") or {}) if isinstance(config, dict) else {}
@@ -267,11 +373,13 @@ def main() -> None:
                 },
                 sys.stderr,
             )
+            if active_loop:
+                clear_loop_guard()
             sys.exit(0)
 
         transcript = get_transcript_text(hook_input, scan_length)
         promise_found = isinstance(transcript, str) and completion_promise in transcript
-        flag_found = check_promise_flag_file(completion_promise)
+        flag_found = active_loop and check_promise_flag_file(completion_promise)
 
         if not (promise_found or flag_found):
             response = build_continue_message(
@@ -296,11 +404,26 @@ def main() -> None:
 
         tests_required = bool(requirements.get("tests_must_pass"))
         lint_required = bool(requirements.get("lint_must_pass"))
+        coverage_threshold = requirements.get("coverage_threshold")
+        if coverage_threshold is not None:
+            try:
+                coverage_threshold = int(coverage_threshold)
+            except Exception:
+                coverage_threshold = None
 
         if tests_required and enforce_tools:
-            code, out = run_cmd([*tools["pytest"], "-q"], timeout_s=180)
+            pytest_cmd = [*tools["pytest"], "-q"]
+            if coverage_threshold is not None:
+                pytest_cmd.extend(
+                    [
+                        "--cov=.",
+                        "--cov-report=term-missing",
+                        f"--cov-fail-under={coverage_threshold}",
+                    ]
+                )
+            code, out = run_cmd(pytest_cmd, timeout_s=180)
             if code != 0:
-                failures.append("pytest -q failed")
+                failures.append("pytest failed")
                 suggestions.append(f"Fix failing tests:\n{out}")
 
         if lint_required and enforce_tools:
@@ -327,14 +450,20 @@ def main() -> None:
             json.dump(response, sys.stderr)
             sys.exit(2)
 
-        write_promise_flag(completion_promise)
+        if active_loop:
+            clear_loop_guard()
         sys.exit(0)
     except Exception as e:
-        # Fail open to avoid deadlocks in the CLI.
-        json.dump(
-            {"decision": "allow", "action": "allow_exit_on_error", "error": str(e)},
-            sys.stderr,
-        )
+        # Fail-closed when enforcing (bypass vector); fail-open otherwise.
+        if loop_guard_active() or LOOP_FLAG.exists():
+            response = build_continue_message(
+                "Stop-hook error while loop is active; continuing to avoid bypass.",
+                [f"Error: {e}", "Fix the error and try again."],
+            )
+            json.dump(response, sys.stderr)
+            sys.exit(2)
+
+        json.dump({"decision": "allow", "action": "allow_exit_on_error", "error": str(e)}, sys.stderr)
         sys.exit(0)
 
 

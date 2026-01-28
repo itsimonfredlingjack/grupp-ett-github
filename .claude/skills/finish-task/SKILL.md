@@ -30,7 +30,7 @@ Run verification checks:
 
 ```bash
 # Check tests pass
-pytest -xvs
+pytest -xvs --cov=. --cov-report=term-missing --cov-fail-under=80
 
 # Check linting
 ruff check .
