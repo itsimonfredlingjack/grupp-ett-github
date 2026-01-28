@@ -54,6 +54,28 @@ git commit -m "{JIRA_ID}: Final implementation - all tests pass
 Co-Authored-By: Claude Code <noreply@anthropic.com>"
 ```
 
+### Step 4.5: Jules Code Review (Optional)
+
+If Jules CLI is available, run a code review before pushing:
+
+```bash
+./scripts/jules_review.sh > .claude/reviews/review_response.json 2> .claude/reviews/review.log
+```
+
+**Read the response:**
+- If `status: "approved"` - Continue to push
+- If `status: "needs_work"` - Review issues, fix if quick, then push
+- If `status: "blocking"` - STOP, fix issues before push
+- If `status: "skipped"` - No Jules CLI installed, continue without review
+
+**Log in CURRENT_TASK.md:**
+```markdown
+### Code Review
+- **Jules Status:** [approved/needs_work/blocking/skipped]
+- **Issues:** [count]
+- **Summary:** [one line]
+```
+
 ### Step 5: Push to Remote
 
 ```bash

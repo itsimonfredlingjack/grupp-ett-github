@@ -383,6 +383,22 @@ You can only output that promise when ALL of these are true:
 - Changes committed and pushed
 - PR created
 
+**Jules Code Review (BEFORE push and DONE):**
+1. Run: `./scripts/jules_review.sh > .claude/reviews/review_response.json 2> .claude/reviews/review.log`
+2. Read `.claude/reviews/review_response.json`
+3. Check the `status` field:
+   - `approved` - Continue to push/DONE
+   - `needs_work` - Review issues, fix if quick, then continue
+   - `blocking` - STOP, fix issues, rerun review, then continue
+   - `skipped` - Jules CLI not installed, continue without review
+4. Log in CURRENT_TASK.md:
+   ```markdown
+   ### Code Review
+   - **Jules Status:** [status]
+   - **Issues:** [count from issues array]
+   - **Summary:** [summary field]
+   ```
+
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
 
 ### Promise Format - EXACT SPECIFICATION
