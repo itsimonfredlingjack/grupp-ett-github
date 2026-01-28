@@ -208,6 +208,57 @@ nothing added to commit but untracked files present
 
 ## AVVIKELSER & FIXES
 
+### Fix 1: Ralph runtime files not in .gitignore
+
+**Before (FAIL):**
+```bash
+$ grep -E '(ralph-state|stop-hook-debug)' .gitignore
+Ralph runtime files NOT in .gitignore
+```
+
+**After (PASS):**
+```bash
+$ grep -E '(ralph-state|stop-hook-debug)' .gitignore
+.claude/ralph-state.json
+.claude/stop-hook-debug.log
+```
+
+### Fix 2: jules_review.sh SIGPIPE with large diffs
+
+**Before (FAIL):**
+```bash
+$ ./scripts/jules_review.sh > output.json 2>&1
+Exit code: 141 (SIGPIPE)
+# Cause: `echo "$DIFF" | head -500` with pipefail kills script when head exits early
+```
+
+**After (PASS):**
+```bash
+$ ./scripts/jules_review.sh > output.json 2>/dev/null
+Exit code: 0
+# Fix: Truncate diff during capture, use printf instead of echo|head
+```
+
+### Fix 3: Python files not formatted
+
+**Before (FAIL):**
+```bash
+$ ruff format --check .
+Would reformat: app.py
+Would reformat: src/grupp_ett/jira_client.py
+... (10 files total)
+Exit code: 1
+```
+
+**After (PASS):**
+```bash
+$ ruff format --check .
+18 files already formatted
+Exit code: 0
+```
+
+### Summary Table
+
 | Issue | Fix | Commit |
 |-------|-----|--------|
 | Ralph runtime files not in .gitignore | Added to .gitignore | 2a6b093 |
