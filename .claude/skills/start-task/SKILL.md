@@ -12,14 +12,14 @@ This skill initializes the Ralph Loop for a new Jira task.
 
 **DO NOT use MCP tools for Jira (jira_get_issue, readMcpResource, etc.).**
 
-This project uses a **direct Jira REST API client** located at `src/grupp_ett/jira_client.py`.
+This project uses a **direct Jira REST API client** located at `src.sejfa.integrations.jira_client.py`.
 All Jira operations MUST be performed via Bash commands running Python code.
 
 Example:
 ```bash
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv; load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 issue = client.get_issue('GE-5')
 print(issue.summary)
@@ -96,7 +96,7 @@ Before attempting to fetch, validate Jira API is accessible using the direct cli
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 if client.test_connection():
     print('✅ Jira connection successful!')
@@ -142,7 +142,7 @@ Run this Bash command to fetch the ticket (replace `{JIRA_ID}` with actual ID):
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 issue = client.get_issue('{JIRA_ID}')
 print(f'Key: {issue.key}')
@@ -313,7 +313,7 @@ Transition the Jira ticket to "In Progress" using the direct API via Bash:
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 try:
     client.transition_issue('{JIRA_ID}', 'In Progress')
@@ -334,7 +334,7 @@ source venv/bin/activate && python3 -c "
 from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 timestamp = datetime.now().isoformat()
 comment = '🤖 Claude Code agent started work on this ticket.\n\nBranch: {branch_name}\nTimestamp: ' + timestamp

@@ -11,8 +11,8 @@ from typing import Any
 
 from flask import Flask, Response, jsonify, request
 
-from src.grupp_ett.admin_auth import AdminAuthService
-from src.grupp_ett.subscriber_service import SubscriberService
+from src.sejfa.core.admin_auth import AdminAuthService
+from src.sejfa.core.subscriber_service import SubscriberService
 
 
 def create_app() -> Flask:

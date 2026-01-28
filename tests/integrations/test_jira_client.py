@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.grupp_ett.jira_client import (
+from src.sejfa.integrations.jira_client import (
     JiraAPIError,
     JiraClient,
     JiraConfig,

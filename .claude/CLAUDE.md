@@ -16,7 +16,7 @@
 - Läsa och skriva kod i src/, tests/, docs/
 - Köra tester och linting
 - Skapa commits och branches
-- Läsa Jira-tickets via direkta API-anrop (src/grupp_ett/jira_client.py)
+- Läsa Jira-tickets via direkta API-anrop (src.sejfa.integrations.jira_client.py)
 - Skapa PR via `gh` CLI
 
 ### FÖRBJUDET
@@ -34,7 +34,7 @@
 
 ### 1. Starta ny uppgift
 ```
-1. Hämta ticket från Jira via direkta API (src/grupp_ett/jira_client.py)
+1. Hämta ticket från Jira via direkta API (src.sejfa.integrations.jira_client.py)
 2. Skapa branch: git checkout -b feature/PROJ-XXX-beskrivning
 3. Populera CURRENT_TASK.md med ticket-info
 4. (Valfritt) Uppdatera Jira-status till "In Progress"
@@ -223,7 +223,7 @@ gh pr create --title "PROJ-XXX: Titel" --body "Beskrivning"
 # Se Jira-ticket (via direkta API)
 source venv/bin/activate && python3 -c "
 from dotenv import load_dotenv; load_dotenv()
-from src.grupp_ett.jira_client import get_jira_client
+from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 issue = client.get_issue('GE-XXX')
 print(f'{issue.key}: {issue.summary}')

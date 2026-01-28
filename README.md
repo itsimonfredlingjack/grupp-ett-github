@@ -44,14 +44,14 @@ graph TD
 ## ⚡ Features
 
 ### 🔌 Application (Subscriber Service)
--   **Admin Authentication**: Secure login with session tokens (`src/grupp_ett/admin_auth.py`).
--   **Subscriber Management**: CRUD operations for email subscribers (`src/grupp_ett/subscriber_service.py`).
+-   **Admin Authentication**: Secure login with session tokens (`src/sejfa/core/admin_auth.py`).
+-   **Subscriber Management**: CRUD operations for email subscribers (`src/sejfa/core/subscriber_service.py`).
 -   **Data Export**: CSV export functionality for reporting.
 -   **Search**: Efficient subscriber search capabilities.
 
 ### 🤖 Agentic Workflow
--   **Jira Integration**: Direct API client to fetch tasks and update statuses (`src/grupp_ett/jira_client.py`).
--   **Ralph Prompts**: Pre-configured prompts for TDD, Bugfixes, and Refactoring (`docs/ralph-prompts.md`).
+-   **Jira Integration**: Direct API client to fetch tasks and update statuses (`src/sejfa/integrations/jira_client.py`).
+-   **Ralph Prompts**: Pre-configured prompts for TDD, Bugfixes, and Refactoring (`agent/ralph-prompts.md`).
 -   **Memory Management**: Structured `CURRENT_TASK.md` for agent context retention.
 
 ### 🛡 Quality Assurance
@@ -107,7 +107,7 @@ pytest -v
 
 ## 🤖 Agentic Development Guide
 
-To use the autonomous development features, refer to the **Ralph Prompts** in `docs/ralph-prompts.md`.
+To use the autonomous development features, refer to the **Ralph Prompts** in `agent/ralph-prompts.md`.
 
 ### Basic Loop
 1.  Pick a task from Jira.
@@ -125,13 +125,13 @@ To use the autonomous development features, refer to the **Ralph Prompts** in `d
 .
 ├── app.py                  # Flask Application Entry Point
 ├── CURRENT_TASK.md         # Agent Context Memory
-├── docs/                   # Documentation & Prompts
+├── agent/                  # Agent Prompts & Plans
 │   └── ralph-prompts.md    # Ralph Loop Templates
 ├── src/                    # Source Code
-│   └── grupp_ett/          # Main Package
-│       ├── admin_auth.py   # Auth Service
-│       ├── jira_client.py  # Jira API Client
-│       └── subscriber_service.py # Business Logic
+│   └── sejfa/              # Main Package
+│       ├── core/           # Business Logic
+│       ├── integrations/   # External Integrations (Jira)
+│       └── utils/          # Utilities
 └── tests/                  # Test Suite
 ```
 
