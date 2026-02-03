@@ -12,17 +12,31 @@ permissions:
 
 jobs:
   heal-failure:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' && secrets.JULES_API_KEY != '' }}
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Validate Jules secret
+        id: secret_check
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+        run: |
+          if [ -z "$JULES_API_KEY" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "JULES_API_KEY not configured; skipping self-healing."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout failed revision
+        if: ${{ steps.secret_check.outputs.available == 'true' }}
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: Trigger Jules remediation analysis
-        uses: google-labs-code/jules-invoke@v1
+        if: ${{ steps.secret_check.outputs.available == 'true' }}
+        uses: google-labs-code/jules-action@v1.0.0
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
           prompt: |
