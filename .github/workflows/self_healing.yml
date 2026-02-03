@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   heal-failure:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.actor != 'google-labs-jules[bot]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -44,6 +44,14 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+          path: .
+
+      - name: Checkout trusted scripts
+        if: ${{ steps.secret_check.outputs.available == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          path: .trusted
+          sparse-checkout: scripts
 
       - name: Set up Python
         if: ${{ steps.secret_check.outputs.available == 'true' }}
@@ -99,7 +107,7 @@ jobs:
         if: ${{ steps.secret_check.outputs.available == 'true' }}
         id: classify
         run: |
-          python scripts/classify_failure.py \
+          python .trusted/scripts/classify_failure.py \
             --log-file artifacts/failed_logs.txt \
             --output-file artifacts/failure_classification.json \
             --github-output "$GITHUB_OUTPUT"
@@ -161,7 +169,7 @@ jobs:
         run: |
           mkdir -p artifacts
           BASE_SHA=$(git rev-parse "${{ github.event.workflow_run.head_sha }}^" 2>/dev/null || true)
-          python scripts/jules_payload.py \
+          python .trusted/scripts/jules_payload.py \
             --profile HEALING_FIX \
             --repo "$GITHUB_REPOSITORY" \
             --sha "${{ github.event.workflow_run.head_sha }}" \
@@ -181,7 +189,7 @@ jobs:
       - name: Invoke Jules remediation
         if: ${{ steps.secret_check.outputs.available == 'true' && steps.cooldown.outputs.allowed == 'true' }}
         id: jules
-        uses: google-labs-code/jules-action@v1.0.0
+        uses: google-labs-code/jules-action@bff7875eaa123cac6742b7cfc51005b95ba4d566 # v1.0.0
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
           prompt: |

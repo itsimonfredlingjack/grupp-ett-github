@@ -4,6 +4,17 @@ import pytest
 from flask.testing import FlaskClient
 
 from app import create_app
+from src.sejfa.core.admin_auth import AdminAuthService
+
+
+@pytest.fixture(autouse=True)
+def setup_auth_credentials(monkeypatch):
+    """Set default admin credentials for tests."""
+    monkeypatch.setattr(
+        AdminAuthService,
+        "VALID_ADMIN",
+        {"username": "admin", "password": "admin123"},
+    )
 
 
 @pytest.fixture

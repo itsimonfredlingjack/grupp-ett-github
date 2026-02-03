@@ -1,5 +1,6 @@
 """Admin authentication module."""
 
+import os
 from dataclasses import dataclass
 
 
@@ -15,7 +16,10 @@ class AdminAuthService:
     """Service for handling admin authentication."""
 
     # Simple hardcoded admin for MVP (in production, use database)
-    VALID_ADMIN = {"username": "admin", "password": "admin123"}
+    VALID_ADMIN = {
+        "username": os.environ.get("ADMIN_USERNAME"),
+        "password": os.environ.get("ADMIN_PASSWORD"),
+    }
 
     @staticmethod
     def authenticate(username: str, password: str) -> bool:
@@ -28,10 +32,13 @@ class AdminAuthService:
         Returns:
             bool: True if credentials are valid.
         """
-        return (
-            username == AdminAuthService.VALID_ADMIN["username"]
-            and password == AdminAuthService.VALID_ADMIN["password"]
-        )
+        valid_username = AdminAuthService.VALID_ADMIN["username"]
+        valid_password = AdminAuthService.VALID_ADMIN["password"]
+
+        if not valid_username or not valid_password:
+            return False
+
+        return username == valid_username and password == valid_password
 
     @staticmethod
     def generate_session_token(username: str) -> str:
