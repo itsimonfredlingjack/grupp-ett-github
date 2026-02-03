@@ -13,6 +13,7 @@ runs, and `jules_health_check.yml` validates integration health on schedule.
 - **PR review:** `.github/workflows/jules_review.yml`
 - **Self-healing:** `.github/workflows/self_healing.yml`
 - **Health check:** `.github/workflows/jules_health_check.yml`
+- **Branch CI (feeds self-healing):** `.github/workflows/ci_branch.yml`
 
 ## Payload and guardrails
 
