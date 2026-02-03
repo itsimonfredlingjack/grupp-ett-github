@@ -6,7 +6,7 @@ on:
     types: [completed]
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
   issues: write
 
@@ -28,7 +28,5 @@ jobs:
           prompt: |
             The CI workflow failed.
             Analyze likely root causes and propose a minimal fix.
-            If a deterministic safe fix is obvious, commit the fix to
-            branch ${{ github.event.workflow_run.head_branch }}.
-            Otherwise, open an issue with analysis and a remediation plan.
+            Open an issue with analysis and a remediation plan.
           include_commit_log: true
