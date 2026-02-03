@@ -138,6 +138,15 @@ jobs:
             --output-file artifacts/jules_context.json \
             --github-output "$GITHUB_OUTPUT"
 
+      - name: Snapshot artifacts before Jules runs
+        if: always()
+        run: |
+          rm -rf jules_artifacts
+          mkdir -p jules_artifacts
+          if [ -d artifacts ]; then
+            cp -R artifacts/. jules_artifacts/ || true
+          fi
+
       - name: Invoke Jules remediation
         if: ${{ steps.secret_check.outputs.available == 'true' }}
         id: jules
@@ -158,8 +167,8 @@ jobs:
         with:
           name: jules-self-heal-pr-${{ github.run_id }}
           path: |
-            artifacts/jules_context.json
-            artifacts/failed_logs.txt
+            jules_artifacts/jules_context.json
+            jules_artifacts/failed_logs.txt
 
       - name: Step summary
         if: always()
