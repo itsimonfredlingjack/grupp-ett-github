@@ -30,7 +30,7 @@
 ## Framsteg
 | Iteration | Tid | Vad gjordes | Resultat |
 |-----------|-----|-------------|----------|
-| 1 | | | |
+| 1 | Now | Removed `tests/agent/test_intentional_ci_fail.py` | File removed |
 | 2 | | | |
 | 3 | | | |
 
