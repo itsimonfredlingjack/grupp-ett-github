@@ -1,4 +1,5 @@
 """Integration tests for the Flask application."""
+
 import pytest
 
 from cursor_newsletter_app.flask_app import create_app
@@ -44,9 +45,7 @@ class TestFlaskApp:
 
     def test_add_news_with_short_title(self, client):
         """Test adding news with title <= 3 characters returns error."""
-        response = client.post(
-            "/add", data={"title": "ABC", "content": "Content"}
-        )
+        response = client.post("/add", data={"title": "ABC", "content": "Content"})
         assert response.status_code == 400
         assert b"Titel m" in response.data  # Part of Swedish error message
 
@@ -88,7 +87,7 @@ class TestFlaskApp:
         for i in range(10):
             client.post(
                 "/add",
-                data={"title": f"News {i+1}", "content": f"Content {i+1}"},
+                data={"title": f"News {i + 1}", "content": f"Content {i + 1}"},
             )
 
         # 11th item should fail

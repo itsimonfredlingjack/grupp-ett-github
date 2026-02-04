@@ -1,4 +1,5 @@
 """Flask routes for the newsletter application."""
+
 from flask import Blueprint, redirect, render_template, request, url_for
 
 from cursor_newsletter_app.service import NewsService

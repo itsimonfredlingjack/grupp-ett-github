@@ -1,4 +1,5 @@
 """Unit tests for the NewsService."""
+
 import pytest
 
 from cursor_newsletter_app.models import NewsItem
@@ -56,7 +57,7 @@ class TestNewsService:
         """Test that max 10 items can be created."""
         # Create 10 items
         for i in range(10):
-            service.create_news(f"News Item {i+1}", f"Content {i+1}")
+            service.create_news(f"News Item {i + 1}", f"Content {i + 1}")
 
         # 11th item should fail
         with pytest.raises(ValueError, match="Max 10 nyhetsartiklar är tillåtet"):
@@ -80,9 +81,7 @@ class TestNewsService:
         items = service.get_news()
         assert len(items) == 0
 
-    def test_delete_nonexistent_news_does_nothing(
-        self, service: NewsService
-    ) -> None:
+    def test_delete_nonexistent_news_does_nothing(self, service: NewsService) -> None:
         """Test that deleting a nonexistent item doesn't raise an error."""
         service.delete_news(999)  # Should not raise
         assert len(service.get_news()) == 0

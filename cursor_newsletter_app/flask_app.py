@@ -1,4 +1,5 @@
 """Flask application factory and initialization."""
+
 from pathlib import Path
 
 from flask import Flask

@@ -1,4 +1,5 @@
 """Data models for the newsletter application."""
+
 from dataclasses import dataclass
 
 

@@ -1,4 +1,5 @@
 """Repository protocol and in-memory implementation."""
+
 from abc import ABC, abstractmethod
 
 from cursor_newsletter_app.models import NewsItem
