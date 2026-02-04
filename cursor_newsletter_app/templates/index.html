@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Nyhetsbrevet Cursor The Mad - Hem{% endblock %}
+{% block content %}
+<h1>Nyhetsbrevet Cursor The Mad</h1>
+
+<div style="margin-bottom: 30px; padding-bottom: 30px; border-bottom: 2px solid #ddd;">
+    <h2>Lägg till ny nyhet</h2>
+    <form method="POST" action="/add">
+        <div class="form-group">
+            <label for="title">Rubrik:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="content">Innehål:</label>
+            <textarea id="content" name="content" required></textarea>
+        </div>
+        <button type="submit">Lägg till nyhet</button>
+    </form>
+</div>
+
+<h2>Senaste nyheter</h2>
+{% if news_items %}
+{% for item in news_items %}
+<div class="news-item">
+    <h2>{{ item.title }}</h2>
+    <p>{{ item.content }}</p>
+    <a href="/delete/{{ item.id }}" class="delete-btn" onclick="return confirm('Är du säker?')">Radera</a>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <p>Inga nyheter än. Lägg till din första nyhet ovan!</p>
+</div>
+{% endif %}
+{% endblock %}
