@@ -55,13 +55,14 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["src", "app.py"]
+source = ["src", "app.py", "cursor_newsletter_app"]
 branch = true
 omit = [
     "tests/*",
     ".claude/*",
     "venv/*",
     ".venv/*",
+    "scripts/*",
 ]
 
 [tool.coverage.report]
