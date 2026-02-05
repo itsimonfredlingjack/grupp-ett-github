@@ -16,6 +16,7 @@ def app() -> Flask:
     """Create a test Flask application with expense tracker blueprint."""
     app = Flask(__name__)
     app.config["TESTING"] = True
+    app.config["WTF_CSRF_ENABLED"] = True
     app.config["SECRET_KEY"] = "test-secret-key-for-testing-only"
 
     # Initialize CSRF protection
