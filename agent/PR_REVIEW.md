@@ -2,26 +2,36 @@
 
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 1. Hardcoded Admin Credentials (Security)
+The `AdminAuthService` in `src/sejfa/core/admin_auth.py` contains hardcoded credentials (`admin`/`admin123`). This allows unauthorized access to administrative functions in any deployed environment.
+**Action:** Replace hardcoded credentials with environment variables or a secure database storage mechanism.
 
-### 2. Hardcoded Secret Key in Application Factory
+### 2. Stored XSS in Monitor Dashboard (Security)
+The `static/monitor.html` dashboard uses `innerHTML` to render event messages (`${event.message}`) without sanitization. This allows Stored Cross-Site Scripting (XSS) if a malicious payload is injected into the monitoring log.
+**Action:** Use `textContent` instead of `innerHTML` or sanitize the input before rendering in the dashboard.
+
+### 3. Missing CSRF Protection on Expense Form (Security)
+The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks.
+**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form.
+
+### 4. Hardcoded Secret Key in Application Factory (Security)
 The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+**Action:** Load the `SECRET_KEY` from environment variables and ensure the application fails to start if it is missing in production.
+
+### 5. Monitor API Routes Missing CSRF Exemption (Security)
+The `POST` endpoints in `src/sejfa/monitor/monitor_routes.py` (`/state`, `/reset`) are not exempted from CSRF protection. Enabling global CSRF protection will break the `claude-monitor-wrapper.sh` script integration.
+**Action:** Apply `@csrf.exempt` to the monitor blueprint or individual API routes to allow external tool access.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 6. Permissive CORS on SocketIO (Security)
+The `SocketIO` instance in `app.py` is configured with `cors_allowed_origins="*"`. This allows any website to connect to the WebSocket server, potentially enabling Cross-Site WebSocket Hijacking (CSWSH).
+**Action:** Restrict `cors_allowed_origins` to trusted domains or configured environment variables.
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
+### 7. Global State Usage in Monitor Blueprint Factory (Reliability)
+`create_monitor_blueprint` in `src/sejfa/monitor/monitor_routes.py` relies on `global` variables (`monitor_service`, `socketio`) to inject dependencies. This prevents creating multiple independent application instances and hampers testing.
+**Action:** Refactor routes to be defined within the `create_monitor_blueprint` scope (closure) to capture dependencies directly.
 
-## Low Severity
-
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 8. Deviation from Data Persistence Requirements (Correctness)
+The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. Using SQLite ensures the application is ready for SQL-based persistence and validates database constraints.
+**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database.
