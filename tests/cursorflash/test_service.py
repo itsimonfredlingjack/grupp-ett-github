@@ -203,3 +203,59 @@ class TestNewsFlashServiceCRUD:
                 content="Short",  # Too short
             )
         assert "Innehåll måste vara minst 10 tecken" in str(exc_info.value)
+
+    def test_delete_flash_success(self):
+        """Test deleting an existing flash."""
+        created = self.service.create_flash(
+            title="To Delete",
+            content="Content to delete",
+            author="Author",
+        )
+
+        result = self.service.delete_flash(created.id)
+        assert result is True
+        assert self.service.get_flash(created.id) is None
+
+    def test_delete_flash_not_found(self):
+        """Test deleting a non-existent flash returns False."""
+        result = self.service.delete_flash(999)
+        assert result is False
+
+    def test_create_flash_with_published_at(self):
+        """Test creating a flash with published_at set."""
+        published = datetime(2026, 2, 5, 12, 0, 0)
+        flash = self.service.create_flash(
+            title="Published Flash",
+            content="This is published content",
+            author="Author",
+            published_at=published,
+        )
+
+        assert flash.published_at == published
+
+    def test_update_flash_with_published_at(self):
+        """Test updating a flash with published_at."""
+        created = self.service.create_flash(
+            title="Original Title",
+            content="Original content here",
+            author="Author",
+        )
+        published = datetime(2026, 2, 5, 14, 0, 0)
+
+        updated = self.service.update_flash(
+            flash_id=created.id,
+            published_at=published,
+        )
+
+        assert updated is not None
+        assert updated.published_at == published
+
+    def test_title_whitespace_only_rejected(self):
+        """Test that title with only whitespace is rejected."""
+        with pytest.raises(ValidationError) as exc_info:
+            self.service.create_flash(
+                title="   ",  # Only whitespace
+                content="Valid content here",
+                author="Test Author",
+            )
+        assert "Titel krävs" in str(exc_info.value)
