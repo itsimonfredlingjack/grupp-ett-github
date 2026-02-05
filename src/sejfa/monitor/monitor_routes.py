@@ -46,7 +46,6 @@ def create_monitor_blueprint(service, socket_io):
         """
         try:
             data = request.get_json(silent=True)
-            data = request.get_json(silent=True)
 
             if not data:
                 err = {"success": False, "error": "No JSON data provided"}
