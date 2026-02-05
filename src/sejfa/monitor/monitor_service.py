@@ -14,6 +14,7 @@ from typing import Any
 @dataclass
 class WorkflowNode:
     """Represents a single node in the workflow."""
+
     active: bool = False
     last_active: str | None = None
     message: str = ""
@@ -86,9 +87,7 @@ class MonitorService:
         """
         return {
             "current_node": self.current_node,
-            "nodes": {
-                node_id: asdict(node) for node_id, node in self.nodes.items()
-            },
+            "nodes": {node_id: asdict(node) for node_id, node in self.nodes.items()},
             "event_log": self.event_log,
             "task_info": self.task_info,
         }
@@ -115,9 +114,7 @@ class MonitorService:
     def reset(self) -> None:
         """Reset all monitoring state."""
         self.current_node = None
-        self.nodes = {
-            node_id: WorkflowNode() for node_id in self.VALID_NODES
-        }
+        self.nodes = {node_id: WorkflowNode() for node_id in self.VALID_NODES}
         self.event_log = []
         self.task_info = {
             "title": "Waiting for task...",
