@@ -1,6 +1,7 @@
 """Unit tests for MonitorService."""
 
 import pytest
+
 from src.sejfa.monitor.monitor_service import MonitorService
 
 
@@ -87,7 +88,9 @@ class TestMonitorService:
 
     def test_task_info(self, service):
         """Test updating task info."""
-        service.set_task_info(title="Fix bug", status="running", start_time="2023-01-01T12:00:00Z")
+        service.set_task_info(
+            title="Fix bug", status="running", start_time="2023-01-01T12:00:00Z"
+        )
 
         info = service.get_task_info()
         assert info["title"] == "Fix bug"

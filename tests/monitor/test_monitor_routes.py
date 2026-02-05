@@ -2,9 +2,9 @@
 
 import pytest
 from flask import Flask
-from flask_socketio import SocketIO
-from src.sejfa.monitor.monitor_service import MonitorService
+
 from src.sejfa.monitor.monitor_routes import create_monitor_blueprint
+from src.sejfa.monitor.monitor_service import MonitorService
 
 
 class TestMonitorRoutes:
