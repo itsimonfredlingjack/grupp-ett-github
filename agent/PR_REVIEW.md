@@ -1,27 +1,39 @@
 # PR Review Findings
 
+## Critical Severity
+
+### 1. Missing CSRF Protection (Security)
+The application lacks Cross-Site Request Forgery (CSRF) protection. `Flask-WTF` is missing from `requirements.txt` and `CSRFProtect` is not initialized in `app.py`.
+**Action:** Install `Flask-WTF` and initialize `CSRFProtect` in `app.py`.
+
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 2. Thread Safety in MonitorService (Reliability)
+The `MonitorService.update_node` method modifies shared state (`self.nodes`) without locking, causing race conditions in threaded environments.
+**Action:** Implement `threading.Lock` around state modifications.
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 3. Missing Automated Tests for Monitoring (Test Coverage)
+The `tests/monitor/` directory is missing, leaving the monitoring feature (`src/sejfa/monitor/`) without automated test coverage.
+**Action:** Add unit and integration tests for `MonitorService` and `monitor_routes`.
+
+### 4. Weak Admin Authentication (Security)
+`AdminAuthService` relies on predictable tokens and hardcoded credentials.
+**Action:** Use secure token generation and password hashing.
+
+### 5. Hardcoded Secret Key (Security)
+`app.secret_key` is hardcoded to "dev-secret-key" in `app.py`.
+**Action:** Load `SECRET_KEY` from environment variables.
+
+### 6. Debug Mode Enabled (Security)
+`socketio.run(app, debug=True)` is enabled by default in the entry point.
+**Action:** Disable debug mode or use an environment variable.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 7. Missing Flask-WTF Dependency (Dependencies)
+`Flask-WTF` is required for CSRF protection but is missing from `requirements.txt`.
+**Action:** Add `Flask-WTF` to `requirements.txt`.
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
-
-## Low Severity
-
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 8. Deprecated datetime.utcnow (Reliability)
+`MonitorService` uses `datetime.utcnow()`, which is deprecated.
+**Action:** Use `datetime.now(timezone.utc)`.
