@@ -1,8 +1,9 @@
 # Current Task: GE-34
 
 **Branch:** `feature/GE-34-expense-tracker-mvp`
-**Status:** In Progress
+**Status:** Complete
 **Started:** 2026-02-05
+**PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/134
 
 ---
 
@@ -107,6 +108,8 @@ Service: `ExpenseService` hanterar logiken.
 | 8 | Wire up DI in create_app | ExpenseTracker blueprint registered at /expenses |
 | 9 | Fix linting errors | ruff check . passes |
 | 10 | Verify all tests pass | 198 tests pass (35 new for ExpenseTracker) |
+| 11 | Create PR | PR #134 created |
+| 12 | Fix formatting | ruff format applied, pushed |
 
 ---
 
