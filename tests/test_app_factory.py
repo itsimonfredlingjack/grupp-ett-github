@@ -1,6 +1,5 @@
 """Additional tests for app factory to improve coverage."""
 
-import pytest
 
 from app import create_app
 

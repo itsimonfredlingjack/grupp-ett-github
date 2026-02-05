@@ -4,7 +4,10 @@ import pytest
 from flask import Flask
 from flask_socketio import SocketIO
 
-from src.sejfa.monitor.monitor_routes import create_monitor_blueprint, init_socketio_events
+from src.sejfa.monitor.monitor_routes import (
+    create_monitor_blueprint,
+    init_socketio_events,
+)
 from src.sejfa.monitor.monitor_service import MonitorService
 
 
@@ -69,7 +72,9 @@ class TestMonitorEdgeCases:
         response = client_with_socketio.post("/api/monitor/reset")
         assert response.status_code in [200, 404, 500]
 
-    def test_task_endpoint_with_running_status_auto_sets_time(self, client_with_socketio):
+    def test_task_endpoint_with_running_status_auto_sets_time(
+        self, client_with_socketio
+    ):
         """POST /task with running status auto-sets start_time."""
         response = client_with_socketio.post(
             "/api/monitor/task",
