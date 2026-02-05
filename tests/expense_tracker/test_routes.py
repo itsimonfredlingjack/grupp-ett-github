@@ -148,7 +148,12 @@ class TestAddRoute:
         )
         data = response.data.decode("utf-8")
         # Should show error about empty title (Swedish) or required
-        assert "tom" in data.lower() or "empty" in data.lower() or "required" in data.lower() or "fältet" in data.lower()
+        assert (
+            "tom" in data.lower()
+            or "empty" in data.lower()
+            or "required" in data.lower()
+            or "fältet" in data.lower()
+        )
 
     def test_add_invalid_category_shows_error(self, client) -> None:
         """Adding expense with invalid category shows error."""
@@ -165,7 +170,11 @@ class TestAddRoute:
         )
         data = response.data.decode("utf-8")
         # Should show error about invalid category (Swedish) or selection
-        assert "kategori" in data.lower() or "category" in data.lower() or "valid choice" in data.lower()
+        assert (
+            "kategori" in data.lower()
+            or "category" in data.lower()
+            or "valid choice" in data.lower()
+        )
 
 
 class TestSummaryRoute:
