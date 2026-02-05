@@ -96,7 +96,7 @@ Implements {JIRA_ID}
 
 **IMPORTANT: Use direct Jira API, NOT MCP tools.**
 
-Transition to "In Review":
+Transition using preferred statuses:
 
 ```bash
 source venv/bin/activate && python3 -c "
@@ -105,8 +105,11 @@ load_dotenv()
 from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 try:
-    client.transition_issue('{JIRA_ID}', 'In Review')
-    print('✅ Transitioned to In Review')
+    used_transition = client.transition_issue_by_preference(
+        '{JIRA_ID}',
+        ['In Review', 'In Progress', 'Done']
+    )
+    print(f'✅ Transitioned to {used_transition}')
 except Exception as e:
     print(f'⚠️ Could not transition: {e}')
 "

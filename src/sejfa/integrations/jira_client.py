@@ -222,6 +222,12 @@ class JiraClient:
 
         return self._request("POST", endpoint, data=comment_data)
 
+    def _get_transitions(self, issue_key: str) -> tuple[str, list[dict[str, Any]]]:
+        """Get transition endpoint and available transitions for an issue."""
+        endpoint = f"/rest/api/3/issue/{issue_key}/transitions"
+        transitions_data = self._request("GET", endpoint)
+        return endpoint, transitions_data.get("transitions", [])
+
     def transition_issue(self, issue_key: str, transition_name: str) -> bool:
         """Transition an issue to a new status.
 
@@ -232,19 +238,17 @@ class JiraClient:
         Returns:
             True if transition was successful
         """
-        # First, get available transitions
-        endpoint = f"/rest/api/3/issue/{issue_key}/transitions"
-        transitions_data = self._request("GET", endpoint)
+        endpoint, transitions = self._get_transitions(issue_key)
 
         # Find the transition by name
         transition_id = None
-        for transition in transitions_data.get("transitions", []):
+        for transition in transitions:
             if transition.get("name", "").lower() == transition_name.lower():
                 transition_id = transition.get("id")
                 break
 
         if not transition_id:
-            available = [t.get("name") for t in transitions_data.get("transitions", [])]
+            available = [t.get("name") for t in transitions]
             raise JiraAPIError(
                 f"Transition '{transition_name}' not found. Available: {available}"
             )
@@ -257,6 +261,47 @@ class JiraClient:
         )
 
         return True
+
+    def transition_issue_by_preference(
+        self, issue_key: str, preferred_transitions: list[str]
+    ) -> str:
+        """Transition issue using the first available status from a preference list.
+
+        Args:
+            issue_key: The issue key
+            preferred_transitions: Ordered transition names to try
+
+        Returns:
+            The transition name that was applied
+
+        Raises:
+            JiraAPIError: If none of the preferred transitions are available
+        """
+        endpoint, transitions = self._get_transitions(issue_key)
+
+        selected_transition: dict[str, Any] | None = None
+        for preferred in preferred_transitions:
+            for transition in transitions:
+                if transition.get("name", "").lower() == preferred.lower():
+                    selected_transition = transition
+                    break
+            if selected_transition:
+                break
+
+        if not selected_transition:
+            available = [t.get("name") for t in transitions]
+            raise JiraAPIError(
+                "None of the preferred transitions were found. "
+                f"Preferred: {preferred_transitions}. Available: {available}"
+            )
+
+        self._request(
+            "POST",
+            endpoint,
+            data={"transition": {"id": selected_transition["id"]}},
+        )
+
+        return str(selected_transition.get("name", ""))
 
     def get_projects(self) -> list[dict[str, Any]]:
         """Get all accessible projects.
