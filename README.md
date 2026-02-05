@@ -17,10 +17,10 @@
 
 SEJFA is a robust **Subscriber Management System** built with Flask, designed to demonstrate a fully autonomous **Agentic Development Workflow**.
 
-## Check Out Our Beautiful Visual Agentic DevOps Monotior Below!
+### Check Out Our Beautiful Visual Agentic DevOps Monotior Below!
 https://gruppett.fredlingautomation.dev/static/monitor.html
 
-The project serves two key purposes:
+## The project serves two key purposes:
 1.  **A Functional Application**: A REST API for managing subscribers with admin authentication and reporting.
 2.  **An Agentic Framework**: A reference implementation for integrating **Jira**, **Ralph Wiggum Loops**, and **Claude Code** to automate software development tasks.
 
