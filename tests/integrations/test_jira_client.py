@@ -232,6 +232,97 @@ class TestJiraClient:
 
             assert "not found" in str(exc_info.value).lower()
 
+    def test_transition_issue_by_preference_primary(self, client: JiraClient) -> None:
+        """Should pick the first preferred transition when available."""
+        transitions_response = {
+            "transitions": [
+                {"id": "1", "name": "To Do"},
+                {"id": "2", "name": "In Review"},
+                {"id": "3", "name": "Done"},
+            ]
+        }
+
+        call_count = 0
+
+        def mock_request(method: str, endpoint: str, data: dict = None):
+            nonlocal call_count
+            call_count += 1
+            if method == "GET":
+                return transitions_response
+            return {}
+
+        with patch.object(client, "_request", side_effect=mock_request):
+            used = client.transition_issue_by_preference(
+                "PROJ-123", ["In Review", "In Progress", "Done"]
+            )
+
+            assert used == "In Review"
+            assert call_count == 2
+
+    def test_transition_issue_by_preference_fallback(self, client: JiraClient) -> None:
+        """Should fall back to next preferred transition."""
+        transitions_response = {
+            "transitions": [
+                {"id": "1", "name": "To Do"},
+                {"id": "2", "name": "In Progress"},
+                {"id": "3", "name": "Done"},
+            ]
+        }
+
+        call_count = 0
+
+        def mock_request(method: str, endpoint: str, data: dict = None):
+            nonlocal call_count
+            call_count += 1
+            if method == "GET":
+                return transitions_response
+            return {}
+
+        with patch.object(client, "_request", side_effect=mock_request):
+            used = client.transition_issue_by_preference(
+                "PROJ-123", ["In Review", "In Progress", "Done"]
+            )
+
+            assert used == "In Progress"
+            assert call_count == 2
+
+    def test_transition_issue_by_preference_case_insensitive(
+        self, client: JiraClient
+    ) -> None:
+        """Should match preferred transition names case-insensitively."""
+        transitions_response = {
+            "transitions": [
+                {"id": "1", "name": "To Do"},
+                {"id": "2", "name": "In Progress"},
+            ]
+        }
+
+        with patch.object(client, "_request", side_effect=[transitions_response, {}]):
+            used = client.transition_issue_by_preference(
+                "PROJ-123", ["in review", "in progress"]
+            )
+
+            assert used == "In Progress"
+
+    def test_transition_issue_by_preference_not_found(self, client: JiraClient) -> None:
+        """Should raise clear error when no preferred transitions are available."""
+        transitions_response = {
+            "transitions": [
+                {"id": "1", "name": "To Do"},
+                {"id": "2", "name": "Blocked"},
+            ]
+        }
+
+        with patch.object(client, "_request", return_value=transitions_response):
+            with pytest.raises(JiraAPIError) as exc_info:
+                client.transition_issue_by_preference(
+                    "PROJ-123", ["In Review", "In Progress", "Done"]
+                )
+
+            message = str(exc_info.value)
+            assert "preferred" in message.lower()
+            assert "available" in message.lower()
+
     def test_test_connection_success(self, client: JiraClient) -> None:
         """Should return True for successful connection."""
         with patch.object(client, "_request", return_value={"displayName": "Test"}):
