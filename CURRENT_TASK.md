@@ -30,8 +30,8 @@ All XML special characters have been encoded for safety.
 - [x] Add pytest test for health check
 - [x] All tests pass: `pytest -xvs` (232 tests passing)
 - [x] Linting passes: `ruff check .`
-- [ ] Code committed and pushed
-- [ ] PR created
+- [x] Code committed and pushed
+- [x] PR created: https://github.com/itsimonfredlingjack/grupp-ett-github/pull/204
 
 ---
 
