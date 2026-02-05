@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Loop Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a5fb4;
+            --bg-secondary: #87ceeb;
+            --accent-blue: #00d4ff;
+            --accent-orange: #ff8c42;
+            --accent-green: #00ff9d;
+            --text-primary: #000000;
+            --text-secondary: #333333;
+            --glow-blue: rgba(0, 212, 255, 0.4);
+            --glow-orange: rgba(255, 140, 66, 0.4);
+
+            /* Node colors - Simpsons Christmas style */
+            --node-purple: #e55ca0;
+            --node-cyan: #4db8e8;
+            --node-blue: #5a9fd4;
+            --node-green: #2d8b57;
+            --node-pink: #ff6b9d;
+            --node-teal: #47c9af;
+            --simpson-yellow: #ffd90f;
+            --simpson-pink: #f7a6d8;
+            --simpson-wall: #e892c5;
+            --simpson-floor: #2d8b57;
+            --simpson-skin: #fed90f;
+
+            /* Glows - brighter for cartoon effect */
+            --glow-purple: rgba(229, 92, 160, 0.8);
+            --glow-cyan: rgba(77, 184, 232, 0.8);
+            --glow-blue: rgba(90, 159, 212, 0.8);
+            --glow-green: rgba(45, 139, 87, 0.8);
+            --glow-pink: rgba(255, 107, 157, 0.8);
+            --glow-teal: rgba(71, 201, 175, 0.8);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(180deg, #ff9933 0%, #ff8c1a 100%);
+            color: var(--text-primary);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background image overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+
+        /* Cartoon decorative elements background */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle 80px at 10% 15%, rgba(255, 217, 15, 0.15), transparent),
+                radial-gradient(circle 100px at 85% 20%, rgba(77, 184, 232, 0.15), transparent),
+                radial-gradient(circle 90px at 50% 80%, rgba(45, 139, 87, 0.15), transparent),
+                radial-gradient(circle 70px at 90% 75%, rgba(229, 92, 160, 0.15), transparent);
+            z-index: 0;
+        }
+
+        @keyframes cloudFloat {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(30px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            padding: 100px 40px 40px 40px;
+            gap: 60px;
+            align-items: center;
+            justify-content: center;
+            transform: scale(1.05) translateX(-2cm);
+            transform-origin: center center;
+        }
+
+        /* Header */
+        header {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--simpson-yellow);
+            border-radius: 8px;
+            border: 4px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 0 #000, 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #000;
+            border-radius: 4px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #000;
+            text-shadow: 3px 3px 0 var(--simpson-yellow),
+                         -1px -1px 0 #000,
+                         1px -1px 0 #000,
+                         -1px 1px 0 #000,
+                         1px 1px 0 #000;
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: -5px;
+        }
+
+        .nav {
+            display: none;
+        }
+
+        /* Main visualization area */
+        .visualization {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .loop-container {
+            position: relative;
+            width: 650px;
+            height: 650px;
+        }
+
+        /* Center image placeholder */
+        .center-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .center-image img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .center-image-placeholder {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: #000;
+            text-align: center;
+            padding: 20px;
+            font-weight: 600;
+            background: var(--simpson-yellow);
+            border: 4px solid #000;
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .orbital-node[data-color="purple"].active .node-label {
+            color: #000;
+        }
+
+        .orbital-node[data-color="cyan"].active .node-label {
+            color: #000;
+        }
+
+        .orbital-node[data-color="blue"].active .node-label {
+            color: #000;
+        }
+
+        .orbital-node[data-color="green"].active .node-label {
+            color: #000;
+        }
+
+        .orbital-node[data-color="pink"].active .node-label {
+            color: #000;
+        }
+
+        .orbital-node[data-color="teal"].active .node-label {
+            color: #000;
+        }
+
+        /* Circular path */
+        .circular-path {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 520px;
+            height: 520px;
+            border: 4px dashed #000;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        /* Moving dot */
+        .moving-dot {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--node-purple), var(--node-cyan));
+            border-radius: 50%;
+            border: 4px solid #000;
+            top: 50%;
+            left: 50%;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 5px 0 #000;
+            opacity: 1;
+            transition: opacity 0.4s ease, transform 0.4s ease, background 0.6s ease, box-shadow 0.6s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .moving-dot.hidden {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.3);
+        }
+
+        .moving-dot::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: 50%;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        .moving-dot::after {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.4), rgba(0, 255, 157, 0.2) 50%, transparent 70%);
+            border-radius: 50%;
+            animation: dotGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        @keyframes dotGlow {
+            0%, 100% { transform: scale(0.8); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Orbital nodes */
+        .orbital-node {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background: #fff;
+            border: 5px solid #000;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            z-index: 3;
+            box-shadow: 0 6px 0 #000, 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .orbital-node.active {
+            transform: scale(1.2);
+            z-index: 4;
+        }
+
+        /* Individual node colors - cartoon style */
+        .orbital-node[data-color="purple"] {
+            background: linear-gradient(135deg, #e55ca0, #f588bb);
+            border-color: #000;
+        }
+
+        .orbital-node[data-color="purple"].active {
+            box-shadow: 0 0 30px var(--glow-purple), 0 0 60px var(--glow-purple), 0 8px 0 #000;
+            animation: cartoonBounce 0.6s ease;
+        }
+
+        .orbital-node[data-color="cyan"] {
+            background: linear-gradient(135deg, #4db8e8, #7dcef5);
+            border-color: #000;
+        }
+
+        .orbital-node[data-color="cyan"].active {
+            box-shadow: 0 0 30px var(--glow-cyan), 0 0 60px var(--glow-cyan), 0 8px 0 #000;
+            animation: cartoonBounce 0.6s ease;
+        }
+
+        .orbital-node[data-color="blue"] {
+            background: linear-gradient(135deg, #5a9fd4, #85b8e0);
+            border-color: #000;
+        }
+
+        .orbital-node[data-color="blue"].active {
+            box-shadow: 0 0 30px var(--glow-blue), 0 0 60px var(--glow-blue), 0 8px 0 #000;
+            animation: cartoonBounce 0.6s ease;
+        }
+
+        .orbital-node[data-color="green"] {
+            background: linear-gradient(135deg, #2d8b57, #4aa572);
+            border-color: #000;
+        }
+
+        .orbital-node[data-color="green"].active {
+            box-shadow: 0 0 30px var(--glow-green), 0 0 60px var(--glow-green), 0 8px 0 #000;
+            animation: cartoonBounce 0.6s ease;
+        }
+
+        .orbital-node[data-color="pink"] {
+            background: linear-gradient(135deg, #ff6b9d, #ff8fb5);
+            border-color: #000;
+        }
+
+        .orbital-node[data-color="pink"].active {
+            box-shadow: 0 0 30px var(--glow-pink), 0 0 60px var(--glow-pink), 0 8px 0 #000;
+            animation: cartoonBounce 0.6s ease;
+        }
+
+        .orbital-node[data-color="teal"] {
+            background: linear-gradient(135deg, #47c9af, #6ed9c3);
+            border-color: #000;
+        }
+
+        .orbital-node[data-color="teal"].active {
+            box-shadow: 0 0 30px var(--glow-teal), 0 0 60px var(--glow-teal), 0 8px 0 #000;
+            animation: cartoonBounce 0.6s ease;
+        }
+
+        @keyframes cartoonBounce {
+            0%, 100% {
+                box-shadow: 0 0 30px var(--glow-purple), 0 0 60px var(--glow-purple), 0 8px 0 #000;
+            }
+            50% {
+                box-shadow: 0 0 40px var(--glow-purple), 0 0 80px var(--glow-purple), 0 8px 0 #000;
+            }
+        }
+
+        .node-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .orbital-node.active .node-icon {
+            transform: scale(1.2);
+        }
+
+        .node-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .orbital-node[data-color="purple"].active .node-label {
+            color: #000 !important;
+        }
+
+        .orbital-node[data-color="cyan"].active .node-label {
+            color: #000 !important;
+        }
+
+        .orbital-node[data-color="blue"].active .node-label {
+            color: #000 !important;
+        }
+
+        .orbital-node[data-color="green"].active .node-label {
+            color: #000 !important;
+        }
+
+        .orbital-node[data-color="pink"].active .node-label {
+            color: #000 !important;
+        }
+
+        .orbital-node[data-color="teal"].active .node-label {
+            color: #000 !important;
+        }
+
+        /* Connection lines */
+        .connection-line {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                rgba(122, 138, 163, 0.2),
+                rgba(122, 138, 163, 0.1));
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .connection-line.active {
+            background: linear-gradient(90deg,
+                var(--accent-orange),
+                var(--accent-blue));
+            box-shadow: 0 0 10px var(--glow-orange);
+            height: 3px;
+        }
+
+        /* Progress indicator on line */
+        .progress-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 20px var(--glow-orange);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .connection-line.active .progress-dot {
+            opacity: 1;
+            animation: moveProgress 2s ease-in-out;
+        }
+
+        @keyframes moveProgress {
+            0% { left: 0%; }
+            100% { left: 100%; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 420px;
+            height: calc(100vh - 180px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 240, 250, 0.95));
+            border: 5px solid #000;
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            box-shadow: 0 8px 0 #000, 0 12px 24px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(122, 138, 163, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .event-log {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: #fff;
+            border-radius: 10px;
+            border: 3px solid #000;
+            font-size: 0.72rem;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 0 #000;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event-item.active {
+            background: var(--simpson-yellow);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .event-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #000;
+            flex-shrink: 0;
+            border: 2px solid #000;
+        }
+
+        .event-item.active .event-dot {
+            background: #ff0000;
+            animation: dotBlink 0.6s ease infinite;
+        }
+
+        @keyframes dotBlink {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .active-step {
+            padding: 20px;
+            background: var(--simpson-yellow);
+            border: 4px solid #000;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .step-status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: #000;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        .step-description {
+            font-size: 0.8rem;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .current-task {
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            border: 4px solid #000;
+            box-shadow: 0 6px 0 #000;
+        }
+
+        .task-title {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .task-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(122, 138, 163, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            border-radius: 2px;
+            animation: progressGrow 2s ease-in-out infinite;
+        }
+
+        @keyframes progressGrow {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 0%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .loop-container {
+                width: 400px;
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <div>
+                <h1>Agentic Loop Monitor</h1>
+                <div class="subtitle">Real-Time Workflow Visualization</div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <a href="#" class="nav-link active">Waiting</a>
+    </nav>
+
+    <div class="container">
+        <div class="visualization">
+            <div class="loop-container" id="loopContainer">
+                <!-- Circular path -->
+                <div class="circular-path"></div>
+
+                <!-- Center image placeholder -->
+                <div class="center-image">
+                    <img src="center-image.png" alt="Center Image" style="display: none;" id="centerImg">
+                    <div class="center-image-placeholder" id="placeholder">
+                        Place your image<br>center-image.png<br>in same folder
+                    </div>
+                </div>
+
+                <!-- Moving dot -->
+                <div class="moving-dot" id="movingDot"></div>
+
+                <!-- Orbital nodes will be positioned by JS -->
+            </div>
+        </div>
+
+        <aside class="sidebar">
+            <div class="section">
+                <div class="section-title">Event Log</div>
+                <div class="event-log" id="eventLog">
+                    <div class="event-item">
+                        <div class="event-dot"></div>
+                        <div>Waiting for events...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Active Step</div>
+                <div class="active-step">
+                    <div class="step-status" id="stepStatus">Idle</div>
+                    <div class="step-description" id="stepDescription">Connecting to monitoring server...</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Current Task</div>
+                <div class="current-task">
+                    <div class="task-title" id="taskTitle">Waiting for task...</div>
+                    <div class="task-status">
+                        <div class="status-badge" id="statusBadge">Idle</div>
+                        <div class="timer" id="timer">0:00</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const nodes = [
+            { id: 'jira', icon: '📋', label: 'JIRA', angle: 270, color: 'purple' },
+            { id: 'claude', icon: '🤖', label: 'CLAUDE', angle: 342, color: 'cyan' },
+            { id: 'github', icon: '📤', label: 'GITHUB', angle: 54, color: 'blue' },
+            { id: 'jules', icon: '👨‍💻', label: 'JULES', angle: 126, color: 'pink' },
+            { id: 'actions', icon: '⚙️', label: 'ACTIONS', angle: 198, color: 'green' }
+        ];
+
+        const container = document.getElementById('loopContainer');
+        const movingDot = document.getElementById('movingDot');
+        const eventLog = document.getElementById('eventLog');
+
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let currentActiveNode = null;
+        const radius = 260;
+        const centerX = 325;
+        const centerY = 325;
+
+        // Create nodes
+        nodes.forEach((node) => {
+            const nodeEl = document.createElement('div');
+            nodeEl.className = 'orbital-node';
+            nodeEl.id = node.id;
+            nodeEl.setAttribute('data-color', node.color);
+
+            const angleRad = (node.angle * Math.PI) / 180;
+            const x = centerX + radius * Math.cos(angleRad);
+            const y = centerY + radius * Math.sin(angleRad);
+
+            nodeEl.style.left = `${x}px`;
+            nodeEl.style.top = `${y}px`;
+            nodeEl.style.transform = 'translate(-50%, -50%)';
+
+            nodeEl.innerHTML = `
+                <div class="node-icon">${node.icon}</div>
+                <div class="node-label">${node.label}</div>
+            `;
+
+            container.appendChild(nodeEl);
+        });
+
+        // WebSocket connection
+        const socket = io('http://localhost:5000/monitor', {
+            transports: ['websocket', 'polling']
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to monitoring server');
+            document.getElementById('stepDescription').textContent = 'Connected to monitoring server';
+        });
+
+        socket.on('state_update', (state) => {
+            console.log('Received state update:', state);
+            updateDashboard(state);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from monitoring server');
+            document.getElementById('stepDescription').textContent = 'Disconnected - attempting reconnect...';
+        });
+
+        socket.on('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
+
+        // Update dashboard with real-time data
+        function updateDashboard(state) {
+            if (!state) return;
+
+            // Update active nodes
+            updateActiveNodes(state);
+
+            // Update event log
+            updateEventLog(state.event_log);
+
+            // Update active step
+            updateActiveStep(state);
+
+            // Update task info
+            updateTaskInfo(state.task_info);
+        }
+
+        function updateActiveNodes(state) {
+            if (!state.nodes) return;
+
+            // Remove active class from all nodes
+            document.querySelectorAll('.orbital-node').forEach(n => n.classList.remove('active'));
+
+            // Add active class to current node
+            if (state.current_node) {
+                const activeNodeEl = document.getElementById(state.current_node);
+                if (activeNodeEl) {
+                    activeNodeEl.classList.add('active');
+                    currentActiveNode = state.current_node;
+
+                    // Move dot to active node
+                    const nodeData = nodes.find(n => n.id === state.current_node);
+                    if (nodeData) {
+                        moveDotToNode(nodeData.angle);
+                        movingDot.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        function moveDotToNode(angle) {
+            const angleRad = (angle * Math.PI) / 180;
+            const x = centerX + radius * Math.cos(angleRad);
+            const y = centerY + radius * Math.sin(angleRad);
+
+            movingDot.style.left = `${x}px`;
+            movingDot.style.top = `${y}px`;
+            movingDot.style.transform = 'translate(-50%, -50%)';
+        }
+
+        function updateEventLog(events) {
+            if (!events || events.length === 0) return;
+
+            eventLog.innerHTML = '';
+
+            // Show last 5 events
+            const recentEvents = events.slice(-5);
+            recentEvents.forEach((event, index) => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'event-item';
+                if (index === recentEvents.length - 1) {
+                    eventItem.classList.add('active');
+                }
+
+                const timestamp = new Date(event.timestamp).toLocaleTimeString();
+                eventItem.innerHTML = `
+                    <div class="event-dot"></div>
+                    <div>
+                        <div style="font-weight: bold; text-transform: uppercase;">${event.node}</div>
+                        <div>${event.message || 'Active'}</div>
+                        <div style="font-size: 0.6rem; color: #999;">${timestamp}</div>
+                    </div>
+                `;
+
+                eventLog.appendChild(eventItem);
+            });
+        }
+
+        function updateActiveStep(state) {
+            const stepStatus = document.getElementById('stepStatus');
+            const stepDescription = document.getElementById('stepDescription');
+
+            if (state.current_node) {
+                const stepTexts = {
+                    'jira': { status: 'Fetching', desc: 'Retrieving ticket from JIRA...' },
+                    'claude': { status: 'Coding', desc: 'Claude is writing the solution...' },
+                    'github': { status: 'Pushing', desc: 'Pushing changes to GitHub...' },
+                    'jules': { status: 'Reviewing', desc: 'Jules is reviewing the code...' },
+                    'actions': { status: 'Testing', desc: 'Running GitHub Actions...' }
+                };
+
+                const text = stepTexts[state.current_node];
+                if (text) {
+                    stepStatus.textContent = text.status;
+                    stepDescription.textContent = text.desc;
+                }
+            } else {
+                stepStatus.textContent = 'Idle';
+                stepDescription.textContent = 'Waiting for workflow...';
+            }
+        }
+
+        function updateTaskInfo(taskInfo) {
+            if (!taskInfo) return;
+
+            document.getElementById('taskTitle').textContent = taskInfo.title || 'Waiting for task...';
+            document.getElementById('statusBadge').textContent = (taskInfo.status || 'idle').toUpperCase();
+
+            // Update timer if task is running
+            if (taskInfo.status === 'running' && taskInfo.start_time) {
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateTimer, 1000);
+                }
+            } else {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerSeconds = 0;
+                }
+            }
+        }
+
+        function updateTimer() {
+            timerSeconds++;
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timer').textContent =
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Initialize - position dot at first node
+        const firstNode = nodes[0];
+        const angleRad = (firstNode.angle * Math.PI) / 180;
+        movingDot.style.left = `${centerX + radius * Math.cos(angleRad)}px`;
+        movingDot.style.top = `${centerY + radius * Math.sin(angleRad)}px`;
+        movingDot.style.transform = 'translate(-50%, -50%)';
+        movingDot.classList.add('hidden');
+
+        // Handle center image loading
+        const centerImg = document.getElementById('centerImg');
+        const placeholder = document.getElementById('placeholder');
+
+        centerImg.onload = function() {
+            centerImg.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+
+        centerImg.onerror = function() {
+            centerImg.style.display = 'none';
+            placeholder.style.display = 'block';
+        };
+
+        centerImg.src = 'center-image.png';
+
+        // Add click handler for sound
+        const centerImage = document.querySelector('.center-image');
+        const ralphSound = new Audio('Ralph.mp3');
+        ralphSound.volume = 0.5;
+
+        centerImage.addEventListener('click', function() {
+            ralphSound.currentTime = 0;
+            ralphSound.play().catch(err => {
+                console.log('Audio play failed:', err);
+            });
+        });
+
+        centerImage.style.cursor = 'pointer';
+    </script>
+</body>
+</html>
