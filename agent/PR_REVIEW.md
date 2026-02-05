@@ -1,27 +1,23 @@
 # PR Review Findings
 
-## High Severity
+## Critical Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 1. Regression: Removal of Ralph Loop Monitoring Hooks (Correctness)
+The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the real-time agentic loop monitoring feature introduced in the base branch. This removal disables the feature and contradicts the intent of recent integrations.
+**Action:** Restore `monitor_client.py` and `monitor_hook.py`, or provide a valid justification and alternative implementation for the monitoring hooks.
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 2. Broken Hook Configuration (Reliability)
+`settings.local.json` continues to reference the deleted `.claude/hooks/monitor_hook.py` in the `PreToolUse` hook configuration. This will cause the `python3` command to fail during every tool execution, potentially disrupting the agent's operation.
+**Action:** If the removal is intentional, remove the corresponding hook configuration from `settings.local.json`. Otherwise, restore the missing file.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
-
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
+### 3. Dead Code in Stop Hook (Maintainability)
+`.claude/hooks/stop-hook.py` contains imports from `monitor_client` wrapped in a try/except block. With `monitor_client.py` deleted, this code becomes dead weight and the monitoring integration in the stop hook is effectively disabled.
+**Action:** Remove the unused import and monitoring logic from `stop-hook.py` if the client is permanently removed.
 
 ## Low Severity
 
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 4. Unaddressed Lint Errors in Deleted Files (Quality)
+The deleted files (`monitor_client.py`, `monitor_hook.py`) contained lint errors (I001, UP045, E501). If the deletion was an attempt to silence these errors, it is an incorrect approach.
+**Action:** Restore the files and fix the lint errors (sort imports, use `| None`, fix line lengths) instead of deleting the feature.
