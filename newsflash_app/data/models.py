@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 
-
 VALID_CATEGORIES = {"BREAKING", "TECH", "FINANCE", "SPORTS"}
 
 

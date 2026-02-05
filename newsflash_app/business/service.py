@@ -3,7 +3,6 @@
 from newsflash_app.data.models import NewsFlash
 from newsflash_app.data.repository import NewsFlashRepository
 
-
 MAX_ITEMS_PER_PAGE = 20
 
 
