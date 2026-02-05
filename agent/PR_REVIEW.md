@@ -1,27 +1,39 @@
 # PR Review Findings
 
+## Critical Severity
+
+### 1. Missing Authentication on Monitor Endpoints (Security)
+The monitoring API endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `/state`, `/reset`) are accessible without any authentication. This allows any network user to modify the monitoring state or reset it, compromising the integrity of the monitoring system.
+**Action:** Protect these endpoints using the `@require_admin_token` decorator or a similar authentication mechanism.
+
+### 2. Insecure Admin Token Validation (Security)
+The `AdminAuthService.validate_session_token` method in `src/sejfa/core/admin_auth.py` validates tokens using `token.startswith("token_")`. This allows any string starting with "token_" to be accepted as a valid session token, completely bypassing authentication.
+**Action:** Implement secure token validation, such as checking against a store of active tokens or using cryptographically signed tokens (e.g., JWT).
+
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
-
-### 2. Hardcoded Secret Key in Application Factory
+### 3. Hardcoded Secret Key in Application Factory (Security)
 The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
 **Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
 
+### 4. Thread Safety in MonitorService (Correctness)
+The `MonitorService` in `src/sejfa/monitor/monitor_service.py` is not thread-safe. The `update_node` method modifies shared state (`self.nodes`, `self.event_log`) without locking. In a concurrent environment like Flask with SocketIO, this can lead to race conditions and data corruption.
+**Action:** Use `threading.Lock` to synchronize access to shared state within `MonitorService`.
+
+### 5. Missing CSRF Exemption for Monitor POST Endpoints (Security)
+The POST endpoints in `src/sejfa/monitor/monitor_routes.py` are not marked with `@csrf.exempt`. If the application enables global CSRF protection (which is a standard security practice), these endpoints will reject legitimate updates from the monitoring wrapper (which cannot easily provide a CSRF token).
+**Action:** Decorate the `update_state`, `reset_monitoring`, and `update_task` endpoints with `@csrf.exempt` (requires importing `csrf` extension).
+
+### 6. Missing CSRF Protection on Expense Form (Security)
+The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks.
+**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include the CSRF token in the form.
+
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 7. Committed Build Artifact (Reliability)
+The file `coverage.xml` has been committed to the repository. This is a generated build artifact and should not be tracked in version control, as it creates noise and merge conflicts.
+**Action:** Remove `coverage.xml` from the repository and add it to `.gitignore`.
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
-
-## Low Severity
-
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 8. Deprecated datetime Usage (Correctness)
+The `MonitorService` uses `datetime.utcnow()`, which is deprecated in Python 3.12+. This may cause issues or warnings in future Python versions.
+**Action:** Replace `datetime.utcnow()` with `datetime.now(timezone.utc)`.
