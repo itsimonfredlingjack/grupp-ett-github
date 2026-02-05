@@ -1,9 +1,6 @@
 """Unit tests for MonitorService."""
 
-import threading
 from datetime import datetime
-
-import pytest
 
 from src.sejfa.monitor.monitor_service import MonitorService
 
