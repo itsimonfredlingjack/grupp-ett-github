@@ -1,7 +1,18 @@
 """Tests for admin authentication functionality."""
 
+import sys
+from unittest.mock import MagicMock
+
 import pytest
 from flask.testing import FlaskClient
+
+# Mock flask_socketio if not present (needed for CI)
+try:
+    import flask_socketio  # noqa: F401
+except ImportError:
+    mock_socketio = MagicMock()
+    mock_socketio.SocketIO = MagicMock
+    sys.modules["flask_socketio"] = mock_socketio
 
 from app import create_app
 

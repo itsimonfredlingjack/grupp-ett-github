@@ -51,11 +51,7 @@ class TestMonitorRoutes:
 
     def test_update_state_valid(self, client):
         """POST /api/monitor/state with valid data should update state."""
-        payload = {
-            "node": "claude",
-            "state": "active",
-            "message": "Testing update"
-        }
+        payload = {"node": "claude", "state": "active", "message": "Testing update"}
         response = client.post("/api/monitor/state", json=payload)
         assert response.status_code == 200
         data = response.get_json()
@@ -64,10 +60,7 @@ class TestMonitorRoutes:
 
     def test_update_state_invalid_node(self, client):
         """POST /api/monitor/state with invalid node should return 400."""
-        payload = {
-            "node": "invalid_node",
-            "state": "active"
-        }
+        payload = {"node": "invalid_node", "state": "active"}
         response = client.post("/api/monitor/state", json=payload)
         assert response.status_code == 400
         data = response.get_json()
