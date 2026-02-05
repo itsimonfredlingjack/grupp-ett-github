@@ -11,6 +11,9 @@ from typing import Any
 
 from flask import Flask, Response, jsonify, request
 
+from src.expense_tracker.business.service import ExpenseService
+from src.expense_tracker.data.repository import InMemoryExpenseRepository
+from src.expense_tracker.presentation.routes import create_expense_blueprint
 from src.sejfa.core.admin_auth import AdminAuthService
 from src.sejfa.core.subscriber_service import SubscriberService
 
@@ -254,6 +257,12 @@ def create_app() -> Flask:
             mimetype="text/csv",
             headers={"Content-Disposition": "attachment;filename=subscribers.csv"},
         )
+
+    # Register ExpenseTracker blueprint with DI
+    expense_repository = InMemoryExpenseRepository()
+    expense_service = ExpenseService(expense_repository)
+    expense_blueprint = create_expense_blueprint(expense_service)
+    app.register_blueprint(expense_blueprint, url_prefix="/expenses")
 
     return app
 
