@@ -1,6 +1,5 @@
 """Unit tests for ExpenseRepository implementations."""
 
-
 from src.expense_tracker.data.models import Expense
 from src.expense_tracker.data.repository import InMemoryExpenseRepository
 
@@ -41,9 +40,7 @@ class TestInMemoryExpenseRepository:
 
     def test_get_all_returns_all_added(self) -> None:
         """Getting all returns all previously added expenses."""
-        self.repository.add(
-            Expense(id=0, title="Test1", amount=100.0, category="Mat")
-        )
+        self.repository.add(Expense(id=0, title="Test1", amount=100.0, category="Mat"))
         self.repository.add(
             Expense(id=0, title="Test2", amount=200.0, category="Transport")
         )
@@ -56,9 +53,7 @@ class TestInMemoryExpenseRepository:
 
     def test_get_all_returns_copy(self) -> None:
         """Getting all returns a copy, not the internal list."""
-        self.repository.add(
-            Expense(id=0, title="Test", amount=100.0, category="Mat")
-        )
+        self.repository.add(Expense(id=0, title="Test", amount=100.0, category="Mat"))
 
         result1 = self.repository.get_all()
         result2 = self.repository.get_all()
@@ -74,7 +69,5 @@ class TestInMemoryExpenseRepository:
     def test_get_next_id_increments(self) -> None:
         """Next ID increments after adding."""
         assert self.repository.get_next_id() == 1
-        self.repository.add(
-            Expense(id=0, title="Test", amount=100.0, category="Mat")
-        )
+        self.repository.add(Expense(id=0, title="Test", amount=100.0, category="Mat"))
         assert self.repository.get_next_id() == 2
