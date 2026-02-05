@@ -1,27 +1,41 @@
 # PR Review Findings
 
+## Critical Severity
+
+### 1. Missing CSRF Protection & Dependency
+The application lacks Cross-Site Request Forgery (CSRF) protection. `Flask-WTF` is missing from `requirements.txt`, `CSRFProtect` is not initialized in `app.py`, and the expense form lacks the CSRF token.
+**Action:** Add `Flask-WTF` to `requirements.txt`, initialize `CSRFProtect(app)`, and add `{{ csrf_token() }}` to forms.
+
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 2. Missing Production Dependency (Reliability)
+`flask-socketio` is imported in `app.py` but missing from `requirements.txt`. This will cause the application to crash in production environments (e.g., Docker) where packages are installed strictly from requirements.
+**Action:** Add `flask-socketio` to `requirements.txt`.
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 3. Inappropriate Data Type for Currency (Correctness)
+The `Expense` model and service use `float` for the `amount` field. Floating-point arithmetic is imprecise for currency calculations.
+**Action:** Use `decimal.Decimal` for monetary values in models and calculations.
+
+### 4. Hardcoded Secret Key (Security)
+The application uses a hardcoded `secret_key` ("dev-secret-key") in `app.py`. This compromises session security.
+**Action:** Use `os.environ.get("SECRET_KEY")` and enforce a strong key in production.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 5. Input Validation Flaw (Correctness)
+The route uses `float(amount_str)` which accepts `infinity` and `NaN`. This bypasses the `amount > 0` validation if `inf` is passed (since `inf > 0` is true).
+**Action:** Validate that the input is a finite number or use `Decimal` with strict validation before logic checks.
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
+### 6. Deviation from Persistence Requirements
+The `InMemoryExpenseRepository` uses a Python `list` instead of `sqlite:///:memory:` as originally specified. This lacks SQL constraint validation and differs from a production DB behavior.
+**Action:** Implement `sqlite3` based repository or explicit acceptance of list-based storage.
 
 ## Low Severity
 
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 7. Test Configuration Mismatch
+Integration tests register the blueprint at `/` while `app.py` registers it at `/expenses`. This mismatch can hide path-related bugs.
+**Action:** Update tests to use the correct url prefix or use `create_app`.
+
+### 8. CSRF Disabled in Tests
+Tests explicitly disable CSRF (`WTF_CSRF_ENABLED = False`), masking the absence of protection in the actual code.
+**Action:** Enable CSRF in tests and ensure forms include tokens to verify security controls.
