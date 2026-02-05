@@ -5,7 +5,8 @@
 - **Type:** Task
 - **Priority:** Medium
 - **Branch:** feature/GE-35-backend-test-expense-tracker
-- **Status:** In Progress
+- **Status:** ✅ COMPLETE
+- **PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/161
 
 ## Overview
 Build ExpenseTracker backend using strict TDD and 3-layer architecture. Goal: log private expenses. Business logic must be clean from Flask using dependency injection.
@@ -53,8 +54,8 @@ Service: `ExpenseService` handles the logic.
 - [x] Integration tests verify routes return 200 OK and render correct template
 - [x] Dependency Injection works via `create_app` factory
 - [x] `ruff check .` passes without warnings
-- [ ] Changes committed and pushed
-- [ ] PR created
+- [x] Changes committed and pushed
+- [x] PR created
 
 ## Iteration Log
 
@@ -67,7 +68,7 @@ Service: `ExpenseService` handles the logic.
 | 5 | Implement Flask routes | ✅ | Blueprint with GET /, POST /add, GET /summary |
 | 6 | Verify all tests pass | ✅ | 35/35 tests passing (16 unit + 19 integration) |
 | 7 | Lint and format | ✅ | ruff check passed (no warnings) |
-| 8 | Commit and push | ⏳ | Create PR |
+| 8 | Commit and push | ✅ | PR created: #161 |
 
 ## Failed Attempts
 (None yet)
