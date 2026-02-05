@@ -128,7 +128,10 @@ class TestFlaskApp:
             },
         )
         assert response.status_code == 400
-        assert "Kan inte lägga till fler än 20 nyheter per sida" in response.data.decode()
+        assert (
+            "Kan inte lägga till fler än 20 nyheter per sida"
+            in response.data.decode()
+        )
 
     def test_form_submission_preserves_state(self, client):
         """Test that form submission works and state persists."""

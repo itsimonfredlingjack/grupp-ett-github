@@ -51,7 +51,8 @@ class TestNewsFlashService:
         service = NewsFlashService(repo)
 
         with pytest.raises(
-            ValueError, match="Kategori måste vara en av: BREAKING, FINANCE, SPORTS, TECH"
+            ValueError,
+            match="Kategori måste vara en av: BREAKING, FINANCE, SPORTS, TECH",
         ):
             service.create_flash("Headline Here", "Summary", "INVALID")
 
@@ -61,7 +62,9 @@ class TestNewsFlashService:
         service = NewsFlashService(repo)
 
         for category in ["BREAKING", "TECH", "FINANCE", "SPORTS"]:
-            flash = service.create_flash("Valid Headline", f"Summary for {category}", category)
+            flash = service.create_flash(
+                "Valid Headline", f"Summary for {category}", category
+            )
             assert flash.category == category
 
     def test_create_multiple_flashes(self):
@@ -85,7 +88,9 @@ class TestNewsFlashService:
             service.create_flash(f"Headline {i}", f"Summary {i}", "TECH")
 
         # 21st item should fail
-        with pytest.raises(ValueError, match="Kan inte lägga till fler än 20 nyheter per sida"):
+        with pytest.raises(
+            ValueError, match="Kan inte lägga till fler än 20 nyheter per sida"
+        ):
             service.create_flash("Too Many", "Summary", "SPORTS")
 
     def test_get_all_flashes_returns_all_items(self):
