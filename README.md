@@ -21,8 +21,8 @@ SEJFA is a robust **Agentic Devops Loop System** ,created by Filippa, Simon, Jon
 https://gruppett.fredlingautomation.dev/static/monitor.html
 
 ## The project serves two key purposes:
-1.  **A Functional Application**: A REST API for managing subscribers with admin authentication and reporting.
-2.  **An Agentic Framework**: A reference implementation for integrating **Jira**, **Ralph Wiggum Loops**, and **Claude Code** to automate software development tasks.
+1.  **A Functional Application**: A Flask web app (SEJFA — Secure Enterprise Jira Flask Agent) with admin panels, expense tracking, subscriber management, and a real-time monitoring dashboard — deployed as a Docker container on **Azure Container Apps**.
+2.  **An Agentic Framework**: A reference implementation for integrating **Jira**, **Ralph Wiggum Loops**, and **Claude Code** to automate software development tasks end-to-end — from Jira ticket to production deploy.
 
 ---
 
@@ -40,17 +40,27 @@ graph TD
     Tests -->|Success| PR[Pull Request]
     PR -->|Triggers| CI[GitHub Actions CI]
     CI -->|Lint/Test/Security| Verify[Verification]
+    Verify -->|Merge to main| Deploy[deploy.yml]
+    Deploy -->|Docker Build & Push| ACR[Azure Container Registry]
+    ACR -->|Auto-deploy| Azure[Azure Container Apps]
 ```
 
 ---
 
 ## ⚡ Features
 
-### 🔌 Application (Subscriber Service)
--   **Admin Authentication**: Secure login with session tokens (`src/sejfa/core/admin_auth.py`).
--   **Subscriber Management**: CRUD operations for email subscribers (`src/sejfa/core/subscriber_service.py`).
--   **Data Export**: CSV export functionality for reporting.
--   **Search**: Efficient subscriber search capabilities.
+### 🔌 Application Endpoints
+The Flask app exposes the following routes:
+
+| Route | Description |
+|-------|-------------|
+| `/` | Hello endpoint (landing page) |
+| `/health` | Health check (used by Docker and Azure for readiness probes) |
+| `/admin/*` | Admin panel — authentication, subscriber management, statistics, CSV export |
+| `/expenses/*` | Expense tracker |
+| `/monitor/*` | Real-time dashboard for the Ralph Loop (powered by SocketIO) |
+
+The app runs via **gunicorn** on port 5000 inside a Docker container.
 
 ### 🤖 Agentic Workflow
 -   **Jira Integration**: Direct API client to fetch tasks and update statuses (`src/sejfa/integrations/jira_client.py`).
@@ -63,7 +73,69 @@ graph TD
 -   **Linting**: Strict code style enforcement with `ruff check`.
 -   **Formatting**: Automated code formatting with `ruff format`.
 -   **Security**: Dependency scanning with `safety`.
--   **CI/CD**: GitHub Actions workflows for continuous integration (`.github/workflows/ci.yml`).
+-   **CI/CD**: GitHub Actions workflows for continuous integration (`.github/workflows/ci.yml`) and continuous deployment (`.github/workflows/deploy.yml`).
+
+---
+
+## 🔄 End-to-End Pipeline
+
+The full journey from idea to production looks like this:
+
+```
+1. Jira ticket (GE-xxx)
+        │
+        ▼
+2. /start-task GE-xxx
+   → Claude Code fetches ticket via Jira REST API
+   → Creates branch: feature/GE-xxx-slug
+   → Populates docs/CURRENT_TASK.md
+        │
+        ▼
+3. Ralph Loop (TDD)
+   → Red: writes a failing test
+   → Green: minimal implementation
+   → Refactor
+   → Updates CURRENT_TASK.md
+   → Commit: "GE-xxx: description"
+   → Repeats until all acceptance criteria ✓
+        │
+        ▼
+4. /finish-task
+   → Pushes branch → Creates PR
+   → CI runs (lint, test on Python 3.10–3.13, security scan)
+   → Jules performs AI code review
+        │
+        ▼
+5. Merge to main
+        │
+        ▼
+6. deploy.yml triggers automatically
+   → Docker build → Push to ACR → Deploy to Azure Container Apps
+        │
+        ▼
+7. App is live on Azure
+```
+
+### What Happens After Deploy
+
+Every time a PR is merged to `main`:
+- `deploy.yml` builds a new Docker image tagged with the commit SHA + `latest`.
+- The image is pushed to **Azure Container Registry (ACR)**.
+- **Azure Container Apps** automatically rolls out the new revision with zero-downtime deployment.
+
+This means the app is continuously deployed — it is not rebuilt from scratch each time. Every merge delivers an incremental update to the same running application.
+
+### Viewing the Live App
+
+To find the application URL:
+1. **Azure Portal** → Container Apps → your app → Overview → *Application Url*
+2. Or via CLI:
+   ```bash
+   az containerapp show \
+     --name <APP_NAME> \
+     --resource-group <RESOURCE_GROUP> \
+     --query properties.configuration.ingress.fqdn
+   ```
 
 ---
 
