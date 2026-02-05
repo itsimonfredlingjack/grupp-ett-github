@@ -19,7 +19,7 @@ class FlashRepository(Protocol):
         Returns:
             Flash with assigned ID
         """
-        ...
+        ...  # pragma: no cover
 
     def get_all(self) -> list[Flash]:
         """Get all flashes.
@@ -27,11 +27,11 @@ class FlashRepository(Protocol):
         Returns:
             List of all flashes
         """
-        ...
+        ...  # pragma: no cover
 
     def clear(self) -> None:
         """Clear all flashes."""
-        ...
+        ...  # pragma: no cover
 
 
 class InMemoryFlashRepository:

@@ -68,6 +68,18 @@ class TestCursorflashIntegration:
         assert response.status_code == 200
         assert b"1" in response.data and b"5" in response.data
 
+    def test_add_flash_non_numeric_severity_shows_error(
+        self, client: FlaskClient
+    ) -> None:
+        """Test that non-numeric severity shows error message."""
+        response = client.post(
+            "/cursorflash/add",
+            data={"content": "Test", "severity": "invalid"},
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert b"Felaktig allvarlighetsgrad" in response.data
+
     def test_add_flash_too_long_shows_error(self, client: FlaskClient) -> None:
         """Test that content over 280 chars shows error."""
         long_content = "x" * 281
