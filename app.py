@@ -17,11 +17,11 @@ from src.expense_tracker.data.repository import InMemoryExpenseRepository
 from src.expense_tracker.presentation.routes import create_expense_blueprint
 from src.sejfa.core.admin_auth import AdminAuthService
 from src.sejfa.core.subscriber_service import SubscriberService
-from src.sejfa.monitor.monitor_service import MonitorService
 from src.sejfa.monitor.monitor_routes import (
     create_monitor_blueprint,
     init_socketio_events,
 )
+from src.sejfa.monitor.monitor_service import MonitorService
 
 # Global SocketIO instance
 socketio = None
@@ -295,4 +295,4 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=5000, host="0.0.0.0")
+    socketio.run(app, debug=True, port=5000, host="0.0.0.0", allow_unsafe_werkzeug=True)
