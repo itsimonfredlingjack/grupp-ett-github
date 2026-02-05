@@ -46,9 +46,7 @@ class TestExpenseServiceValidation:
     def test_title_cannot_be_empty(self) -> None:
         """Title must not be empty."""
         with pytest.raises(InvalidTitleError) as exc_info:
-            self.service.add_expense(
-                title="", amount=Decimal("100.0"), category="Mat"
-            )
+            self.service.add_expense(title="", amount=Decimal("100.0"), category="Mat")
         error_msg = str(exc_info.value).lower()
         assert "empty" in error_msg or "tom" in error_msg
 
