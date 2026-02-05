@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}News Flash - Senaste Nyheterna{% endblock %}
+
+{% block content %}
+<h1>📰 News Flash - Senaste Nyheterna</h1>
+
+<form method="POST" action="/add">
+    <h2>Lägg till nyhet</h2>
+    <label for="headline">Rubrik (minst 6 tecken):</label>
+    <input type="text" id="headline" name="headline" required>
+
+    <label for="category">Kategori:</label>
+    <select id="category" name="category" required>
+        <option value="">-- Välj kategori --</option>
+        <option value="BREAKING">BREAKING - Viktig nyhet</option>
+        <option value="TECH">TECH - Teknik</option>
+        <option value="FINANCE">FINANCE - Ekonomi</option>
+        <option value="SPORTS">SPORTS - Sport</option>
+    </select>
+
+    <label for="summary">Sammanfattning:</label>
+    <textarea id="summary" name="summary" rows="3" required></textarea>
+
+    <button type="submit">Publicera</button>
+</form>
+
+{% if flashes %}
+    <h2>Alla Nyheter ({{ flashes|length }}/20)</h2>
+    {% for flash in flashes %}
+    <div class="flash-item">
+        <div class="flash-category category-{{ flash.category }}">
+            {{ flash.category }}
+        </div>
+        <div class="flash-headline">{{ flash.headline }}</div>
+        <div class="flash-summary">{{ flash.summary }}</div>
+        <a href="/delete/{{ flash.id }}" class="delete-btn">Ta bort</a>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <p>Inga nyheter ännu. Lägg till den första nyheten ovan!</p>
+    </div>
+{% endif %}
+
+{% endblock %}
