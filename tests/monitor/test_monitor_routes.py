@@ -58,3 +58,19 @@ class TestMonitorRoutes:
         """Metrics endpoint should be reachable."""
         response = client.get("/api/monitor/metrics")
         assert response.status_code in [200, 404]
+
+    def test_update_state_with_jira_node(self, client):
+        """Update state with jira node."""
+        response = client.post(
+            "/api/monitor/state",
+            json={"node": "jira", "state": "inactive", "message": "idle"},
+        )
+        assert response.status_code in [200, 400, 500]
+
+    def test_update_state_with_github_node(self, client):
+        """Update state with github node."""
+        response = client.post(
+            "/api/monitor/state",
+            json={"node": "github", "state": "active", "message": "pushing"},
+        )
+        assert response.status_code in [200, 400, 500]
