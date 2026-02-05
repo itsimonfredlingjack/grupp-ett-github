@@ -25,19 +25,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-# Monitor integration - sends real-time updates to the dashboard
-try:
-    from monitor_client import (
-        activate_claude,
-        activate_actions,
-        activate_jira,
-        start_task,
-        complete_task,
-    )
-    MONITOR_AVAILABLE = True
-except ImportError:
-    MONITOR_AVAILABLE = False
-
 DEFAULT_PROMISE = "<promise>DONE</promise>"
 JIRA_KEY_RE = re.compile(r"[A-Z]+-[0-9]+")
 
@@ -377,21 +364,6 @@ def main() -> None:
         current_iteration = increment_iteration()
         _debug(f"{datetime.now().isoformat()} iteration={current_iteration} enforce=true")
 
-        # Monitor integration: Send status updates to the dashboard
-        if MONITOR_AVAILABLE:
-            # Extract task ID from branch name if possible
-            branch = get_git_branch() or ""
-            task_match = JIRA_KEY_RE.search(branch)
-            task_id = task_match.group() if task_match else "TASK"
-
-            if current_iteration == 1:
-                # First iteration - start task and activate JIRA
-                start_task(task_id, f"Working on {task_id}")
-                activate_jira(f"Starting {task_id}...")
-            else:
-                # Subsequent iterations - Claude is working
-                activate_claude(f"Iteration {current_iteration}: Coding...")
-
         if current_iteration >= max_iterations:
             json.dump(
                 {
@@ -440,10 +412,6 @@ def main() -> None:
                 coverage_threshold = None
 
         if tests_required and enforce_tools:
-            # Monitor: Show that we're running tests
-            if MONITOR_AVAILABLE:
-                activate_actions("Running pytest...")
-
             pytest_cmd = [*tools["pytest"], "-q"]
             if coverage_threshold is not None:
                 pytest_cmd.extend(
@@ -459,10 +427,6 @@ def main() -> None:
                 suggestions.append(f"Fix failing tests:\n{out}")
 
         if lint_required and enforce_tools:
-            # Monitor: Show that we're running lint
-            if MONITOR_AVAILABLE:
-                activate_actions("Running ruff check...")
-
             code, out = run_cmd([*tools["ruff"], "check", "."], timeout_s=120)
             if code != 0:
                 failures.append("ruff check . failed")
@@ -485,10 +449,6 @@ def main() -> None:
             )
             json.dump(response, sys.stderr)
             sys.exit(2)
-
-        # Monitor: Task completed successfully!
-        if MONITOR_AVAILABLE:
-            complete_task()
 
         if active_loop:
             clear_loop_guard()

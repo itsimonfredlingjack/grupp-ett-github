@@ -30,15 +30,6 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 .claude/hooks/monitor_hook.py"
-          }
-        ]
-      },
-      {
         "matcher": "Bash",
         "hooks": [
           {
