@@ -10,9 +10,18 @@ from functools import wraps
 from typing import Any
 
 from flask import Flask, Response, jsonify, request
+from flask_socketio import SocketIO
 
 from src.sejfa.core.admin_auth import AdminAuthService
 from src.sejfa.core.subscriber_service import SubscriberService
+from src.sejfa.monitor.monitor_service import MonitorService
+from src.sejfa.monitor.monitor_routes import (
+    create_monitor_blueprint,
+    init_socketio_events,
+)
+
+# Global SocketIO instance
+socketio = None
 
 
 def create_app() -> Flask:
@@ -21,8 +30,23 @@ def create_app() -> Flask:
     Returns:
         Flask: Configured Flask application instance.
     """
+    global socketio
+
     app = Flask(__name__)
     app.secret_key = "dev-secret-key"  # In production, use environment variable
+
+    # Initialize SocketIO for real-time monitoring
+    socketio = SocketIO(app, cors_allowed_origins="*")
+
+    # Initialize monitoring service
+    monitor_service = MonitorService()
+
+    # Create and register monitoring blueprint
+    monitor_blueprint = create_monitor_blueprint(monitor_service, socketio)
+    app.register_blueprint(monitor_blueprint)
+
+    # Initialize SocketIO event handlers
+    init_socketio_events()
 
     @app.route("/")
     def hello():
@@ -262,4 +286,4 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True, port=5000, host="0.0.0.0")
