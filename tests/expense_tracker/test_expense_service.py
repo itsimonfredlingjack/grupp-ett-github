@@ -32,7 +32,9 @@ class TestExpenseServiceValidation:
     def test_amount_zero_is_invalid(self) -> None:
         """Amount of exactly 0 is also invalid."""
         with pytest.raises(InvalidAmountError):
-            self.service.add_expense(title="Test", amount=Decimal("0.0"), category="Mat")
+            self.service.add_expense(
+                title="Test", amount=Decimal("0.0"), category="Mat"
+            )
 
     def test_amount_positive_is_valid(self) -> None:
         """Positive amount should be accepted."""
@@ -51,7 +53,9 @@ class TestExpenseServiceValidation:
     def test_title_cannot_be_whitespace_only(self) -> None:
         """Title with only whitespace is considered empty."""
         with pytest.raises(InvalidTitleError):
-            self.service.add_expense(title="   ", amount=Decimal("100.0"), category="Mat")
+            self.service.add_expense(
+                title="   ", amount=Decimal("100.0"), category="Mat"
+            )
 
     def test_title_valid(self) -> None:
         """Valid title should be accepted."""

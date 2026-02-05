@@ -3,7 +3,7 @@
 This module handles HTTP requests and delegates to the business service.
 """
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, url_for
 
 from src.expense_tracker.business.exceptions import ExpenseValidationError
 from src.expense_tracker.business.service import ExpenseService
@@ -51,7 +51,7 @@ def create_expense_blueprint(service: ExpenseService) -> Blueprint:
             except ExpenseValidationError as e:
                 flash(str(e), "error")
         else:
-            for field, errors in form.errors.items():
+            for _, errors in form.errors.items():
                 for error in errors:
                     flash(f"{error}", "error")
 
