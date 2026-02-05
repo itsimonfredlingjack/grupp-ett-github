@@ -10,8 +10,9 @@ Provides endpoints for:
 
 from __future__ import annotations
 
-from flask import Blueprint, Response, jsonify, request
 from typing import Any
+
+from flask import Blueprint, Response, jsonify, request
 
 from src.sejfa.monitor.monitor_service import MonitorService
 

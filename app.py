@@ -16,12 +16,15 @@ from src.expense_tracker.data.repository import InMemoryExpenseRepository
 from src.expense_tracker.presentation.routes import create_expense_blueprint
 from src.sejfa.core.admin_auth import AdminAuthService
 from src.sejfa.core.subscriber_service import SubscriberService
-from src.sejfa.monitor.monitor_routes import create_monitor_blueprint
+from src.sejfa.monitor.monitor_routes import (
+    create_monitor_blueprint,
+    create_socketio_handlers,
+)
 
 # Optional: Flask-SocketIO for real-time WebSocket support
 try:
     from flask_socketio import SocketIO
-    from src.sejfa.monitor.monitor_routes import create_socketio_handlers
+
     SOCKETIO_AVAILABLE = True
 except ImportError:
     SOCKETIO_AVAILABLE = False
@@ -320,6 +323,9 @@ if __name__ == "__main__":
         socketio.run(app, debug=True, host="0.0.0.0", port=5000)
     else:
         print("Starting without SocketIO (polling fallback)")
-        print("Install flask-socketio for WebSocket support: pip install flask-socketio")
+        print(
+            "Install flask-socketio for WebSocket support: "
+            "pip install flask-socketio"
+        )
         print("Monitor dashboard: http://localhost:5000/static/monitor.html")
         app.run(debug=True, host="0.0.0.0", port=5000)

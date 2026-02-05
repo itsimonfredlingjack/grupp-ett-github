@@ -300,7 +300,9 @@ class MonitorService:
         self._timer_running = False
 
     # Methods for parsing CURRENT_TASK.md
-    def parse_current_task(self, task_file_path: str | Path | None = None) -> dict[str, Any] | None:
+    def parse_current_task(
+        self, task_file_path: str | Path | None = None
+    ) -> dict[str, Any] | None:
         """Parse CURRENT_TASK.md for Ralph Loop state.
 
         Args:
