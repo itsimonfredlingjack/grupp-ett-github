@@ -250,18 +250,7 @@
             color: #000;
         }
 
-        /* Circular path */
-        .circular-path {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 520px;
-            height: 520px;
-            border: 4px dashed #000;
-            border-radius: 50%;
-            opacity: 0.3;
-        }
+        /* Circular path - REMOVED: Was causing duplicate visual with SVG connection paths */
 
         /* Moving dot */
         .moving-dot {
@@ -336,8 +325,9 @@
         }
 
         .orbital-node.active {
-            transform: scale(1.2);
             z-index: 4;
+            border-width: 7px;
+            /* Noden förblir stilla - endast visuella effekter */
         }
 
         /* Individual node colors - cartoon style */
@@ -347,8 +337,10 @@
         }
 
         .orbital-node[data-color="purple"].active {
-            box-shadow: 0 0 30px var(--glow-purple), 0 0 60px var(--glow-purple), 0 8px 0 #000;
-            animation: cartoonBounce 0.6s ease;
+            --glow-color: var(--glow-purple);
+            --glow-color-faded: rgba(229, 92, 160, 0.5);
+            box-shadow: 0 0 40px var(--glow-purple), 0 0 80px var(--glow-purple), 0 0 120px rgba(229, 92, 160, 0.5), 0 8px 0 #000;
+            animation: activeNodePulse 1.5s ease-in-out infinite, glowIntensity 2s ease-in-out infinite;
         }
 
         .orbital-node[data-color="cyan"] {
@@ -357,8 +349,10 @@
         }
 
         .orbital-node[data-color="cyan"].active {
-            box-shadow: 0 0 30px var(--glow-cyan), 0 0 60px var(--glow-cyan), 0 8px 0 #000;
-            animation: cartoonBounce 0.6s ease;
+            --glow-color: var(--glow-cyan);
+            --glow-color-faded: rgba(77, 184, 232, 0.5);
+            box-shadow: 0 0 40px var(--glow-cyan), 0 0 80px var(--glow-cyan), 0 0 120px rgba(77, 184, 232, 0.5), 0 8px 0 #000;
+            animation: activeNodePulse 1.5s ease-in-out infinite, glowIntensity 2s ease-in-out infinite;
         }
 
         .orbital-node[data-color="blue"] {
@@ -367,8 +361,10 @@
         }
 
         .orbital-node[data-color="blue"].active {
-            box-shadow: 0 0 30px var(--glow-blue), 0 0 60px var(--glow-blue), 0 8px 0 #000;
-            animation: cartoonBounce 0.6s ease;
+            --glow-color: var(--glow-blue);
+            --glow-color-faded: rgba(90, 159, 212, 0.5);
+            box-shadow: 0 0 40px var(--glow-blue), 0 0 80px var(--glow-blue), 0 0 120px rgba(90, 159, 212, 0.5), 0 8px 0 #000;
+            animation: activeNodePulse 1.5s ease-in-out infinite, glowIntensity 2s ease-in-out infinite;
         }
 
         .orbital-node[data-color="green"] {
@@ -377,8 +373,10 @@
         }
 
         .orbital-node[data-color="green"].active {
-            box-shadow: 0 0 30px var(--glow-green), 0 0 60px var(--glow-green), 0 8px 0 #000;
-            animation: cartoonBounce 0.6s ease;
+            --glow-color: var(--glow-green);
+            --glow-color-faded: rgba(45, 139, 87, 0.5);
+            box-shadow: 0 0 40px var(--glow-green), 0 0 80px var(--glow-green), 0 0 120px rgba(45, 139, 87, 0.5), 0 8px 0 #000;
+            animation: activeNodePulse 1.5s ease-in-out infinite, glowIntensity 2s ease-in-out infinite;
         }
 
         .orbital-node[data-color="pink"] {
@@ -387,8 +385,10 @@
         }
 
         .orbital-node[data-color="pink"].active {
-            box-shadow: 0 0 30px var(--glow-pink), 0 0 60px var(--glow-pink), 0 8px 0 #000;
-            animation: cartoonBounce 0.6s ease;
+            --glow-color: var(--glow-pink);
+            --glow-color-faded: rgba(255, 107, 157, 0.5);
+            box-shadow: 0 0 40px var(--glow-pink), 0 0 80px var(--glow-pink), 0 0 120px rgba(255, 107, 157, 0.5), 0 8px 0 #000;
+            animation: activeNodePulse 1.5s ease-in-out infinite, glowIntensity 2s ease-in-out infinite;
         }
 
         .orbital-node[data-color="teal"] {
@@ -397,16 +397,98 @@
         }
 
         .orbital-node[data-color="teal"].active {
-            box-shadow: 0 0 30px var(--glow-teal), 0 0 60px var(--glow-teal), 0 8px 0 #000;
-            animation: cartoonBounce 0.6s ease;
+            --glow-color: var(--glow-teal);
+            --glow-color-faded: rgba(71, 201, 175, 0.5);
+            box-shadow: 0 0 40px var(--glow-teal), 0 0 80px var(--glow-teal), 0 0 120px rgba(71, 201, 175, 0.5), 0 8px 0 #000;
+            animation: activeNodePulse 1.5s ease-in-out infinite, glowIntensity 2s ease-in-out infinite;
         }
 
-        @keyframes cartoonBounce {
+        /* Pulsing glow animation for active nodes */
+        @keyframes activeNodePulse {
             0%, 100% {
-                box-shadow: 0 0 30px var(--glow-purple), 0 0 60px var(--glow-purple), 0 8px 0 #000;
+                filter: brightness(1);
             }
             50% {
-                box-shadow: 0 0 40px var(--glow-purple), 0 0 80px var(--glow-purple), 0 8px 0 #000;
+                filter: brightness(1.15);
+            }
+        }
+
+        /* Pulsing glow intensity for active nodes */
+        @keyframes glowIntensity {
+            0%, 100% {
+                box-shadow:
+                    0 0 40px var(--glow-color),
+                    0 0 80px var(--glow-color),
+                    0 0 120px var(--glow-color-faded),
+                    0 8px 0 #000;
+            }
+            50% {
+                box-shadow:
+                    0 0 60px var(--glow-color),
+                    0 0 100px var(--glow-color),
+                    0 0 150px var(--glow-color-faded),
+                    0 8px 0 #000;
+            }
+        }
+
+        /* Pulsing ring pseudo-element for active nodes */
+        .orbital-node.active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140%;
+            height: 140%;
+            transform: translate(-50%, -50%);
+            border: 4px solid currentColor;
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulsingRing 1.5s ease-out infinite;
+            pointer-events: none;
+        }
+
+        .orbital-node[data-color="purple"].active::after { border-color: var(--node-purple); }
+        .orbital-node[data-color="cyan"].active::after { border-color: var(--node-cyan); }
+        .orbital-node[data-color="blue"].active::after { border-color: var(--node-blue); }
+        .orbital-node[data-color="green"].active::after { border-color: var(--node-green); }
+        .orbital-node[data-color="pink"].active::after { border-color: var(--node-pink); }
+        .orbital-node[data-color="teal"].active::after { border-color: var(--node-teal); }
+
+        /* Second ripple ring for dual ripple effect */
+        .orbital-node.active::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            border: 3px solid currentColor;
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulsingRing 1.5s ease-out infinite 0.75s;
+            pointer-events: none;
+        }
+
+        .orbital-node[data-color="purple"].active::before { border-color: var(--node-purple); }
+        .orbital-node[data-color="cyan"].active::before { border-color: var(--node-cyan); }
+        .orbital-node[data-color="blue"].active::before { border-color: var(--node-blue); }
+        .orbital-node[data-color="green"].active::before { border-color: var(--node-green); }
+        .orbital-node[data-color="pink"].active::before { border-color: var(--node-pink); }
+        .orbital-node[data-color="teal"].active::before { border-color: var(--node-teal); }
+
+        @keyframes pulsingRing {
+            0% {
+                width: 100%;
+                height: 100%;
+                opacity: 1;
+                border-width: 4px;
+            }
+            100% {
+                width: 220%;
+                height: 220%;
+                opacity: 0;
+                border-width: 2px;
             }
         }
 
@@ -453,50 +535,97 @@
             color: #000 !important;
         }
 
-        /* Connection lines */
-        .connection-line {
+        /* Connection path styles (SVG arcs) */
+        .connection-paths {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform-origin: 0 0;
-            height: 2px;
-            background: linear-gradient(90deg,
-                rgba(122, 138, 163, 0.2),
-                rgba(122, 138, 163, 0.1));
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 1;
-            transition: all 0.3s ease;
+            pointer-events: none;
         }
 
-        .connection-line.active {
-            background: linear-gradient(90deg,
-                var(--accent-orange),
-                var(--accent-blue));
-            box-shadow: 0 0 10px var(--glow-orange);
-            height: 3px;
+        .connection-path {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.25);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 12 8;
+            transition: stroke 0.4s ease, stroke-width 0.4s ease, filter 0.4s ease, stroke-dasharray 0.4s ease;
         }
 
-        /* Progress indicator on line */
-        .progress-dot {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: var(--accent-orange);
-            border-radius: 50%;
-            top: 50%;
-            transform: translateY(-50%);
-            box-shadow: 0 0 20px var(--glow-orange);
+        .connection-path.active {
+            stroke: var(--active-color, #00F0FF);
+            stroke-width: 8;
+            stroke-dasharray: none;
+            filter: url(#glowFilter) drop-shadow(0 0 12px var(--active-color, #00F0FF)) drop-shadow(0 0 20px var(--active-color, #00F0FF));
+        }
+
+        .connection-path.done {
+            stroke: var(--done-color, rgba(255, 255, 255, 0.5));
+            stroke-dasharray: none;
+            stroke-width: 5;
+            opacity: 0.7;
+        }
+
+        /* Arrow markers */
+        .arrow-head {
+            fill: rgba(0, 0, 0, 0.4);
+            transition: fill 0.4s ease;
+        }
+
+        .arrow-head.active {
+            fill: var(--active-color, #4db8e8);
+        }
+
+        /* Traveling particle - animated ball along path - ENHANCED */
+        .traveling-particle {
+            z-index: 15;
+            filter: url(#particleGlow) drop-shadow(0 0 16px var(--particle-color, #e55ca0)) drop-shadow(0 0 24px var(--particle-color, #e55ca0));
+        }
+
+        .particle-core {
+            transition: fill 0.4s ease;
+        }
+
+        .particle-glow {
+            transition: stroke 0.4s ease;
+        }
+
+        @keyframes particle-pulse {
+            0%, 100% { r: 22; opacity: 0.5; }
+            50% { r: 28; opacity: 0.8; }
+        }
+
+        .particle-glow {
+            animation: particle-pulse 1.2s ease-in-out infinite;
+        }
+
+        /* Outer glow ring for particle */
+        @keyframes particle-outer-glow {
+            0%, 100% { r: 32; opacity: 0.2; }
+            50% { r: 40; opacity: 0.4; }
+        }
+
+        /* Particle trail effect */
+        .particle-trail {
+            fill: none;
+            stroke: var(--particle-color, #e55ca0);
+            stroke-width: 3;
+            stroke-linecap: round;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        .connection-line.active .progress-dot {
-            opacity: 1;
-            animation: moveProgress 2s ease-in-out;
+        .particle-trail.active {
+            opacity: 0.6;
+            animation: trail-fade 1.2s ease-out forwards;
         }
 
-        @keyframes moveProgress {
-            0% { left: 0%; }
-            100% { left: 100%; }
+        @keyframes trail-fade {
+            0% { stroke-dashoffset: 0; opacity: 0.6; }
+            100% { stroke-dashoffset: -200; opacity: 0; }
         }
 
         /* Sidebar */
@@ -691,6 +820,33 @@
 <body>
     <div class="bg-grid"></div>
 
+    <!-- Audio unlock notification -->
+    <div id="audioNotification" style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ffd90f, #ffed4a);
+        border: 4px solid #000;
+        border-radius: 12px;
+        padding: 15px 20px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.85rem;
+        color: #000;
+        z-index: 1000;
+        box-shadow: 0 6px 0 #000, 0 8px 20px rgba(0,0,0,0.3);
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        animation: bounce 0.6s ease infinite;
+    ">
+        🔊 Klicka var som helst för att aktivera ljud!
+    </div>
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+
     <header>
         <div class="logo">
             <div class="logo-icon"></div>
@@ -708,8 +864,80 @@
     <div class="container">
         <div class="visualization">
             <div class="loop-container" id="loopContainer">
-                <!-- Circular path -->
-                <div class="circular-path"></div>
+                <!-- SVG Connection Arcs and Traveling Particle -->
+                <svg class="connection-paths" viewBox="0 0 650 650" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Glow filter for enhanced path visibility -->
+                        <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="blur"/>
+                            <feMerge>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <!-- Strong glow filter for particle -->
+                        <filter id="particleGlow" x="-100%" y="-100%" width="300%" height="300%">
+                            <feGaussianBlur stdDeviation="6" result="blur"/>
+                            <feMerge>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <!-- Arrow marker for direction -->
+                        <marker id="arrowMarker" viewBox="0 0 10 10" refX="5" refY="5"
+                                markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head"/>
+                        </marker>
+                        <!-- Active arrow marker (colored) -->
+                        <marker id="arrowMarkerActive" viewBox="0 0 10 10" refX="5" refY="5"
+                                markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head active"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Connection arcs (curved lines between nodes) -->
+                    <g id="connectionArcs">
+                        <!-- Path 0: JIRA (top) to CLAUDE (right-upper) - curves outward right-top -->
+                        <path id="path-0-1" class="connection-path"
+                              d="M 325,65 Q 520,50 572,245"
+                              marker-mid="url(#arrowMarker)"/>
+                        <!-- Path 1: CLAUDE to GITHUB (right-lower) - curves outward right -->
+                        <path id="path-1-2" class="connection-path"
+                              d="M 572,245 Q 620,400 478,535"
+                              marker-mid="url(#arrowMarker)"/>
+                        <!-- Path 2: GITHUB to JULES (left-lower) - curves outward bottom -->
+                        <path id="path-2-3" class="connection-path"
+                              d="M 478,535 Q 325,620 172,535"
+                              marker-mid="url(#arrowMarker)"/>
+                        <!-- Path 3: JULES to ACTIONS (left-upper) - curves outward left -->
+                        <path id="path-3-4" class="connection-path"
+                              d="M 172,535 Q 30,400 78,245"
+                              marker-mid="url(#arrowMarker)"/>
+                        <!-- Path 4: ACTIONS to JIRA (top) - curves outward top-left -->
+                        <path id="path-4-0" class="connection-path"
+                              d="M 78,245 Q 130,50 325,65"
+                              marker-mid="url(#arrowMarker)"/>
+                    </g>
+
+                    <!-- Traveling particle - ENHANCED for visibility -->
+                    <g id="travelingParticle" class="traveling-particle" style="display: none;">
+                        <!-- Outer glow ring -->
+                        <circle class="particle-outer" cx="0" cy="0" r="32"
+                                fill="none" stroke="var(--particle-color, #e55ca0)" stroke-width="2" opacity="0.3"/>
+                        <!-- Main glow -->
+                        <circle class="particle-glow" cx="0" cy="0" r="22"
+                                fill="none" stroke="var(--particle-color, #e55ca0)" stroke-width="4" opacity="0.5"/>
+                        <!-- Core -->
+                        <circle class="particle-core" cx="0" cy="0" r="14"
+                                fill="var(--particle-color, #e55ca0)"/>
+                        <!-- Inner highlight -->
+                        <circle class="particle-inner" cx="0" cy="0" r="6"
+                                fill="rgba(255,255,255,0.9)"/>
+                    </g>
+                </svg>
 
                 <!-- Center image placeholder -->
                 <div class="center-image">
@@ -763,11 +991,30 @@
 
     <script>
         const nodes = [
-            { id: 'jira', icon: '📋', label: 'JIRA', angle: 270, color: 'purple' },
-            { id: 'claude', icon: '🤖', label: 'CLAUDE', angle: 342, color: 'cyan' },
-            { id: 'github', icon: '📤', label: 'GITHUB', angle: 54, color: 'blue' },
-            { id: 'jules', icon: '👨‍💻', label: 'JULES', angle: 126, color: 'pink' },
-            { id: 'actions', icon: '⚙️', label: 'ACTIONS', angle: 198, color: 'green' }
+            { id: 'jira', icon: '📋', label: 'JIRA', angle: 270, color: 'purple', cssColor: '#e55ca0' },
+            { id: 'claude', icon: '🤖', label: 'CLAUDE', angle: 342, color: 'cyan', cssColor: '#4db8e8' },
+            { id: 'github', icon: '📤', label: 'GITHUB', angle: 54, color: 'blue', cssColor: '#5a9fd4' },
+            { id: 'jules', icon: '👨‍💻', label: 'JULES', angle: 126, color: 'pink', cssColor: '#ff6b9d' },
+            { id: 'actions', icon: '⚙️', label: 'ACTIONS', angle: 198, color: 'green', cssColor: '#2d8b57' }
+        ];
+
+        // Node positions (calculated from angles at radius 260 from center 325,325)
+        const nodePositions = [
+            { x: 325, y: 65 },     // 0: JIRA (270° - top)
+            { x: 572, y: 245 },    // 1: CLAUDE (342° - right-upper)
+            { x: 478, y: 535 },    // 2: GITHUB (54° - right-lower)
+            { x: 172, y: 535 },    // 3: JULES (126° - left-lower)
+            { x: 78, y: 245 }      // 4: ACTIONS (198° - left-upper)
+        ];
+
+        // Path definitions matching SVG arcs (curved outward for organic flow)
+        // Control points are placed outside the pentagon for smooth outward curves
+        const pathDefinitions = [
+            'M 325,65 Q 520,50 572,245',      // 0→1: JIRA to CLAUDE (curve out right-top)
+            'M 572,245 Q 620,400 478,535',    // 1→2: CLAUDE to GITHUB (curve out right)
+            'M 478,535 Q 325,620 172,535',    // 2→3: GITHUB to JULES (curve out bottom)
+            'M 172,535 Q 30,400 78,245',      // 3→4: JULES to ACTIONS (curve out left)
+            'M 78,245 Q 130,50 325,65'        // 4→0: ACTIONS to JIRA (curve out top-left)
         ];
 
         const container = document.getElementById('loopContainer');
@@ -777,9 +1024,42 @@
         let timerSeconds = 0;
         let timerInterval = null;
         let currentActiveNode = null;
+        let previousNodeIndex = -1;
+        let particleAnimation = null;
         const radius = 260;
         const centerX = 325;
         const centerY = 325;
+
+        // Ralph sound - used for particle visit animation
+        const ralphSound = new Audio('Ralph.mp3');
+        ralphSound.volume = 0.5;
+        let audioUnlocked = false;
+
+        // Unlock audio on first user interaction (browser autoplay policy)
+        function unlockAudio() {
+            if (audioUnlocked) return;
+
+            // Play and immediately pause to unlock
+            ralphSound.play().then(() => {
+                ralphSound.pause();
+                ralphSound.currentTime = 0;
+                audioUnlocked = true;
+                console.log('🔊 Audio unlocked!');
+
+                // Remove the notification
+                const notification = document.getElementById('audioNotification');
+                if (notification) {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }).catch(err => {
+                console.log('Audio unlock failed:', err);
+            });
+        }
+
+        // Listen for any click to unlock audio
+        document.addEventListener('click', unlockAudio, { once: true });
+        document.addEventListener('keydown', unlockAudio, { once: true });
 
         // Create nodes
         nodes.forEach((node) => {
@@ -803,6 +1083,197 @@
 
             container.appendChild(nodeEl);
         });
+
+        // ============================================
+        // Particle Animation Functions
+        // ============================================
+
+        // Get point along a quadratic bezier curve at t (0-1)
+        function getPointOnQuadraticBezier(p0, p1, p2, t) {
+            const x = Math.pow(1 - t, 2) * p0.x + 2 * (1 - t) * t * p1.x + Math.pow(t, 2) * p2.x;
+            const y = Math.pow(1 - t, 2) * p0.y + 2 * (1 - t) * t * p1.y + Math.pow(t, 2) * p2.y;
+            return { x, y };
+        }
+
+        // Parse SVG path "M x,y Q cx,cy ex,ey" into points
+        function parsePath(pathStr) {
+            const parts = pathStr.match(/[\d.]+/g).map(Number);
+            return {
+                start: { x: parts[0], y: parts[1] },
+                control: { x: parts[2], y: parts[3] },
+                end: { x: parts[4], y: parts[5] }
+            };
+        }
+
+        // Position particle at a specific node
+        function positionParticleAtNode(nodeIndex) {
+            const particle = document.getElementById('travelingParticle');
+            const pos = nodePositions[nodeIndex];
+            const node = nodes[nodeIndex];
+
+            particle.style.display = 'block';
+            particle.style.setProperty('--particle-color', node.cssColor);
+            particle.querySelector('.particle-core').style.fill = node.cssColor;
+            particle.querySelector('.particle-glow').style.stroke = node.cssColor;
+            particle.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+        }
+
+        // Animate particle along a path from one node to another
+        function animateParticleAlongPath(fromIndex, toIndex, duration = 1200) {
+            const particle = document.getElementById('travelingParticle');
+            const pathIndex = fromIndex;
+            const pathStr = pathDefinitions[pathIndex];
+            const targetNode = nodes[toIndex];
+
+            // Cancel any existing animation
+            if (particleAnimation) {
+                cancelAnimationFrame(particleAnimation);
+            }
+
+            // Parse the path
+            const path = parsePath(pathStr);
+
+            // Set particle color to target node color
+            particle.style.display = 'block';
+            particle.style.setProperty('--particle-color', targetNode.cssColor);
+            particle.querySelector('.particle-core').style.fill = targetNode.cssColor;
+            particle.querySelector('.particle-glow').style.stroke = targetNode.cssColor;
+
+            // Highlight the active connection path
+            updateConnectionPaths(fromIndex, toIndex);
+
+            // Animate
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease-out cubic for smooth deceleration
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+                // Get position on curve
+                const pos = getPointOnQuadraticBezier(path.start, path.control, path.end, easedProgress);
+
+                // Update particle position
+                particle.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+
+                if (progress < 1) {
+                    particleAnimation = requestAnimationFrame(animate);
+                } else {
+                    // Animation complete - ensure particle is at exact end position
+                    particle.setAttribute('transform', `translate(${path.end.x}, ${path.end.y})`);
+                    particleAnimation = null;
+                }
+            }
+
+            particleAnimation = requestAnimationFrame(animate);
+        }
+
+        // Special animation: Particle visits Ralph and triggers sound
+        function animateParticleToRalph(fromPos, callback) {
+            console.log('🎯 Particle visiting Ralph!', fromPos);
+            const particle = document.getElementById('travelingParticle');
+            const centerPos = { x: centerX, y: centerY };
+
+            // Calculate control point for curved path (slight arc)
+            const controlPoint = {
+                x: (fromPos.x + centerPos.x) / 2,
+                y: (fromPos.y + centerPos.y) / 2 - 50  // Arc upward
+            };
+
+            const duration = 400; // Fast visit
+            const startTime = performance.now();
+
+            function animateToCenter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+                const pos = getPointOnQuadraticBezier(fromPos, controlPoint, centerPos, easedProgress);
+                particle.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateToCenter);
+                } else {
+                    // Arrived at Ralph - play sound!
+                    console.log('🎵 Playing AMAZING RALPH sound!');
+                    ralphSound.currentTime = 0;
+                    ralphSound.play().then(() => {
+                        console.log('✅ Sound played successfully!');
+                    }).catch(err => console.log('❌ Audio error:', err));
+
+                    // Brief pause then return
+                    setTimeout(() => animateReturnFromRalph(centerPos, fromPos, callback), 300);
+                }
+            }
+
+            requestAnimationFrame(animateToCenter);
+        }
+
+        function animateReturnFromRalph(fromPos, toPos, callback) {
+            const particle = document.getElementById('travelingParticle');
+
+            const controlPoint = {
+                x: (fromPos.x + toPos.x) / 2,
+                y: (fromPos.y + toPos.y) / 2 - 50
+            };
+
+            const duration = 400;
+            const startTime = performance.now();
+
+            function animateBack(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+                const pos = getPointOnQuadraticBezier(fromPos, controlPoint, toPos, easedProgress);
+                particle.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateBack);
+                } else {
+                    if (callback) callback();
+                }
+            }
+
+            requestAnimationFrame(animateBack);
+        }
+
+        // Update connection path styles
+        function updateConnectionPaths(fromIndex, toIndex) {
+            const targetNode = nodes[toIndex];
+
+            document.querySelectorAll('.connection-path').forEach((pathEl, i) => {
+                pathEl.classList.remove('active', 'done');
+                pathEl.style.setProperty('--active-color', targetNode.cssColor);
+
+                // Mark paths before current as "done"
+                if (i < fromIndex) {
+                    pathEl.classList.add('done');
+                }
+                // Mark current path as "active"
+                if (i === fromIndex) {
+                    pathEl.classList.add('active');
+                    pathEl.setAttribute('marker-mid', 'url(#arrowMarkerActive)');
+                } else {
+                    pathEl.setAttribute('marker-mid', 'url(#arrowMarker)');
+                }
+            });
+        }
+
+        // Reset all connection paths to default state
+        function resetConnectionPaths() {
+            document.querySelectorAll('.connection-path').forEach((pathEl) => {
+                pathEl.classList.remove('active', 'done');
+                pathEl.setAttribute('marker-mid', 'url(#arrowMarker)');
+            });
+        }
+
+        // Get node index by id
+        function getNodeIndex(nodeId) {
+            return nodes.findIndex(n => n.id === nodeId);
+        }
 
         // WebSocket connection
         const socket = io('http://localhost:5000/monitor', {
@@ -858,13 +1329,51 @@
                     activeNodeEl.classList.add('active');
                     currentActiveNode = state.current_node;
 
-                    // Move dot to active node
+                    // Get current node index
+                    const currentIndex = getNodeIndex(state.current_node);
+
+                    // Move dot to active node (legacy - keep for fallback)
                     const nodeData = nodes.find(n => n.id === state.current_node);
                     if (nodeData) {
                         moveDotToNode(nodeData.angle);
-                        movingDot.classList.remove('hidden');
+                        movingDot.classList.add('hidden'); // Hide legacy dot, use particle instead
                     }
+
+                    // Animate particle along path if moving forward in sequence
+                    if (previousNodeIndex >= 0 && currentIndex !== previousNodeIndex) {
+                        // Calculate path index - handle wrap-around (ACTIONS -> JIRA)
+                        if (currentIndex > previousNodeIndex ||
+                            (previousNodeIndex === 4 && currentIndex === 0)) {
+
+                            // Special case: When Claude becomes active, visit Ralph!
+                            if (currentIndex === 1) { // Claude is index 1
+                                animateParticleAlongPath(previousNodeIndex, currentIndex, 1200);
+                                // After normal animation completes, visit Ralph
+                                setTimeout(() => {
+                                    const claudePos = nodePositions[1];
+                                    animateParticleToRalph(claudePos, null);
+                                }, 1300); // Wait for path animation to finish
+                            } else {
+                                animateParticleAlongPath(previousNodeIndex, currentIndex);
+                            }
+                        } else {
+                            // Moving backwards or jumping - just position at node
+                            positionParticleAtNode(currentIndex);
+                            resetConnectionPaths();
+                        }
+                    } else if (previousNodeIndex === -1) {
+                        // First activation - position particle at node
+                        positionParticleAtNode(currentIndex);
+                    }
+
+                    previousNodeIndex = currentIndex;
                 }
+            } else {
+                // No current node - hide particle and reset paths
+                const particle = document.getElementById('travelingParticle');
+                if (particle) particle.style.display = 'none';
+                resetConnectionPaths();
+                previousNodeIndex = -1;
             }
         }
 
@@ -958,13 +1467,15 @@
                 `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        // Initialize - position dot at first node
-        const firstNode = nodes[0];
-        const angleRad = (firstNode.angle * Math.PI) / 180;
-        movingDot.style.left = `${centerX + radius * Math.cos(angleRad)}px`;
-        movingDot.style.top = `${centerY + radius * Math.sin(angleRad)}px`;
-        movingDot.style.transform = 'translate(-50%, -50%)';
+        // Initialize - hide legacy moving dot (using particle instead)
         movingDot.classList.add('hidden');
+        movingDot.style.display = 'none';
+
+        // Initialize particle (hidden until first state update)
+        const particle = document.getElementById('travelingParticle');
+        if (particle) {
+            particle.style.display = 'none';
+        }
 
         // Handle center image loading
         const centerImg = document.getElementById('centerImg');
@@ -982,10 +1493,8 @@
 
         centerImg.src = 'center-image.png';
 
-        // Add click handler for sound
+        // Add click handler for sound (ralphSound is defined at top of script)
         const centerImage = document.querySelector('.center-image');
-        const ralphSound = new Audio('Ralph.mp3');
-        ralphSound.volume = 0.5;
 
         centerImage.addEventListener('click', function() {
             ralphSound.currentTime = 0;

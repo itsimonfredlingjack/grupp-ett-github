@@ -5,9 +5,10 @@ Provides REST endpoints and WebSocket support for streaming workflow state updat
 to connected dashboard clients.
 """
 
-from flask import Blueprint, request, jsonify
-from flask_socketio import emit, disconnect
 from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+from flask_socketio import emit
 
 # This will be injected from the main app
 monitor_service = None
@@ -47,7 +48,8 @@ def create_monitor_blueprint(service, socket_io):
             data = request.get_json()
 
             if not data:
-                return jsonify({"success": False, "error": "No JSON data provided"}), 400
+                err = {"success": False, "error": "No JSON data provided"}
+                return jsonify(err), 400
 
             node = data.get("node", "").lower()
             state = data.get("state", "active").lower()
@@ -59,7 +61,8 @@ def create_monitor_blueprint(service, socket_io):
                     jsonify(
                         {
                             "success": False,
-                            "error": f"Invalid node: {node}. Must be one of {monitor_service.VALID_NODES}",
+                            "error": f"Invalid node: {node}. "
+                            f"Must be one of {monitor_service.VALID_NODES}",
                         }
                     ),
                     400,
@@ -154,7 +157,8 @@ def create_monitor_blueprint(service, socket_io):
             data = request.get_json()
 
             if not data:
-                return jsonify({"success": False, "error": "No JSON data provided"}), 400
+                err = {"success": False, "error": "No JSON data provided"}
+                return jsonify(err), 400
 
             title = data.get("title", "")
             status = data.get("status", "")

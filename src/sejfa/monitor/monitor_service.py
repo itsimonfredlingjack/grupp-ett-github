@@ -1,20 +1,21 @@
 """
 MonitorService: Manages workflow state and event logging for Claude Code monitoring.
 
-Tracks which node is currently active in the agentic loop (JIRA, CLAUDE, GITHUB, JULES, ACTIONS)
-and maintains a real-time event log for dashboard visualization.
+Tracks which node is currently active in the agentic loop
+(JIRA, CLAUDE, GITHUB, JULES, ACTIONS) and maintains a real-time
+event log for dashboard visualization.
 """
 
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Optional, Dict, List, Any
-from dataclasses import dataclass, asdict
+from typing import Any
 
 
 @dataclass
 class WorkflowNode:
     """Represents a single node in the workflow."""
     active: bool = False
-    last_active: Optional[str] = None
+    last_active: str | None = None
     message: str = ""
 
 
@@ -32,12 +33,12 @@ class MonitorService:
             max_events: Maximum number of events to retain in the log
         """
         self.max_events = max_events
-        self.current_node: Optional[str] = None
-        self.nodes: Dict[str, WorkflowNode] = {
+        self.current_node: str | None = None
+        self.nodes: dict[str, WorkflowNode] = {
             node_id: WorkflowNode() for node_id in self.VALID_NODES
         }
-        self.event_log: List[Dict[str, Any]] = []
-        self.task_info: Dict[str, Any] = {
+        self.event_log: list[dict[str, Any]] = []
+        self.task_info: dict[str, Any] = {
             "title": "Waiting for task...",
             "status": "idle",
             "start_time": None,
@@ -76,12 +77,12 @@ class MonitorService:
 
         return True
 
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """
         Get the current workflow state snapshot.
 
         Returns:
-            Dictionary containing current node, all nodes status, event log, and task info
+            Dict with current node, nodes status, event log, and task info
         """
         return {
             "current_node": self.current_node,
@@ -125,7 +126,7 @@ class MonitorService:
         }
 
     def set_task_info(
-        self, title: str = "", status: str = "", start_time: Optional[str] = None
+        self, title: str = "", status: str = "", start_time: str | None = None
     ) -> None:
         """
         Update task information.
@@ -142,7 +143,7 @@ class MonitorService:
         if start_time:
             self.task_info["start_time"] = start_time
 
-    def get_task_info(self) -> Dict[str, Any]:
+    def get_task_info(self) -> dict[str, Any]:
         """Get current task information."""
         return self.task_info.copy()
 
