@@ -1,27 +1,39 @@
 # PR Review Findings
 
+## Critical Severity
+
+### 1. Missing CSRF Protection (Security)
+The application lacks CSRF protection on form submissions (e.g., Expense Form), allowing attackers to forge requests.
+**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include CSRF tokens in all forms.
+
+### 2. Weak Admin Authentication (Security)
+`AdminAuthService` uses predictable token generation and hardcoded credentials (`admin`/`admin123`).
+**Action:** Implement secure password hashing (e.g., `bcrypt`) and cryptographically secure tokens.
+
+### 3. Missing Authentication on Monitor Endpoints (Security)
+The `/api/monitor/*` endpoints are publicly accessible, allowing unprivileged users to modify the monitoring state.
+**Action:** Implement authentication (e.g., Admin Token check) for all state-modifying monitor endpoints.
+
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 4. Hardcoded Secret Key (Security)
+The `SECRET_KEY` is hardcoded as `'dev-secret-key'` in `app.py`.
+**Action:** Load `SECRET_KEY` from environment variables and fail if missing in production.
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 5. Debug Mode Enabled (Security)
+The application runs with `debug=True` and `allow_unsafe_werkzeug=True` in `app.py`.
+**Action:** Configure debug mode via environment variable (e.g., `FLASK_DEBUG`) and default to `False`.
+
+### 6. Global State in Monitor Blueprint (Reliability)
+`monitor_routes.py` relies on module-level `global` variables (`monitor_service`, `socketio`), compromising thread safety and testability.
+**Action:** Refactor `create_monitor_blueprint` to avoid globals, using `current_app` or closure-based dependency injection.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 7. Unsafe Float Conversion (Correctness)
+The `Expense` model uses `float` for monetary values, causing potential precision errors and accepting `NaN`/`Infinity`.
+**Action:** Use `decimal.Decimal` for all monetary fields and conversions.
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
-
-## Low Severity
-
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 8. Untested SocketIO Events (Reliability)
+The tests in `tests/monitor/test_monitor_routes.py` do not verify SocketIO event handlers (`connect`, `request_state`), leaving `init_socketio_events` untested.
+**Action:** Add tests using `socketio_client` to verify WebSocket event emission and handling.
