@@ -7,9 +7,7 @@ class ExpenseForm(FlaskForm):
     """Form for adding new expenses."""
 
     title = StringField("Titel", validators=[DataRequired()])
-    amount = DecimalField(
-        "Belopp", validators=[DataRequired(), NumberRange(min=0.01)]
-    )
+    amount = DecimalField("Belopp", validators=[DataRequired(), NumberRange(min=0.01)])
     category = SelectField(
         "Kategori",
         choices=[
