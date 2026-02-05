@@ -3,8 +3,10 @@
 import pytest
 from flask import Flask
 from flask_socketio import SocketIO
-from src.sejfa.monitor.monitor_service import MonitorService
+
 from src.sejfa.monitor.monitor_routes import create_monitor_blueprint
+from src.sejfa.monitor.monitor_service import MonitorService
+
 
 @pytest.fixture
 def app():
@@ -25,10 +27,12 @@ def app():
 
     return app
 
+
 @pytest.fixture
 def client(app):
     """Create a test client."""
     return app.test_client()
+
 
 def test_get_state(client):
     """Test getting status JSON."""
@@ -38,13 +42,13 @@ def test_get_state(client):
     assert data["current_node"] == "claude"
     assert data["task_info"]["title"] == "Test Task"
 
+
 def test_update_state(client):
     """Test updating status via API."""
-    response = client.post("/api/monitor/state", json={
-        "node": "github",
-        "state": "active",
-        "message": "Pushing code"
-    })
+    response = client.post(
+        "/api/monitor/state",
+        json={"node": "github", "state": "active", "message": "Pushing code"},
+    )
     assert response.status_code == 200
 
     # Verify update
@@ -52,20 +56,20 @@ def test_update_state(client):
     data = response.get_json()
     assert data["current_node"] == "github"
 
+
 def test_update_state_invalid_node(client):
     """Test updating with invalid node."""
-    response = client.post("/api/monitor/state", json={
-        "node": "invalid",
-        "state": "active"
-    })
+    response = client.post(
+        "/api/monitor/state", json={"node": "invalid", "state": "active"}
+    )
     assert response.status_code == 400
+
 
 def test_update_task(client):
     """Test updating task info."""
-    response = client.post("/api/monitor/task", json={
-        "title": "New Task",
-        "status": "completed"
-    })
+    response = client.post(
+        "/api/monitor/task", json={"title": "New Task", "status": "completed"}
+    )
     assert response.status_code == 200
 
     # Verify update
@@ -73,6 +77,7 @@ def test_update_task(client):
     data = response.get_json()
     assert data["task_info"]["title"] == "New Task"
     assert data["task_info"]["status"] == "completed"
+
 
 def test_reset(client):
     """Test reset endpoint."""
