@@ -3,7 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from src.sejfa.monitor.monitor_service import Event, MonitorService, STEPS
+from src.sejfa.monitor.monitor_service import STEPS, Event, MonitorService
 
 
 class TestMonitorService:
