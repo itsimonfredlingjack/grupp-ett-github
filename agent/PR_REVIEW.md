@@ -1,27 +1,31 @@
 # PR Review Findings
 
-## High Severity
+## Critical Severity
 
-### 1. Missing CSRF Protection on Expense Form
+### 1. Missing CSRF Protection on Expense Form (Security)
 The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
 **Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 2. Insecure Application Configuration (Security)
+The application configuration in `app.py` uses a hardcoded secret key (`"dev-secret-key"`), enables `debug=True`, and allows `unsafe_werkzeug` in the main execution block. This compromises session security and exposes debug information in production.
+**Action:** Load `SECRET_KEY` from environment variables, and ensure `debug` and `allow_unsafe_werkzeug` are disabled in production environments.
+
+## High Severity
+
+### 3. Missing Dependency: flask-socketio (Reliability)
+The application code (`app.py`, `monitor_routes.py`) imports `flask_socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
+**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+
+### 4. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows unauthorized users to modify the monitor state or inject false events.
+**Action:** Implement authentication for these endpoints, such as checking for an admin session or API key.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 5. Inaccurate PR Review Findings (Correctness)
+The previous `agent/PR_REVIEW.md` content incorrectly claimed that `.claude/hooks/monitor_client.py` and `monitor_hook.py` were deleted, whereas they exist in the codebase. It also removed the valid finding regarding missing CSRF protection.
+**Action:** This file has been updated to reflect the actual state of the codebase.
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
-
-## Low Severity
-
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 6. Deviation from Data Persistence Requirements (Correctness)
+The `InMemoryExpenseRepository` in `src/expense_tracker/data/repository.py` uses a Python `list` for storage, whereas the requirements mandated `sqlite:///:memory:`. This limits the ability to test SQL interactions and constraints.
+**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify the requirement change.
