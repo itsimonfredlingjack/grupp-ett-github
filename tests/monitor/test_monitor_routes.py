@@ -1,4 +1,4 @@
-"""Basic tests for monitor routes to improve coverage."""
+"""Tests for monitor routes."""
 
 import pytest
 from flask import Flask
@@ -40,21 +40,44 @@ def client(app, socketio, monitor_service):
 class TestMonitorRoutes:
     """Test monitor routes."""
 
-    def test_update_state_endpoint_exists(self, client):
-        """State update endpoint should be reachable."""
-        response = client.post(
-            "/api/monitor/state",
-            json={"node": "claude", "state": "active", "message": "test"},
-        )
-        # Should return 200 or 400, but not 404
-        assert response.status_code in [200, 400, 500]
+    def test_get_state(self, client):
+        """GET /api/monitor/state should return 200 and current state."""
+        response = client.get("/api/monitor/state")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert "current_node" in data
+        assert "nodes" in data
+        assert "event_log" in data
 
-    def test_health_check_endpoint_exists(self, client):
-        """Health check endpoint should be reachable."""
-        response = client.get("/api/monitor/health")
-        assert response.status_code in [200, 404]
+    def test_update_state_valid(self, client):
+        """POST /api/monitor/state with valid data should update state."""
+        payload = {
+            "node": "claude",
+            "state": "active",
+            "message": "Testing update"
+        }
+        response = client.post("/api/monitor/state", json=payload)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["success"] is True
+        assert data["current_state"]["current_node"] == "claude"
 
-    def test_metrics_endpoint_exists(self, client):
-        """Metrics endpoint should be reachable."""
-        response = client.get("/api/monitor/metrics")
-        assert response.status_code in [200, 404]
+    def test_update_state_invalid_node(self, client):
+        """POST /api/monitor/state with invalid node should return 400."""
+        payload = {
+            "node": "invalid_node",
+            "state": "active"
+        }
+        response = client.post("/api/monitor/state", json=payload)
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data["success"] is False
+        assert "Invalid node" in data["error"]
+
+    def test_update_state_no_json(self, client):
+        """POST /api/monitor/state with no JSON should return 400."""
+        response = client.post("/api/monitor/state")
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data["success"] is False
+        assert "No JSON data provided" in data["error"]
