@@ -64,3 +64,4 @@ Thumbs.db
 .claude/.ralph_loop_active
 .claude/.promise_done
 .claude/reviews/
+coverage.xml
