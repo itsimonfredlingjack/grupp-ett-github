@@ -16,7 +16,12 @@ Usage:
     send_task_start("GE-123", title="Add user authentication")
 
     # Update step
-    send_task_update("GE-123", step=1, step_name="Claude Code", step_desc="Writing tests...")
+    send_task_update(
+        "GE-123",
+        step=1,
+        step_name="Claude Code",
+        step_desc="Writing tests...",
+    )
 """
 
 from __future__ import annotations
@@ -317,7 +322,8 @@ if __name__ == "__main__":
     command = sys.argv[1]
 
     if command == "event" and len(sys.argv) >= 4:
-        send_event(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "cli")
+        source = sys.argv[4] if len(sys.argv) > 4 else "cli"
+        send_event(sys.argv[2], sys.argv[3], source)
     elif command == "start" and len(sys.argv) >= 3:
         send_task_start(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "")
     elif command == "update" and len(sys.argv) >= 4:

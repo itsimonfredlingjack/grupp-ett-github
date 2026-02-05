@@ -1,7 +1,5 @@
 """Tests for monitor routes."""
 
-import json
-
 import pytest
 
 from app import create_app
@@ -260,7 +258,9 @@ class TestNodeStateEndpoint:
             )
             assert response.status_code == 200
             data = response.get_json()
-            assert data["step"] == expected_step, f"Node {node} should map to step {expected_step}"
+            assert data["step"] == expected_step, (
+                f"Node {node} should map to step {expected_step}"
+            )
 
 
 class TestStaticFiles:

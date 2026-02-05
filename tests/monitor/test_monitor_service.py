@@ -3,9 +3,7 @@
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from src.sejfa.monitor.monitor_service import MonitorService, TaskState, Event, STEPS
+from src.sejfa.monitor.monitor_service import Event, MonitorService, STEPS
 
 
 class TestMonitorService:
