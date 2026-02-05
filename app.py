@@ -5,12 +5,14 @@ This is a minimal Flask app used to demonstrate the TDD workflow
 and test infrastructure of the project.
 """
 
+import os
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
 from flask import Flask, Response, jsonify, request
 from flask_socketio import SocketIO
+from flask_wtf.csrf import CSRFProtect
 
 from src.expense_tracker.business.service import ExpenseService
 from src.expense_tracker.data.repository import InMemoryExpenseRepository
@@ -36,7 +38,12 @@ def create_app() -> Flask:
     global socketio
 
     app = Flask(__name__)
-    app.secret_key = "dev-secret-key"  # In production, use environment variable
+    app.secret_key = os.environ.get(
+        "SECRET_KEY", "dev-secret-key"
+    )  # In production, use environment variable
+
+    # Initialize CSRF protection
+    CSRFProtect(app)
 
     # Initialize SocketIO for real-time monitoring
     socketio = SocketIO(app, cors_allowed_origins="*")

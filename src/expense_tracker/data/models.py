@@ -1,6 +1,7 @@
 """Data models for ExpenseTracker."""
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 
 @dataclass
@@ -16,5 +17,5 @@ class Expense:
 
     id: int
     title: str
-    amount: float
+    amount: Decimal
     category: str

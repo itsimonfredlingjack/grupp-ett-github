@@ -3,6 +3,8 @@
 This module contains pure Python business logic - no Flask dependencies allowed.
 """
 
+from decimal import Decimal
+
 from src.expense_tracker.business.exceptions import (
     InvalidAmountError,
     InvalidCategoryError,
@@ -29,7 +31,7 @@ class ExpenseService:
         """
         self._repository = repository
 
-    def add_expense(self, title: str, amount: float, category: str) -> Expense:
+    def add_expense(self, title: str, amount: Decimal, category: str) -> Expense:
         """Add a new expense after validating business rules.
 
         Args:
@@ -65,16 +67,16 @@ class ExpenseService:
         """
         return self._repository.get_all()
 
-    def get_total_amount(self) -> float:
+    def get_total_amount(self) -> Decimal:
         """Calculate the total of all expense amounts.
 
         Returns:
-            Sum of all expense amounts, or 0.0 if no expenses.
+            Sum of all expense amounts, or 0.00 if no expenses.
         """
         expenses = self._repository.get_all()
-        return sum(expense.amount for expense in expenses)
+        return sum((expense.amount for expense in expenses), start=Decimal("0.00"))
 
-    def _validate_amount(self, amount: float) -> None:
+    def _validate_amount(self, amount: Decimal) -> None:
         """Validate that amount is greater than 0.
 
         Args:

@@ -6,6 +6,7 @@
 <h1>Utgifter</h1>
 
 <form action="{{ url_for('expense_tracker.add_expense') }}" method="post">
+    {{ form.hidden_tag() }}
     <div class="form-group">
         <label for="title">Titel</label>
         <input type="text" id="title" name="title" placeholder="Vad var utgiften för?" required>
