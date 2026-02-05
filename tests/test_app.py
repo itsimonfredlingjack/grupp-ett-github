@@ -1,6 +1,9 @@
 from unittest.mock import patch
+
 import pytest
+
 from app import create_app
+
 
 class TestHelloEndpoint:
     @pytest.fixture
@@ -58,12 +61,14 @@ class TestAppCreation:
         assert "/" in rules
         assert "/health" in rules
 
+
 def test_app_module_execution():
     """Test that app.py can be executed as a script."""
     # We mock socketio.run to prevent the server from actually starting and blocking
-    with patch("flask_socketio.SocketIO.run") as mock_run:
+    with patch("flask_socketio.SocketIO.run"):
         # Import app to trigger module-level code
         import app
+
         # Re-execute the module to ensure __main__ block is hit if we were to run it
-        # Since we can't easily re-import with __name__ == "__main__", we'll check imports
+        # Since we can't easily re-import with __name__ == "__main__", we check imports
         assert app.create_app is not None

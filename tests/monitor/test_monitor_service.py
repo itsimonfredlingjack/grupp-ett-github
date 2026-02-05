@@ -1,5 +1,5 @@
-import pytest
 from src.sejfa.monitor.monitor_service import MonitorService
+
 
 def test_monitor_service_initialization():
     service = MonitorService(max_events=50)

@@ -1,6 +1,7 @@
 import pytest
+
 from app import create_app
-from src.sejfa.monitor.monitor_service import MonitorService
+
 
 @pytest.fixture
 def app():
