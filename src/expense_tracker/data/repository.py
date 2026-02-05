@@ -18,7 +18,7 @@ class ExpenseRepository(ABC):
         Returns:
             The added expense with assigned ID.
         """
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     def get_all(self) -> list[Expense]:
@@ -27,7 +27,7 @@ class ExpenseRepository(ABC):
         Returns:
             List of all expenses.
         """
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     def get_next_id(self) -> int:
@@ -36,7 +36,7 @@ class ExpenseRepository(ABC):
         Returns:
             The next unique ID.
         """
-        ...
+        ...  # pragma: no cover
 
 
 class InMemoryExpenseRepository(ExpenseRepository):
