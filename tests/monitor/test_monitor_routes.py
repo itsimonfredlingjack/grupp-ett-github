@@ -20,9 +20,11 @@ class TestMonitorRoutes:
         class MockSocketIO:
             def emit(self, event, data, namespace=None, skip_sid=None):
                 pass
+
             def on(self, event, namespace=None):
                 def decorator(f):
                     return f
+
                 return decorator
 
         socketio = MockSocketIO()
@@ -48,11 +50,7 @@ class TestMonitorRoutes:
 
     def test_update_state_valid(self, client):
         """Test POST /state with valid data."""
-        payload = {
-            "node": "claude",
-            "state": "active",
-            "message": "Working"
-        }
+        payload = {"node": "claude", "state": "active", "message": "Working"}
         response = client.post("/api/monitor/state", json=payload)
         assert response.status_code == 200
         data = response.get_json()
@@ -61,10 +59,7 @@ class TestMonitorRoutes:
 
     def test_update_state_invalid_node(self, client):
         """Test POST /state with invalid node."""
-        payload = {
-            "node": "invalid",
-            "state": "active"
-        }
+        payload = {"node": "invalid", "state": "active"}
         response = client.post("/api/monitor/state", json=payload)
         assert response.status_code == 400
         data = response.get_json()
@@ -89,10 +84,7 @@ class TestMonitorRoutes:
 
     def test_update_task(self, client):
         """Test POST /task endpoint."""
-        payload = {
-            "title": "New Task",
-            "status": "running"
-        }
+        payload = {"title": "New Task", "status": "running"}
         response = client.post("/api/monitor/task", json=payload)
         assert response.status_code == 200
         data = response.get_json()
