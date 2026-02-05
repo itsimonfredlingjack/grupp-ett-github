@@ -2,26 +2,30 @@
 
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 1. Missing Dependency (Configuration)
+The `tests/monitor/test_monitor_routes.py` and `src/sejfa/monitor/monitor_routes.py` modules import `flask_socketio`, but this package is not listed in `requirements.txt`. This will cause immediate runtime errors in production and CI environments.
+**Action:** Add `flask-socketio` (and `python-dotenv` if used) to `requirements.txt`.
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 2. Ineffective Test Coverage (Reliability/Correctness)
+Tests in `tests/monitor/test_monitor_routes.py` (specifically `test_update_state_endpoint_exists`) assert that `POST /api/monitor/state` returns 200, 400, or 500. This assertion is overly broad, masking potential crashes (500) or validation errors (400), rendering the test useless for actual verification.
+**Action:** Update the test to assert specific status codes (e.g., 200 for valid input, 400 for invalid input) and verify the response content or side effects.
+
+### 3. Testing Non-Existent Endpoints (Correctness)
+Tests `test_health_check_endpoint_exists` and `test_metrics_endpoint_exists` verify that `/api/monitor/health` and `/api/monitor/metrics` return 404 (or 200). Since these endpoints are missing from `src/sejfa/monitor/monitor_routes.py`, the tests pass by confirming they do NOT exist, creating a false sense of coverage.
+**Action:** Either implement the endpoints if required or remove the meaningless tests. If testing 404 handling is intended, rename the test to reflect that (e.g., `test_unknown_route_returns_404`).
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
+### 4. Global State Dependency (Testability/Design)
+`src/sejfa/monitor/monitor_routes.py` uses global variables (`monitor_service`, `socketio`) for dependency injection. This makes the code thread-unsafe and difficult to test reliably, as state leaks between tests and parallel execution is compromised.
+**Action:** Refactor `create_monitor_blueprint` to pass dependencies via `current_app` context or use a closure-based blueprint factory properly (avoiding globals).
 
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
+### 5. Task/PR Mismatch (Documentation)
+The PR title "GE-35 - Backend TEST (Expense Tracker)" and description suggest ExpenseTracker testing, but the actual changes are solely monitor tests. This violates the Single Responsibility Principle for PRs and misleads reviewers about the scope of changes.
+**Action:** Update the PR title/description to accurately reflect the changes (e.g., "Add Monitor Route Tests") or include the missing ExpenseTracker tests if intended.
 
 ## Low Severity
 
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 6. Missing Type Hints (Readability)
+The `create_monitor_blueprint` function signature in `src/sejfa/monitor/monitor_routes.py` lacks type hints for `service` and `socket_io`, reducing code clarity and tooling support.
+**Action:** Add type hints (e.g., `service: MonitorService`, `socket_io: SocketIO`) to the function signature.
