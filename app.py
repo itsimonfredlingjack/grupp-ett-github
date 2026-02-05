@@ -9,13 +9,23 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, jsonify, request, send_from_directory
 
 from src.expense_tracker.business.service import ExpenseService
 from src.expense_tracker.data.repository import InMemoryExpenseRepository
 from src.expense_tracker.presentation.routes import create_expense_blueprint
 from src.sejfa.core.admin_auth import AdminAuthService
 from src.sejfa.core.subscriber_service import SubscriberService
+from src.sejfa.monitor.monitor_routes import create_monitor_blueprint
+
+# Optional: Flask-SocketIO for real-time WebSocket support
+try:
+    from flask_socketio import SocketIO
+    from src.sejfa.monitor.monitor_routes import create_socketio_handlers
+    SOCKETIO_AVAILABLE = True
+except ImportError:
+    SOCKETIO_AVAILABLE = False
+    SocketIO = None
 
 
 def create_app() -> Flask:
@@ -264,11 +274,52 @@ def create_app() -> Flask:
     expense_blueprint = create_expense_blueprint(expense_service)
     app.register_blueprint(expense_blueprint, url_prefix="/expenses")
 
+    # Register Monitor blueprint
+    monitor_blueprint = create_monitor_blueprint()
+    app.register_blueprint(monitor_blueprint)
+
+    # Serve static files (monitor dashboard)
+    @app.route("/static/<path:filename>")
+    def serve_static(filename):
+        """Serve static files including monitor dashboard."""
+        return send_from_directory("static", filename)
+
     return app
+
+
+# SocketIO instance (created if flask-socketio is available)
+socketio = None
+
+
+def create_app_with_socketio() -> tuple[Flask, Any]:
+    """Create app with SocketIO support for real-time WebSocket updates.
+
+    Returns:
+        Tuple of (Flask app, SocketIO instance or None)
+    """
+    app = create_app()
+
+    if SOCKETIO_AVAILABLE:
+        global socketio
+        socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+        create_socketio_handlers(socketio)
+        return app, socketio
+
+    return app, None
 
 
 # Create app instance for direct running
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Use SocketIO if available for WebSocket support
+    if SOCKETIO_AVAILABLE:
+        app, socketio = create_app_with_socketio()
+        print("Starting with SocketIO (WebSocket support enabled)")
+        print("Monitor dashboard: http://localhost:5000/static/monitor.html")
+        socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+    else:
+        print("Starting without SocketIO (polling fallback)")
+        print("Install flask-socketio for WebSocket support: pip install flask-socketio")
+        print("Monitor dashboard: http://localhost:5000/static/monitor.html")
+        app.run(debug=True, host="0.0.0.0", port=5000)

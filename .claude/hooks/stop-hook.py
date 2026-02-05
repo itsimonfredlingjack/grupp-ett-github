@@ -21,11 +21,35 @@ import os
 import re
 import subprocess
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 DEFAULT_PROMISE = "<promise>DONE</promise>"
+
+# Monitor integration (non-blocking)
+MONITOR_URL = os.environ.get("MONITOR_URL", "http://localhost:5000")
+MONITOR_TIMEOUT = 2
+
+
+def _notify_monitor(endpoint: str, payload: dict) -> None:
+    """Send notification to monitor (fire-and-forget)."""
+    def _send():
+        try:
+            url = f"{MONITOR_URL}/api/monitor/{endpoint}"
+            data = json.dumps(payload).encode("utf-8")
+            headers = {"Content-Type": "application/json"}
+            req = Request(url, data=data, headers=headers, method="POST")
+            with urlopen(req, timeout=MONITOR_TIMEOUT):
+                pass
+        except (URLError, HTTPError, TimeoutError, OSError, Exception):
+            pass  # Silently ignore - never block Claude
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()
 JIRA_KEY_RE = re.compile(r"[A-Z]+-[0-9]+")
 
 LOOP_FLAG = Path.cwd() / ".claude" / ".ralph_loop_active"
@@ -290,7 +314,19 @@ def increment_iteration() -> int:
     state["iterations"] = int(state.get("iterations", 0) or 0) + 1
     state["last_check"] = datetime.now().isoformat()
     _write_json_dict(STATE_FILE, state)
-    return int(state["iterations"])
+
+    iteration = int(state["iterations"])
+    max_iterations = int(state.get("max_iterations", 25))
+
+    # Notify monitor of iteration update
+    _notify_monitor("task", {
+        "action": "update",
+        "iteration": iteration,
+        "max_iterations": max_iterations,
+        "step_desc": f"Checking exit conditions (iteration {iteration}/{max_iterations})...",
+    })
+
+    return iteration
 
 
 def check_promise_flag_file(promise: str) -> bool:
@@ -412,6 +448,13 @@ def main() -> None:
                 coverage_threshold = None
 
         if tests_required and enforce_tools:
+            # Notify monitor: running tests (Actions/CI node)
+            _notify_monitor("node-state", {
+                "node": "actions",
+                "state": "active",
+                "message": "Running pytest...",
+            })
+
             pytest_cmd = [*tools["pytest"], "-q"]
             if coverage_threshold is not None:
                 pytest_cmd.extend(
@@ -425,17 +468,46 @@ def main() -> None:
             if code != 0:
                 failures.append("pytest failed")
                 suggestions.append(f"Fix failing tests:\n{out}")
+                _notify_monitor("event", {
+                    "event_type": "error",
+                    "message": "Tests failed",
+                    "source": "stop-hook",
+                })
+            else:
+                _notify_monitor("event", {
+                    "event_type": "success",
+                    "message": "Tests passed",
+                    "source": "stop-hook",
+                })
 
         if lint_required and enforce_tools:
+            # Notify monitor: running linter
+            _notify_monitor("node-state", {
+                "node": "actions",
+                "state": "active",
+                "message": "Running ruff check...",
+            })
+
             code, out = run_cmd([*tools["ruff"], "check", "."], timeout_s=120)
             if code != 0:
                 failures.append("ruff check . failed")
                 suggestions.append(f"Fix Ruff lint:\n{out}")
+                _notify_monitor("event", {
+                    "event_type": "error",
+                    "message": "Lint check failed",
+                    "source": "stop-hook",
+                })
 
             code, out = run_cmd([*tools["ruff"], "format", "--check", "."], timeout_s=120)
             if code != 0:
                 failures.append("ruff format --check . failed")
                 suggestions.append(f"Run formatter:\n{out}")
+            elif not failures:
+                _notify_monitor("event", {
+                    "event_type": "success",
+                    "message": "Lint passed",
+                    "source": "stop-hook",
+                })
 
         if failures:
             response = build_continue_message(
@@ -449,6 +521,14 @@ def main() -> None:
             )
             json.dump(response, sys.stderr)
             sys.exit(2)
+
+        # All checks passed - notify monitor of completion
+        _notify_monitor("task", {"action": "complete"})
+        _notify_monitor("event", {
+            "event_type": "success",
+            "message": "Task completed - all quality gates passed!",
+            "source": "stop-hook",
+        })
 
         if active_loop:
             clear_loop_guard()
