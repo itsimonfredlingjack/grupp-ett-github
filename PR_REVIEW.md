@@ -1,30 +1,23 @@
-# PR Review: 1ed9537
+# Review Findings
 
-**Review Summary:**
-The PR introduces automated review and self-healing workflows. While the concept is sound, there are critical security and reliability issues that must be addressed before merging.
+## Security Regressions
+1. **Missing CSRF Protection** (High)
+   - The `add` route in `newsflash_app/presentation/routes.py` accepts POST requests without verifying a CSRF token. This allows Cross-Site Request Forgery attacks where a malicious site could trick a user into adding news flashes without their consent.
+   - **Recommendation:** Integrate `Flask-WTF` for form handling which includes CSRF protection by default, or manually implement CSRF token verification.
 
-## 🚨 Blockers (Security & Reliability)
+2. **Unsafe HTTP Method for State Change** (Medium)
+   - The `delete` route in `newsflash_app/presentation/routes.py` uses the GET method to delete items (`@bp.route("/delete/<int:item_id>", methods=["GET"])`). HTTP GET requests should be safe and idempotent. Using GET for deletion exposes the application to accidental data loss via web crawlers, browser prefetching, or simple link clicking/CSRF.
+   - **Recommendation:** Change the route to accept only `POST` (or `DELETE`) requests and ensure it is protected by a CSRF token. Update the frontend to use a form for deletion instead of a link.
 
-### 1. Critical Security Regression (`.github/workflows/self_healing.yml`)
-- **Issue:** The workflow grants `permissions: contents: write`. This violates the project's security guidelines ("FUCKA INTE DETTA") which explicitly state that the Self Healing workflow "must be restricted to `contents: read` permissions to prevent direct code commits".
-- **Risk:** Using `workflow_run` with `contents: write` while checking out untrusted code (from a fork's PR `head_sha`) creates a high-risk scenario for Remote Code Execution (RCE) and unauthorized repository modifications.
-- **Action Required:** Change permissions to `contents: read`.
+## Reliability and Edge Cases
+3. **Data Consistency in Multi-Worker Environment** (Medium)
+   - The `InMemoryNewsFlashRepository` is instantiated within `create_app`. If the application is deployed with multiple workers (e.g., using Gunicorn), each worker will maintain its own isolated copy of the data. This will lead to inconsistent application state where users see different data depending on which worker handles their request.
+   - **Recommendation:** For the MVP, document that the application must be run with a single worker. For production, replace the in-memory repository with a database (e.g., SQLite, PostgreSQL) or a shared in-memory store like Redis.
 
-### 2. Reliability Failure on Forks (`.github/workflows/self_healing.yml`)
-- **Issue:** The prompt instructs the agent to "commit the fix to branch ${{ github.event.workflow_run.head_branch }}".
-- **Impact:** This will fail for any PR originating from a fork, as the `GITHUB_TOKEN` in the base repository context cannot push to a fork's branch.
-- **Action Required:** Update the prompt to instruct the agent to propose fixes via Issues (using the already granted `issues: write` permission) rather than attempting to commit directly.
+4. **Race Condition in Item Limit Check** (Minor)
+   - In `NewsFlashService.create_flash`, the application checks if the item count exceeds `MAX_ITEMS_PER_PAGE` before adding a new item. In a concurrent environment, multiple requests could pass this check simultaneously before any writes occur, causing the limit to be exceeded.
+   - **Recommendation:** While low risk for this specific MVP, utilizing database constraints or atomic operations would prevent this race condition in a robust implementation.
 
-## ⚠️ Warnings
-
-### 3. Invalid Action Reference
-- **Issue:** The workflows use `google-labs-code/jules-action@v1.0.0`. The included analysis file (`agent/JULES_CI_ANALYSIS.md`) suggests this action reference might be invalid or inaccessible.
-- **Action Required:** Verify the action tag exists. If not, revert to a known good version (e.g., `v1`).
-
-## ✅ Checks Passed
-- **Test Coverage:** Python code maintains high coverage (92%), exceeding the 80% threshold.
-- **Linting:** `ruff` checks passed.
-- **Secret Gating:** The logic to skip workflows when `JULES_API_KEY` is missing is correctly implemented.
-
-## Recommendation
-**Request Changes**. The security regression in `self_healing.yml` is a blocker.
+5. **Documentation/Implementation Divergence** (Minor)
+   - The `CURRENT_TASK.md` suggests "sqlite memory funkar för testerna", but the implementation uses a Python dictionary. While both are in-memory, SQLite would provide SQL semantics and easier migration to a real DB.
+   - **Recommendation:** Clarify in the code or docs whether `dict` storage is intended as the final "InMemory" solution or a placeholder for SQLite-based in-memory storage.
