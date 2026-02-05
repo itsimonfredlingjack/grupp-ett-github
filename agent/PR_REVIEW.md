@@ -2,26 +2,22 @@
 
 ## High Severity
 
-### 1. Missing CSRF Protection on Expense Form
-The `POST /add` endpoint in `src/expense_tracker/presentation/routes.py` processes form data without verifying a CSRF token. This exposes the application to Cross-Site Request Forgery attacks, allowing malicious sites to submit expenses on behalf of authenticated users.
-**Action:** Configure `Flask-WTF`'s `CSRFProtect` in `app.py` and include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` in the form in `index.html`.
+### 1. Ineffective Assertions masking failures
+The tests in `tests/monitor/test_monitor_routes.py` use `assert response.status_code in [200, 500]` (or `[400, 500]`). This allows the application to crash with an Internal Server Error (500) without failing the test, providing false confidence in the system's reliability.
+**Action:** Update assertions to expect specific success or error codes (e.g., `assert response.status_code == 200`).
 
-### 2. Hardcoded Secret Key in Application Factory
-The application secret key is hardcoded as `"dev-secret-key"` in `app.py`. This insecure configuration compromises session security and cryptographic signatures in production environments.
-**Action:** Load the `SECRET_KEY` from environment variables (e.g., `os.environ.get("SECRET_KEY")`) and ensure the application fails to start if it is missing in production.
+### 2. Missing Response Verification
+The monitor route tests verify only the status code but do not validate the response body or the side effects (e.g., that the `monitor_service` state was actually updated). This reduces the test's ability to catch functional regressions.
+**Action:** Add assertions to verify the JSON response content and check the `monitor_service` state after requests.
 
 ## Medium Severity
 
-### 3. Deviation from Data Persistence Requirements (Correctness)
-The `InMemoryExpenseRepository` currently uses a Python `list` for storage, whereas the requirements specifically mandated `sqlite:///:memory:`. While both are in-memory, using SQLite ensures the application is ready for SQL-based persistence and validates database constraints as intended.
-**Action:** Update `InMemoryExpenseRepository` to use `sqlite3` with an in-memory database or clarify if the requirement has changed.
-
-### 4. Brittle Error Handling Logic (Reliability)
-In `src/expense_tracker/presentation/routes.py`, error handling relies on string matching of exception messages (e.g., `if "Amount must be greater than 0" in str(e):`). This logic is fragile and will break if the error messages in `ExpenseService` are updated.
-**Action:** Define custom exception classes (e.g., `InvalidAmountError`) or use error codes in `src/expense_tracker/business/exceptions.py` to handle errors programmatically.
+### 3. Manual App Construction in Tests
+The tests manually instantiate `Flask(__name__)` instead of using the `create_app` factory from `app.py`. This risks testing a configuration that differs from production and bypasses standard initialization logic.
+**Action:** Import and use `create_app` from `app.py` in the `app` fixture to ensure consistency with production.
 
 ## Low Severity
 
-### 5. Inconsistent Route Registration in Tests
-The integration tests in `tests/expense_tracker/test_routes.py` register the blueprint at the root (`/`), while `app.py` registers it at `/expenses`. This discrepancy creates a mismatch between the test environment and production, potentially hiding issues related to relative URLs or path handling.
-**Action:** Update the test fixture to register the blueprint at `/expenses` or use the `create_app` factory in tests to mirror the production configuration.
+### 4. Hardcoded Secrets in Test Fixture
+The test fixture uses a hardcoded `app.secret_key = "test-secret"`. While acceptable for tests, it is better practice to use a configuration object or environment variables to manage settings.
+**Action:** Use a dedicated test configuration or environment variable for the secret key.
