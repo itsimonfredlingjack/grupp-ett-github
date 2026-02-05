@@ -11,9 +11,20 @@ The repository uses three workflows so each automation concern stays focused.
 runs, and `jules_health_check.yml` validates integration health on schedule.
 
 - **PR review:** `.github/workflows/jules_review.yml`
+- **Auto-merge arming:** `.github/workflows/auto_merge.yml`
 - **Self-healing:** `.github/workflows/self_healing.yml`
 - **Health check:** `.github/workflows/jules_health_check.yml`
 - **Branch CI (feeds self-healing):** `.github/workflows/ci_branch.yml`
+- **Deployment:** `.github/workflows/deploy.yml` (push to `main`)
+
+## End-to-end handoff (Jira to Azure)
+
+1. `finish-task` pushes branch and opens PR.
+2. PR gets `automerge` label.
+3. `auto_merge.yml` enables GitHub Auto-merge (same-repo, non-draft PR only).
+4. `ci.yml` + `jules_review.yml` must pass.
+5. GitHub merges PR to `main`.
+6. `deploy.yml` runs and deploys latest image to Azure Container Apps.
 
 ## Payload and guardrails
 
@@ -55,6 +66,13 @@ Use this sequence when you investigate Jules behavior.
 3. Check cooldown and guardrail outcomes for self-healing runs.
 4. If needed, rerun manually with `workflow_dispatch` (health check mode `full`).
 5. If failures repeat, open or update the tracking issue with run links.
+
+## Auto-merge troubleshooting
+
+- **PR does not auto-merge:** verify `automerge` label exists and PR is not draft.
+- **Automerge enabled but PR waits:** one or more required checks are pending/failing.
+- **Jules skipped unexpectedly:** for `automerge` PR, missing `JULES_API_KEY` now fails review intentionally.
+- **Merged but no deploy:** confirm merge landed on `main` and `deploy.yml` run exists.
 
 ## Next steps
 

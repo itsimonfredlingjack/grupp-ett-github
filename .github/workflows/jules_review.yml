@@ -2,7 +2,7 @@ name: Jules Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
     branches: [main]
 
 permissions:
@@ -23,14 +23,39 @@ jobs:
         id: start
         run: echo "epoch=$(date +%s)" >> "$GITHUB_OUTPUT"
 
+      - name: Detect automerge intent
+        id: automerge_intent
+        run: |
+          python - <<'PY'
+          import json
+          import os
+
+          event_path = os.environ["GITHUB_EVENT_PATH"]
+          output_path = os.environ["GITHUB_OUTPUT"]
+
+          with open(event_path, encoding="utf-8") as handle:
+              event = json.load(handle)
+
+          labels = event.get("pull_request", {}).get("labels", [])
+          requested = any(label.get("name") == "automerge" for label in labels)
+
+          with open(output_path, "a", encoding="utf-8") as handle:
+              handle.write(f"requested={'true' if requested else 'false'}\n")
+          PY
+
       - name: Validate Jules secret
         id: secret_check
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          AUTOMERGE_REQUESTED: ${{ steps.automerge_intent.outputs.requested }}
         run: |
           if [ -z "$JULES_API_KEY" ]; then
+            if [ "$AUTOMERGE_REQUESTED" = "true" ]; then
+              echo "JULES_API_KEY is missing; automerge PRs must run Jules review."
+              exit 1
+            fi
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "JULES_API_KEY is missing; Jules review will be skipped."
+            echo "JULES_API_KEY is missing; Jules review will be skipped for non-automerge PR."
           else
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi

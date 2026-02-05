@@ -1,0 +1,86 @@
+name: Auto Merge PR
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enable auto-merge for eligible PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.notice("No pull_request payload found; skipping.");
+              return;
+            }
+
+            if (pr.base.ref !== "main") {
+              core.notice(`Base branch is ${pr.base.ref}; skipping.`);
+              return;
+            }
+
+            if (pr.draft) {
+              core.notice("PR is draft; skipping.");
+              return;
+            }
+
+            if (pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+              core.notice("PR comes from a fork; skipping for safety.");
+              return;
+            }
+
+            const hasAutomergeLabel = (pr.labels || []).some((label) => label.name === "automerge");
+            if (!hasAutomergeLabel) {
+              core.notice("PR has no 'automerge' label; skipping.");
+              return;
+            }
+
+            const state = await github.graphql(
+              `
+              query($id: ID!) {
+                node(id: $id) {
+                  ... on PullRequest {
+                    autoMergeRequest {
+                      enabledAt
+                    }
+                  }
+                }
+              }
+              `,
+              { id: pr.node_id },
+            );
+
+            if (state.node?.autoMergeRequest) {
+              core.notice("Auto-merge already enabled.");
+              return;
+            }
+
+            await github.graphql(
+              `
+              mutation($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(
+                  input: {
+                    pullRequestId: $pullRequestId
+                    mergeMethod: SQUASH
+                  }
+                ) {
+                  pullRequest {
+                    number
+                  }
+                }
+              }
+              `,
+              { pullRequestId: pr.node_id },
+            );
+
+            core.notice(`Enabled auto-merge for PR #${pr.number}.`);

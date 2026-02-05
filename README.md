@@ -36,7 +36,9 @@ graph TD
     end
     Tests -->|Success| PR[Pull Request]
     PR -->|Triggers| CI[GitHub Actions CI]
-    CI -->|Lint/Test/Security| Verify[Verification]
+    CI -->|Lint/Test/Security + Jules Review| Verify[Verification]
+    Verify -->|Required checks pass| AutoMerge[Auto Merge PR]
+    AutoMerge -->|Push to main| Deploy[Deploy to Azure Container Apps]
 ```
 
 ---
@@ -125,7 +127,12 @@ To use the autonomous development features, use the **Ralph Skills** located in 
     ```bash
     claude -i finish-task
     ```
-    This runs verification, commits, pushes, and updates Jira.
+    This runs verification, commits, pushes, creates PR, labels it for guarded
+    auto-merge, and updates Jira.
+
+4.  **Automatic merge + deploy**:
+    After CI + Jules checks pass, PR merges automatically to `main`, which
+    triggers deployment to Azure Container Apps.
 
 ---
 
