@@ -15,7 +15,7 @@
 
 ## 📖 About SEJFA
 
-SEJFA is a robust **Subscriber Management System** built with Flask, designed to demonstrate a fully autonomous **Agentic Development Workflow**.
+SEJFA is a robust **Agentic Devops Loop System** ,created by Filippa, Simon, Jonas Ö, Emma and Annika. The system is designed to demonstrate a fully autonomous AI-workflow where coding AI Agents deliver full scale developed products, from taking a Jira-ticket to a deliverable poroduct delpoyed on Azure
 
 ### Check Out Our Beautiful Visual Agentic DevOps Monotior Below!
 https://gruppett.fredlingautomation.dev/static/monitor.html
