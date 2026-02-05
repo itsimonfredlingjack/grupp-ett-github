@@ -1033,6 +1033,8 @@
         // Ralph sound - used for particle visit animation
         const ralphSound = new Audio('Ralph.mp3');
         ralphSound.volume = 0.5;
+        ralphSound.preload = 'auto';
+        ralphSound.load();
         let audioUnlocked = false;
 
         // Unlock audio on first user interaction (browser autoplay policy)
@@ -1046,6 +1048,10 @@
                 audioUnlocked = true;
                 console.log('🔊 Audio unlocked!');
 
+                // Remove listeners now that unlock succeeded
+                document.removeEventListener('click', unlockAudio);
+                document.removeEventListener('keydown', unlockAudio);
+
                 // Remove the notification
                 const notification = document.getElementById('audioNotification');
                 if (notification) {
@@ -1053,13 +1059,13 @@
                     setTimeout(() => notification.remove(), 300);
                 }
             }).catch(err => {
-                console.log('Audio unlock failed:', err);
+                console.log('Audio unlock failed, will retry on next interaction:', err);
             });
         }
 
-        // Listen for any click to unlock audio
-        document.addEventListener('click', unlockAudio, { once: true });
-        document.addEventListener('keydown', unlockAudio, { once: true });
+        // Listen for any click/key to unlock audio (retry until success)
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('keydown', unlockAudio);
 
         // Create nodes
         nodes.forEach((node) => {
@@ -1198,10 +1204,14 @@
                 } else {
                     // Arrived at Ralph - play sound!
                     console.log('🎵 Playing AMAZING RALPH sound!');
-                    ralphSound.currentTime = 0;
-                    ralphSound.play().then(() => {
-                        console.log('✅ Sound played successfully!');
-                    }).catch(err => console.log('❌ Audio error:', err));
+                    if (audioUnlocked) {
+                        ralphSound.currentTime = 0;
+                        ralphSound.play().then(() => {
+                            console.log('✅ Sound played successfully!');
+                        }).catch(err => console.log('❌ Audio error:', err));
+                    } else {
+                        console.log('⚠️ Audio not unlocked yet - click page to enable sound');
+                    }
 
                     // Brief pause then return
                     setTimeout(() => animateReturnFromRalph(centerPos, fromPos, callback), 300);
