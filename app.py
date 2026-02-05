@@ -13,6 +13,9 @@ from flask import Flask, Response, jsonify, request
 
 from src.sejfa.core.admin_auth import AdminAuthService
 from src.sejfa.core.subscriber_service import SubscriberService
+from src.sejfa.cursorflash.repository import InMemoryNewsFlashRepository
+from src.sejfa.cursorflash.routes import create_cursorflash_blueprint
+from src.sejfa.cursorflash.service import NewsFlashService
 
 
 def create_app() -> Flask:
@@ -23,6 +26,12 @@ def create_app() -> Flask:
     """
     app = Flask(__name__)
     app.secret_key = "dev-secret-key"  # In production, use environment variable
+
+    # Register Cursorflash blueprint with dependency injection
+    cursorflash_repository = InMemoryNewsFlashRepository()
+    cursorflash_service = NewsFlashService(repository=cursorflash_repository)
+    cursorflash_bp = create_cursorflash_blueprint(cursorflash_service)
+    app.register_blueprint(cursorflash_bp, url_prefix="/cursorflash")
 
     @app.route("/")
     def hello():
