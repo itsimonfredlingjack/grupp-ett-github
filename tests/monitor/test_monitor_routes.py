@@ -1,9 +1,9 @@
 """Tests for Monitor Routes."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from flask import Flask
-from flask.testing import FlaskClient
-from unittest.mock import MagicMock, patch
 
 from src.sejfa.monitor.monitor_routes import create_monitor_blueprint
 from src.sejfa.monitor.monitor_service import MonitorService
@@ -49,11 +49,7 @@ class TestMonitorRoutes:
 
     def test_update_state_valid(self, client, monitor_service, mock_socketio):
         """Test updating state with valid data."""
-        payload = {
-            "node": "jira",
-            "state": "active",
-            "message": "Testing"
-        }
+        payload = {"node": "jira", "state": "active", "message": "Testing"}
         response = client.post("/api/monitor/state", json=payload)
         assert response.status_code == 200
 
@@ -63,10 +59,7 @@ class TestMonitorRoutes:
 
     def test_update_state_invalid_node(self, client):
         """Test updating with invalid node."""
-        payload = {
-            "node": "invalid",
-            "state": "active"
-        }
+        payload = {"node": "invalid", "state": "active"}
         response = client.post("/api/monitor/state", json=payload)
         assert response.status_code == 400
         data = response.get_json()
@@ -76,9 +69,7 @@ class TestMonitorRoutes:
         """Test updating with no data."""
         response = client.post("/api/monitor/state", json={})
         # Note: Depending on Flask version/config, this might be 400 if get_json fails
-        # or if we check "if not data". In our route: if not data -> 400.
-        # But an empty dict is "data", so it might pass validation if keys are optional?
-        # The route checks `if not data: return ... 400`. Empty dict is truthy? No, empty dict is falsy.
+        # or if we check "if not data".
         assert response.status_code == 400
 
     def test_reset(self, client, monitor_service, mock_socketio):
@@ -93,10 +84,7 @@ class TestMonitorRoutes:
 
     def test_update_task(self, client, monitor_service, mock_socketio):
         """Test updating task info."""
-        payload = {
-            "title": "New Task",
-            "status": "running"
-        }
+        payload = {"title": "New Task", "status": "running"}
         response = client.post("/api/monitor/task", json=payload)
         assert response.status_code == 200
 
