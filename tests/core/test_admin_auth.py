@@ -15,6 +15,7 @@ def client() -> FlaskClient:
     """
     app = create_app()
     app.config["TESTING"] = True
+    app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for auth tests
     with app.test_client() as client:
         yield client
 
