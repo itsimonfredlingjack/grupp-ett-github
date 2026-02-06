@@ -60,6 +60,27 @@ class TestHealthEndpoint:
         assert "status" in data
         assert data["status"] == "healthy"
 
+    def test_health_contains_status(self, client: FlaskClient) -> None:
+        """Test that the health endpoint returns status and timestamp."""
+        from datetime import datetime
+
+        response = client.get("/health")
+        data = response.get_json()
+
+        # Check that both required fields are present
+        assert "status" in data
+        assert "timestamp" in data
+
+        # Verify status value
+        assert data["status"] == "healthy"
+
+        # Verify timestamp is valid ISO-8601 format
+        timestamp_str = data["timestamp"]
+        try:
+            datetime.fromisoformat(timestamp_str)
+        except (ValueError, TypeError):
+            pytest.fail(f"Invalid ISO-8601 timestamp: {timestamp_str}")
+
 
 class TestAppCreation:
     """Tests for app factory function."""
