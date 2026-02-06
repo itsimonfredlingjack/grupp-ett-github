@@ -65,9 +65,11 @@ def create_app() -> Flask:
         """Health check endpoint.
 
         Returns:
-            Response: JSON response with health status.
+            Response: JSON response with health status and timestamp.
         """
-        return jsonify({"status": "healthy"})
+        from datetime import datetime
+
+        return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
     # Admin authentication routes
     @app.route("/admin/login", methods=["POST"])
