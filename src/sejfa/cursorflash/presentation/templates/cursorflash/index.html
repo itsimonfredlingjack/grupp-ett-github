@@ -234,6 +234,33 @@
             color: #8a2be2;
             margin-top: 5px;
         }
+
+        .error-banner {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-left: 4px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        input.error {
+            border-color: #ff0000 !important;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        input[type="email"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8a2be2;
+            border-radius: 5px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -285,6 +312,44 @@
                 </div>
 
                 <button type="submit">Lägg till Flash</button>
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h2>Prenumerera på Nyhetsflash</h2>
+
+            {% if subscription_error %}
+                <div class="error-banner">
+                    {{ subscription_error }}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('cursorflash.subscribe_confirm') }}">
+                <div class="form-group">
+                    <label for="email">E-postadress:</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ email_value or '' }}"
+                        placeholder="din@email.com"
+                        {% if subscription_error %}class="error"{% endif %}
+                        required
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Namn (valfritt):</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value="{{ name_value or '' }}"
+                        placeholder="Ditt namn"
+                    />
+                </div>
+
+                <button type="submit">Prenumerera</button>
             </form>
         </div>
 
