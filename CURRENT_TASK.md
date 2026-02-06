@@ -61,8 +61,8 @@ Dockerfile CMD fungerar med den nya app-strukturen (verifiera att gunicorn hitta
 - [x] Test: POST /subscribe/confirm med giltig data returnerar 200
 - [x] Dockerfile CMD fungerar med gunicorn (app:app)
 - [x] All linting passes (ruff check .)
-- [ ] Changes committed and pushed
-- [ ] PR created
+- [x] Changes committed and pushed
+- [x] PR created (#209)
 
 ---
 
@@ -137,6 +137,9 @@ Dockerfile CMD fungerar med den nya app-strukturen (verifiera att gunicorn hitta
 | 4 | Implement routes & templates | ✅ Blueprint, templates, CSS | PASS (243/243) | PASS |
 | 5 | Update app.py integration | ✅ News Flash at /, /api for old endpoint | PASS (243/243) | PASS |
 | 6 | Create .env.example | ✅ Configuration template | PASS (243/243) | PASS |
+| 7 | Fix linting (remove unused import) | ✅ Removed pytest import | PASS (243/243) | PASS |
+| 8 | Commit and push | ✅ Pushed to remote | PASS (243/243) | PASS |
+| 9 | Create PR | ✅ PR #209 created | PASS (243/243) | PASS |
 
 ---
 
@@ -177,6 +180,8 @@ Dockerfile CMD fungerar med den nya app-strukturen (verifiera att gunicorn hitta
 
 ---
 
-**Status:** ✅ READY TO COMMIT
+**Status:** ✅ COMPLETE
+
+**PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/209
 
 **Branch:** feature/GE-39-news-flash-presentation-layer
