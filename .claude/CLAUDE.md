@@ -7,6 +7,7 @@
 3. **Kör tester efter varje kodändring** - `pytest -xvs`
 4. **Commit-format:** `PROJ-XXX: [beskrivning]`
 5. **Branch-namngivning:** `feature/PROJ-XXX-kort-beskrivning`
+6. **🔴 PRODUKTION:** https://gruppett.fredlingautomation.dev (Cloudflare Tunnel → localhost:5000) - Se [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md) för detaljer
 
 ---
 

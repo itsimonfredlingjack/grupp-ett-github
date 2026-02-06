@@ -204,6 +204,14 @@ To use the autonomous development features, use the **Ralph Skills** located in 
 
 ---
 
+## 📚 Documentation
+
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Production deployment guide (Cloudflare Tunnel setup, troubleshooting Error 1033)
+- **[jules-playbook.md](docs/jules-playbook.md)** - Jules AI review system guide
+- **[CURRENT_TASK.md](docs/CURRENT_TASK.md)** - Active task context (agent memory)
+
+---
+
 ## 📂 Project Structure
 
 ```
