@@ -134,9 +134,7 @@ class TestCursorflashIntegration:
 class TestSubscriptionIntegration:
     """Test subscription functionality."""
 
-    def test_subscribe_confirm_with_valid_data(
-        self, client: FlaskClient
-    ) -> None:
+    def test_subscribe_confirm_with_valid_data(self, client: FlaskClient) -> None:
         """Test successful subscription with valid email and name."""
         response = client.post(
             "/cursorflash/subscribe/confirm",
@@ -197,9 +195,7 @@ class TestSubscriptionIntegration:
         # Should have error class or error styling
         assert b"error" in response.data.lower()
 
-    def test_subscribe_confirm_normalizes_email(
-        self, client: FlaskClient
-    ) -> None:
+    def test_subscribe_confirm_normalizes_email(self, client: FlaskClient) -> None:
         """Test that email is normalized (uppercase -> lowercase, trimmed)."""
         response = client.post(
             "/cursorflash/subscribe/confirm",

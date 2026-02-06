@@ -62,10 +62,7 @@ def create_blueprint(flash_service: FlashService) -> Blueprint:
             result = subscription_service.process_subscription(email, name)
 
             # Success - redirect with success message
-            flash(
-                f"Tack för din prenumeration, {result['name']}!",
-                "success"
-            )
+            flash(f"Tack för din prenumeration, {result['name']}!", "success")
             return redirect(url_for("cursorflash.index"))
 
         except ValidationError as e:
