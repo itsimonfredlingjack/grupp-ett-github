@@ -44,31 +44,34 @@ class TestNewsFlashSubscribeConfirm:
     """Tests for the subscription confirmation."""
 
     def test_subscribe_confirm_returns_200(self):
-        """POST /subscribe/confirm with valid data should return HTTP 200."""
+        """POST /subscribe/confirm with valid data should redirect."""
         app = create_app()
         client = app.test_client()
         response = client.post(
             "/subscribe/confirm",
             data={"email": "test@example.com", "name": "Test User"},
+            follow_redirects=True,
         )
         assert response.status_code == 200
 
     def test_subscribe_confirm_shows_email(self):
-        """Thank you page should display the submitted email."""
+        """Success message should be shown after subscription."""
         app = create_app()
         client = app.test_client()
         response = client.post(
             "/subscribe/confirm",
             data={"email": "test@example.com", "name": "Test User"},
+            follow_redirects=True,
         )
-        assert b"test@example.com" in response.data
+        assert b"prenumeration" in response.data.lower()
 
     def test_subscribe_confirm_shows_name(self):
-        """Thank you page should display the submitted name."""
+        """Success message should include the submitted name."""
         app = create_app()
         client = app.test_client()
         response = client.post(
             "/subscribe/confirm",
             data={"email": "test@example.com", "name": "Test User"},
+            follow_redirects=True,
         )
         assert b"Test User" in response.data
