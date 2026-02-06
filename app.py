@@ -22,6 +22,7 @@ from src.sejfa.monitor.monitor_routes import (
     init_socketio_events,
 )
 from src.sejfa.monitor.monitor_service import MonitorService
+from src.sejfa.newsflash.presentation.routes import create_newsflash_blueprint
 
 # Global SocketIO instance
 socketio = None
@@ -51,9 +52,13 @@ def create_app() -> Flask:
     # Initialize SocketIO event handlers
     init_socketio_events()
 
-    @app.route("/")
+    # Register News Flash blueprint at root
+    newsflash_blueprint = create_newsflash_blueprint()
+    app.register_blueprint(newsflash_blueprint)
+
+    @app.route("/api")
     def hello():
-        """Root endpoint returning a greeting.
+        """API endpoint returning a greeting.
 
         Returns:
             Response: JSON response with greeting message.

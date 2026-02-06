@@ -20,21 +20,21 @@ def client() -> FlaskClient:
 
 
 class TestHelloEndpoint:
-    """Tests for the root endpoint."""
+    """Tests for the API endpoint."""
 
     def test_hello_returns_200(self, client: FlaskClient) -> None:
-        """Test that the root endpoint returns 200 OK."""
-        response = client.get("/")
+        """Test that the API endpoint returns 200 OK."""
+        response = client.get("/api")
         assert response.status_code == 200
 
     def test_hello_returns_json(self, client: FlaskClient) -> None:
-        """Test that the root endpoint returns JSON."""
-        response = client.get("/")
+        """Test that the API endpoint returns JSON."""
+        response = client.get("/api")
         assert response.content_type == "application/json"
 
     def test_hello_returns_message(self, client: FlaskClient) -> None:
-        """Test that the root endpoint returns expected message."""
-        response = client.get("/")
+        """Test that the API endpoint returns expected message."""
+        response = client.get("/api")
         data = response.get_json()
         assert "message" in data
         assert data["message"] == "Hello, Agentic Dev Loop!"
@@ -97,4 +97,5 @@ class TestAppCreation:
         app = create_app()
         rules = [rule.rule for rule in app.url_map.iter_rules()]
         assert "/" in rules
+        assert "/api" in rules
         assert "/health" in rules
