@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Subscribe - News Flash{% endblock %}
+
+{% block content %}
+<section class="subscribe">
+    <div class="subscribe__container">
+        <h2 class="subscribe__heading">Join Our Newsletter</h2>
+        <p class="subscribe__subtitle">Get the latest tech news delivered to your inbox</p>
+
+        <form action="{{ url_for('newsflash.subscribe_confirm') }}" method="POST" class="subscribe__form">
+            <div class="form__group">
+                <label for="email" class="form__label">Email Address *</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form__input"
+                    placeholder="you@example.com"
+                    required
+                >
+            </div>
+
+            <div class="form__group">
+                <label for="name" class="form__label">Name (Optional)</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="form__input"
+                    placeholder="Your name"
+                >
+            </div>
+
+            <button type="submit" class="form__button">Subscribe</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
