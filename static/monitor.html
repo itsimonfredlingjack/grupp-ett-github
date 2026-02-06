@@ -1354,7 +1354,11 @@
         }
 
         // WebSocket connection
-        const socket = io('http://localhost:5000/monitor', {
+        const pageOrigin = window.location.origin;
+        const socketUrl = pageOrigin && pageOrigin !== 'null'
+            ? `${pageOrigin}/monitor`
+            : 'http://localhost:5000/monitor';
+        const socket = io(socketUrl, {
             transports: ['websocket', 'polling']
         });
 
