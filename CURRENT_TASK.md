@@ -41,8 +41,8 @@ Acceptance Criteria:
 - [x] Test: test_health_returns_200 finns och passerar
 - [x] Test: test_health_contains_status finns och passerar
 - [x] All linting passes (ruff check .)
-- [ ] Changes committed and pushed
-- [ ] PR created
+- [x] Changes committed and pushed
+- [x] PR created
 
 ---
 
@@ -82,6 +82,7 @@ Acceptance Criteria:
 | 1 | Task initialized | ✅ Branch created | - | - |
 | 2 | Add test_health_contains_status | ✅ Test written (RED) | FAIL | - |
 | 3 | Update /health endpoint with timestamp | ✅ Implemented (GREEN) | PASS (236/236) | PASS |
+| 4 | Commit, push, create PR | ✅ Complete | PASS (236/236) | PASS |
 
 ---
 
@@ -103,9 +104,11 @@ Acceptance Criteria:
 1. ~~Write failing tests~~ ✅
 2. ~~Implement /health endpoint~~ ✅
 3. ~~Verify all tests pass~~ ✅
-4. Commit and push
-5. Create PR
+4. ~~Commit and push~~ ✅
+5. ~~Create PR~~ ✅
 
 ---
 
-**Next Step:** Commit changes and push to remote
+**Status:** ✅ COMPLETE
+
+**PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/207
