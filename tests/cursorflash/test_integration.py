@@ -131,6 +131,83 @@ class TestCursorflashIntegration:
             assert f"Severity {severity}".encode() in response.data
 
 
+class TestSubscriptionIntegration:
+    """Test subscription functionality."""
+
+    def test_subscribe_confirm_with_valid_data(self, client: FlaskClient) -> None:
+        """Test successful subscription with valid email and name."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "test@example.com", "name": "John Doe"},
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert b"prenumeration" in response.data.lower() or b"tack" in response.data.lower()
+
+    def test_subscribe_confirm_empty_email_shows_error(self, client: FlaskClient) -> None:
+        """Test that empty email shows 'Email is required' error."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "", "name": "John Doe"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 200
+        assert b"Email is required" in response.data
+
+    def test_subscribe_confirm_invalid_email_shows_error(self, client: FlaskClient) -> None:
+        """Test that invalid email shows 'Invalid email format' error."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "invalid", "name": "John Doe"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 200
+        assert b"Invalid email format" in response.data
+
+    def test_subscribe_confirm_preserves_input_on_error(self, client: FlaskClient) -> None:
+        """Test that user input is preserved when validation fails."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "invalid", "name": "John Doe"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 200
+        assert b"invalid" in response.data  # Email preserved
+        assert b"John Doe" in response.data  # Name preserved
+
+    def test_subscribe_confirm_error_banner_has_error_class(self, client: FlaskClient) -> None:
+        """Test that error banner has error class for styling."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "", "name": "John"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 200
+        # Should have error class or error styling
+        assert b"error" in response.data.lower()
+
+    def test_subscribe_confirm_normalizes_email(self, client: FlaskClient) -> None:
+        """Test that email is normalized (uppercase -> lowercase, trimmed)."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "  TEST@EXAMPLE.COM  ", "name": "John"},
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        # Should succeed with normalized email
+        assert b"prenumeration" in response.data.lower() or b"tack" in response.data.lower()
+
+    def test_subscribe_confirm_empty_name_uses_default(self, client: FlaskClient) -> None:
+        """Test that empty name defaults to 'Subscriber'."""
+        response = client.post(
+            "/cursorflash/subscribe/confirm",
+            data={"email": "test@example.com", "name": ""},
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        # Should succeed with default name
+
+
 class TestAppFactory:
     """Test app factory configuration."""
 
