@@ -48,6 +48,9 @@ Implementera business-lagret med en SubscriptionService som validerar och normal
 | 4 | Write presentation layer tests | ✅ | Added 7 integration tests for /subscribe/confirm route |
 | 5 | Implement route & template | ✅ | Added route in routes.py, subscription form in index.html |
 | 6 | All tests passing | ✅ | 270 tests pass, no lint errors, all acceptance criteria met |
+| 7 | Fix linting errors | ✅ | Fixed line length violations in test file |
+| 8 | Push to remote | ✅ | Pushed to feature/GE-40-news-flash-business-layer |
+| 9 | Create PR | ✅ | PR #211 created, Jira updated with PR link |
 
 ---
 
