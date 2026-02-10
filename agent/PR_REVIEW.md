@@ -2,28 +2,28 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Admin Authentication Bypass (Security)
+The `AdminAuthService.validate_session_token` method accepts any token starting with `token_` without verification, allowing unauthorized access to admin endpoints.
+**Action:** Implement secure token validation (e.g., JWT or server-side session store).
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
-
-## Medium Severity
-
-### 3. Unprotected Monitoring Endpoints (Security)
+### 2. Unprotected Monitoring Endpoints (Security)
 The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
 **Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
 
+### 3. Stored XSS in Monitor Dashboard (Security)
+The monitoring dashboard (`static/monitor.html`) renders `message` content using `innerHTML` without sanitization. An attacker can inject malicious scripts via the unauthenticated `POST /api/monitor/state` endpoint, executing code in the browser of any user viewing the dashboard.
+**Action:** Sanitize the `message` content before rendering or use `textContent` instead of `innerHTML`.
+
+## Medium Severity
+
+### 4. Hardcoded Admin Credentials (Security)
+The `AdminAuthService` uses hardcoded credentials (`admin`/`admin123`) which are insecure for production and exposed in the codebase.
+**Action:** Use environment variables or a secure database for credentials.
+
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
 ### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
+The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production without proper WSGI server configuration.
 **Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
