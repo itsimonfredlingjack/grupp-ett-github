@@ -17,6 +17,7 @@ class Subscriber(db.Model):
         email: Unique, indexed email address.
         name: Subscriber name.
         subscribed_at: Timestamp when the subscriber was created.
+        active: Whether the subscriber is active.
     """
 
     __tablename__ = "subscribers"
@@ -27,3 +28,4 @@ class Subscriber(db.Model):
     subscribed_at: datetime = db.Column(
         db.DateTime, nullable=False, default=datetime.now
     )
+    active: bool = db.Column(db.Boolean, nullable=False, default=True)
