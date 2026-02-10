@@ -13,8 +13,12 @@ def client() -> FlaskClient:
     Returns:
         FlaskClient: Test client instance.
     """
-    app = create_app()
-    app.config["TESTING"] = True
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        }
+    )
     with app.test_client() as client:
         yield client
 

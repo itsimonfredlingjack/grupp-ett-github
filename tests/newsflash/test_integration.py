@@ -6,18 +6,30 @@ import pytest
 from flask import Flask
 from flask.testing import FlaskClient
 
+from src.sejfa.newsflash.business.subscription_service import SubscriptionService
+from src.sejfa.newsflash.data.models import db
+from src.sejfa.newsflash.data.subscriber_repository import SubscriberRepository
 from src.sejfa.newsflash.presentation.routes import create_newsflash_blueprint
 
 
 @pytest.fixture
 def app() -> Flask:
-    """Create test application."""
+    """Create test application with in-memory SQLite."""
     app = Flask(__name__)
     app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.secret_key = "test-secret-key"
 
-    # Register blueprint
-    bp = create_newsflash_blueprint()
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    # Register blueprint with DI
+    repo = SubscriberRepository()
+    service = SubscriptionService(repository=repo)
+    bp = create_newsflash_blueprint(subscription_service=service)
     app.register_blueprint(bp, url_prefix="/newsflash")
 
     return app
@@ -116,3 +128,41 @@ class TestNewsFlashSubscription:
         )
         assert response.status_code == 200
         # Should succeed with default name
+
+    def test_subscribe_saves_to_database(self, app: Flask, client: FlaskClient) -> None:
+        """Test that form submission persists subscriber to database."""
+        response = client.post(
+            "/newsflash/subscribe/confirm",
+            data={"email": "dbtest@example.com", "name": "DB Test"},
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+
+        # Verify subscriber was persisted
+        with app.app_context():
+            from src.sejfa.newsflash.data.models import Subscriber
+
+            subscriber = db.session.execute(
+                db.select(Subscriber).filter_by(email="dbtest@example.com")
+            ).scalar_one_or_none()
+
+            assert subscriber is not None
+            assert subscriber.name == "DB Test"
+
+    def test_subscribe_duplicate_email_shows_error(self, client: FlaskClient) -> None:
+        """Test that duplicate email shows error message."""
+        # First subscription
+        client.post(
+            "/newsflash/subscribe/confirm",
+            data={"email": "dup@example.com", "name": "First"},
+            follow_redirects=True,
+        )
+
+        # Second subscription with same email
+        response = client.post(
+            "/newsflash/subscribe/confirm",
+            data={"email": "dup@example.com", "name": "Second"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 200
+        assert b"This email is already subscribed" in response.data
