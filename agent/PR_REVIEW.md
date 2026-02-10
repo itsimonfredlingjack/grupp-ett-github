@@ -2,28 +2,20 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Botched Merge: Discarded Changes (Process)
+The merge commit `06bf182` discarded the changes from the source branch (commit `69b8c8d`), causing critical review findings (e.g., Admin Auth Bypass) to be lost and invalid findings (e.g., deleted hooks) to be retained.
+**Action:** Re-perform the merge to include changes from `69b8c8d`, or ensure `agent/PR_REVIEW.md` is manually updated.
+
+### 2. Admin Authentication Bypass (Security)
+The `AdminAuthService.validate_session_token` method accepts any token starting with `token_` without verification, allowing unauthorized access.
+**Action:** Implement secure token validation (e.g., JWT or server-side session store).
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 3. Stale Task Context (Reliability)
+The `CURRENT_TASK.md` file has been reverted to an old state (GE-39), overwriting the active task (GE-48). This destroys the agent's external memory context.
+**Action:** Restore `CURRENT_TASK.md` to the state from the base branch (GE-48).
 
-## Medium Severity
-
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
-
-## Low Severity
-
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 4. Hardcoded Admin Credentials (Security)
+The `AdminAuthService` uses hardcoded credentials ("admin"/"admin123") which are insecure for production.
+**Action:** Use environment variables or a secure database for credentials.
