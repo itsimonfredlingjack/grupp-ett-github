@@ -1,29 +1,35 @@
-# PR Review Findings
-
-## Critical Severity
-
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+# Automated PR Review Findings
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 1. Unauthenticated Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (`/state`, `/reset`, `/task`) are publicly accessible without authentication. This allows unauthorized users to manipulate the monitoring state.
+**Action:** Implement authentication (e.g., `@login_required` or token check).
+
+### 2. In-Memory State & Split-Brain (Reliability)
+`MonitorService` relies on in-memory dictionaries (`self.nodes`, `self.event_log`). In a production environment with multiple Gunicorn workers (as indicated by `CURRENT_TASK.md`), each worker will maintain isolated state, causing inconsistent data ("split-brain").
+**Action:** Use an external state store (e.g., Redis) or ensure sticky sessions if using single-process deployment.
+
+### 3. Lack of Thread Safety (Reliability)
+`MonitorService` modifies shared state without locks (`threading.RLock`). Concurrent requests can race and corrupt data, leading to unpredictable behavior.
+**Action:** Add thread safety mechanisms (locks) around state modifications.
+
+### 4. Broken CI Configuration (Reliability)
+The `.github/workflows/ci_branch.yml` workflow installs dependencies manually (`pip install pytest ... flask`) and omits `flask-socketio`. The new tests in `tests/monitor/test_monitor_routes.py` depend on `flask-socketio`, so CI will fail with `ImportError`.
+**Action:** Update the workflow to `pip install -r requirements.txt` or explicitly add `flask-socketio`.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 5. Module-Level Global State (Reliability)
+`src/sejfa/monitor/monitor_routes.py` uses module-level global variables (`monitor_service`, `socketio`) set by `create_monitor_blueprint`. This creates temporal coupling and makes testing fragile, preventing concurrent test execution or multiple app instances.
+**Action:** Store services in `current_app.extensions` or use dependency injection properly.
+
+### 6. Missing WebSocket Verification (Test Coverage)
+The new tests in `tests/monitor/test_monitor_routes.py` cover REST endpoints but do not verify WebSocket event emissions. This leaves a critical part of the functionality untested.
+**Action:** Add tests using `socketio.test_client(app)` to verify `state_update` events are emitted.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 7. Deprecated datetime.utcnow() (Correctness)
+Both `src/sejfa/monitor/monitor_routes.py` and `src/sejfa/monitor/monitor_service.py` use `datetime.utcnow()`, which is deprecated in Python 3.12.
+**Action:** Replace with `datetime.now(timezone.utc)`.
