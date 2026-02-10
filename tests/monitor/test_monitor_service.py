@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from src.sejfa.monitor.monitor_service import MonitorService, WorkflowNode
+from src.sejfa.monitor.monitor_service import MonitorService
 
 
 class TestMonitorService:

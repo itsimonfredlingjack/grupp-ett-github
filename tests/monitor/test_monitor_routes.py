@@ -1,12 +1,15 @@
 """Tests for Monitor Routes."""
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from flask import Flask
 
-from src.sejfa.monitor.monitor_routes import create_monitor_blueprint, init_socketio_events
+from src.sejfa.monitor.monitor_routes import (
+    create_monitor_blueprint,
+    init_socketio_events,
+)
 from src.sejfa.monitor.monitor_service import MonitorService
 
 
@@ -91,7 +94,8 @@ class TestMonitorRoutes:
         assert data["success"] is True
         assert data["current_state"]["task_info"]["title"] == "New Task"
         assert data["current_state"]["task_info"]["status"] == "running"
-        assert data["current_state"]["task_info"]["start_time"] is not None # Should be set automatically
+        # Should be set automatically
+        assert data["current_state"]["task_info"]["start_time"] is not None
 
     def test_update_task_no_json(self, client):
         """Test POST /api/monitor/task with no JSON."""
