@@ -85,9 +85,7 @@ class TestNewsFlashSubscription:
         assert b"invalid" in response.data  # Email preserved
         assert b"John Doe" in response.data  # Name preserved
 
-    def test_subscribe_confirm_error_banner_visible(
-        self, client: FlaskClient
-    ) -> None:
+    def test_subscribe_confirm_error_banner_visible(self, client: FlaskClient) -> None:
         """Test that error banner is visible on validation failure."""
         response = client.post(
             "/newsflash/subscribe/confirm",
