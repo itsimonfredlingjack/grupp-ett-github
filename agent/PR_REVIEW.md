@@ -1,29 +1,35 @@
 # PR Review Findings
 
-## Critical Severity
-
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
-
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 1. Incompatible Monitor Client Payload (Correctness)
+The `monitor_client.py` sends `action="start"` and `task_id` in `start_task`, but `monitor_routes.py` expects `status` and `start_time` (ignoring `action`). As a result, tasks initiated by the client remain in the "idle" state on the dashboard.
+**Action:** Update `monitor_client.py` to send `status="running"` and `start_time` in the payload, or update `monitor_routes.py` to handle the `action` field.
+
+### 2. Thread Safety Issues in MonitorService (Reliability)
+The `MonitorService` manages shared state (`nodes`, `event_log`) without any synchronization primitives (e.g., `threading.Lock`). In a multi-threaded Flask environment, this will lead to race conditions and data corruption.
+**Action:** Introduce `threading.RLock` to protect access to shared dictionaries and lists in `MonitorService`.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 3. Test Isolation Leak in stop-hook tests (Test Quality)
+The `tests/agent/test_stop_hook.py` fixture `stop_hook` modifies `sys.modules["monitor_client"]` globally but fails to restore it after the test. This can cause subsequent tests that rely on the real `monitor_client` to fail or behave unpredictably.
+**Action:** Use `mock.patch.dict(sys.modules, ...)` or manually restore `sys.modules` in a `yield` fixture teardown.
+
+### 4. Missing WebSocket Tests (Test Coverage)
+The new test suite `tests/monitor/test_monitor_routes.py` covers REST endpoints but completely lacks coverage for WebSocket events (`connect`, `disconnect`, `state_update`). The `monitor_routes.py` module contains significant SocketIO logic that is currently untested.
+**Action:** Add a test file (e.g., `tests/monitor/test_monitor_socket.py`) using `socketio.test_client(app)` to verify event emission and handling.
+
+### 5. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints (e.g., `/api/monitor/state`) are publicly accessible without any authentication. This allows unauthorized users to inject fake events, reset the state, or disrupt monitoring.
+**Action:** Implement a simple API key check (e.g., `Authorization: Bearer <KEY>`) or integrate with `AdminAuthService`.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
+### 6. Global State in Monitor Routes (Maintainability)
+The `src/sejfa/monitor/monitor_routes.py` module relies on global variables `monitor_service` and `socketio`, which are injected via `create_monitor_blueprint`. This pattern makes the module difficult to test and reuse, and prone to initialization order issues.
+**Action:** Refactor to use `current_app` extensions or a proper dependency injection pattern.
 
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 7. Deprecated datetime.utcnow() Usage (Reliability)
+The code uses `datetime.utcnow()`, which is deprecated in Python 3.12. It returns a naive datetime object that can cause timezone confusion.
+**Action:** Replace with `datetime.now(datetime.timezone.utc)`.
