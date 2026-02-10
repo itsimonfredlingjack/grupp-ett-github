@@ -30,6 +30,6 @@ The `stop_hook` fixture in `tests/agent/test_stop_hook.py` modifies `sys.modules
 `src/sejfa/monitor/monitor_routes.py` uses module-level global variables (`monitor_service`, `socketio`) that are overwritten by `create_monitor_blueprint`. This prevents running multiple app instances or parallel tests involving this blueprint.
 **Action:** Store dependencies in `current_app.extensions` or `current_app.config` instead of module globals.
 
-### 7. Missing Monitor Tests (Test Coverage)
-The file `tests/monitor/test_monitor_routes.py` (referenced in previous findings) does not exist. Consequently, the monitoring endpoints (especially WebSocket events like `connect` and `request_state`) are completely untested.
-**Action:** Create `tests/monitor/test_monitor_routes.py` and add tests for HTTP endpoints and WebSocket events.
+### 7. Missing Monitor Tests (Resolved)
+The file `tests/monitor/test_monitor_routes.py` was missing, causing low coverage in the monitoring module.
+**Action:** Created `tests/monitor/test_monitor_routes.py` with comprehensive tests for HTTP endpoints and WebSocket events.
