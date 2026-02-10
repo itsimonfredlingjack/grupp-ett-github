@@ -5,7 +5,8 @@
 - **Summary:** Koppla admin-endpoints till SQLAlchemy-databasen
 - **Type:** Task
 - **Priority:** Medium
-- **Status:** In Progress
+- **Status:** Complete - In Review
+- **PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/316
 - **Branch:** feature/GE-49-koppla-admin-endpoints-till-sqlalchemy-db
 
 ## Beskrivning
