@@ -185,3 +185,5 @@ Dockerfile CMD fungerar med den nya app-strukturen (verifiera att gunicorn hitta
 **PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/209
 
 **Branch:** feature/GE-39-news-flash-presentation-layer
+
+push-ok
