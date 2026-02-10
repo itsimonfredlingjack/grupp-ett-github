@@ -60,9 +60,7 @@ class SubscriberRepository:
         Returns:
             List of all subscribers.
         """
-        return list(
-            db.session.execute(db.select(Subscriber)).scalars().all()
-        )
+        return list(db.session.execute(db.select(Subscriber)).scalars().all())
 
     def get_by_id(self, subscriber_id: int) -> Subscriber | None:
         """Get a subscriber by ID.
@@ -165,9 +163,7 @@ class SubscriberRepository:
                     "id": subscriber.id,
                     "email": subscriber.email,
                     "name": subscriber.name,
-                    "subscribed_date": subscriber.subscribed_at.strftime(
-                        "%Y-%m-%d"
-                    ),
+                    "subscribed_date": subscriber.subscribed_at.strftime("%Y-%m-%d"),
                     "active": subscriber.active,
                 }
             )
@@ -179,13 +175,9 @@ class SubscriberRepository:
         Returns:
             Dictionary with total, active, and inactive counts.
         """
-        total = db.session.execute(
-            db.select(db.func.count(Subscriber.id))
-        ).scalar_one()
+        total = db.session.execute(db.select(db.func.count(Subscriber.id))).scalar_one()
         active = db.session.execute(
-            db.select(db.func.count(Subscriber.id)).filter(
-                Subscriber.active.is_(True)
-            )
+            db.select(db.func.count(Subscriber.id)).filter(Subscriber.active.is_(True))
         ).scalar_one()
         return {
             "total_subscribers": total,

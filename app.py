@@ -270,9 +270,7 @@ def create_app(config: dict | None = None) -> Flask:
             return jsonify({"error": "Missing search query"}), 400
 
         results = subscriber_repository.search(query)
-        return jsonify(
-            {"results": [_subscriber_to_dict(s) for s in results]}
-        ), 200
+        return jsonify({"results": [_subscriber_to_dict(s) for s in results]}), 200
 
     @app.route("/admin/subscribers/export", methods=["GET"])
     @require_admin_token
@@ -286,9 +284,7 @@ def create_app(config: dict | None = None) -> Flask:
         return Response(
             csv_data,
             mimetype="text/csv",
-            headers={
-                "Content-Disposition": "attachment;filename=subscribers.csv"
-            },
+            headers={"Content-Disposition": "attachment;filename=subscribers.csv"},
         )
 
     # Register ExpenseTracker blueprint with DI

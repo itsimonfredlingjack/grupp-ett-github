@@ -67,9 +67,7 @@ class TestAdminReadsFromDatabase:
         emails = [s["email"] for s in data["subscribers"]]
         assert "newsflash@example.com" in emails
 
-    def test_statistics_counts_db_subscribers(
-        self, app, client: FlaskClient
-    ) -> None:
+    def test_statistics_counts_db_subscribers(self, app, client: FlaskClient) -> None:
         """GET /admin/statistics shows correct count from database."""
         seed_subscriber_via_db(app, "stat1@example.com", "Stat One")
         seed_subscriber_via_db(app, "stat2@example.com", "Stat Two")
@@ -85,9 +83,7 @@ class TestAdminReadsFromDatabase:
         assert data["total_subscribers"] >= 2
         assert data["active_subscribers"] >= 2
 
-    def test_search_finds_db_subscribers(
-        self, app, client: FlaskClient
-    ) -> None:
+    def test_search_finds_db_subscribers(self, app, client: FlaskClient) -> None:
         """Search endpoint finds subscribers stored in the database."""
         seed_subscriber_via_db(app, "findme@example.com", "Findable")
         token = login_admin(client)
@@ -102,9 +98,7 @@ class TestAdminReadsFromDatabase:
         emails = [s["email"] for s in data["results"]]
         assert "findme@example.com" in emails
 
-    def test_export_includes_db_subscribers(
-        self, app, client: FlaskClient
-    ) -> None:
+    def test_export_includes_db_subscribers(self, app, client: FlaskClient) -> None:
         """Export CSV includes subscribers stored in the database."""
         seed_subscriber_via_db(app, "export@example.com", "Export User")
         token = login_admin(client)
