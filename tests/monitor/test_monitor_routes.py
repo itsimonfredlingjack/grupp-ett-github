@@ -53,10 +53,7 @@ class TestMonitorRoutes:
 
         # Verify socket emission
         mock_socketio.emit.assert_called_with(
-            "state_update",
-            data["current_state"],
-            namespace="/monitor",
-            skip_sid=None
+            "state_update", data["current_state"], namespace="/monitor", skip_sid=None
         )
 
     def test_update_state_invalid_node(self, client):
