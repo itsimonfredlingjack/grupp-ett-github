@@ -5,6 +5,7 @@ This is a minimal Flask app used to demonstrate the TDD workflow
 and test infrastructure of the project.
 """
 
+import os
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
@@ -46,22 +47,25 @@ def create_app(config: dict | None = None) -> Flask:
     app = Flask(__name__)
     app.secret_key = "dev-secret-key"  # In production, use environment variable
 
-    # Database configuration
-    app.config.setdefault("SQLALCHEMY_DATABASE_URI", "sqlite:///newsflash.db")
+    # Database configuration: DATABASE_URL env var, fallback to SQLite
+    default_db_uri = os.environ.get("DATABASE_URL", "sqlite:///newsflash.db")
+    app.config.setdefault("SQLALCHEMY_DATABASE_URI", default_db_uri)
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
 
     # Apply config overrides
     if config:
         app.config.update(config)
 
+    # Ensure instance directory exists for file-based SQLite
+    os.makedirs(app.instance_path, exist_ok=True)
+
     # Initialize SQLAlchemy and Migrate (two-phase pattern)
     db.init_app(app)
     Migrate(app, db)
 
-    # Create tables in testing mode (production uses migrations)
-    if app.config.get("TESTING"):
-        with app.app_context():
-            db.create_all()
+    # Create tables to ensure DB is usable (safe no-op if tables exist)
+    with app.app_context():
+        db.create_all()
 
     # Initialize SocketIO for real-time monitoring
     socketio = SocketIO(app, cors_allowed_origins="*")
