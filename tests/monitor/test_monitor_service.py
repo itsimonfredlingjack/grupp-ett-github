@@ -1,6 +1,7 @@
 """Tests for MonitorService."""
 
 import pytest
+
 from src.sejfa.monitor.monitor_service import MonitorService
 
 

@@ -1,9 +1,9 @@
 """Tests for Monitor API routes."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from flask import Flask
-from flask.testing import FlaskClient
-from unittest.mock import MagicMock
 
 from src.sejfa.monitor.monitor_routes import create_monitor_blueprint
 from src.sejfa.monitor.monitor_service import MonitorService
@@ -38,11 +38,10 @@ class TestMonitorRoutes:
 
     def test_update_state(self, client):
         """Test POST /api/monitor/state."""
-        response = client.post("/api/monitor/state", json={
-            "node": "jira",
-            "state": "active",
-            "message": "Processing"
-        })
+        response = client.post(
+            "/api/monitor/state",
+            json={"node": "jira", "state": "active", "message": "Processing"},
+        )
         assert response.status_code == 200
         data = response.get_json()
         assert data["success"] is True
@@ -50,10 +49,9 @@ class TestMonitorRoutes:
 
     def test_update_state_invalid_node(self, client):
         """Test POST /api/monitor/state with invalid node."""
-        response = client.post("/api/monitor/state", json={
-            "node": "invalid",
-            "state": "active"
-        })
+        response = client.post(
+            "/api/monitor/state", json={"node": "invalid", "state": "active"}
+        )
         assert response.status_code == 400
         data = response.get_json()
         assert data["success"] is False
@@ -75,10 +73,9 @@ class TestMonitorRoutes:
 
     def test_update_task(self, client):
         """Test POST /api/monitor/task."""
-        response = client.post("/api/monitor/task", json={
-            "title": "My Task",
-            "status": "running"
-        })
+        response = client.post(
+            "/api/monitor/task", json={"title": "My Task", "status": "running"}
+        )
         assert response.status_code == 200
 
         state_response = client.get("/api/monitor/state")
