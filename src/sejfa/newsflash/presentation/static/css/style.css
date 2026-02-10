@@ -1,7 +1,7 @@
 /* News Flash - Dark Theme Styles */
 
 :root {
-    --bg-dark: #0a0e1a;
+    --bg-dark: #1a1d29;
     --bg-card: #1a1f2e;
     --accent-blue: #3b82f6;
     --accent-glow: rgba(59, 130, 246, 0.3);
@@ -71,7 +71,7 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
+    background: linear-gradient(135deg, #1a1f2e 0%, #1a1d29 100%);
     padding: 6rem 2rem;
     text-align: center;
     border-bottom: 2px solid var(--accent-blue);

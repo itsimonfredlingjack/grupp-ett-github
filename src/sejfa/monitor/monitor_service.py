@@ -6,6 +6,7 @@ Tracks which node is currently active in the agentic loop
 event log for dashboard visualization.
 """
 
+import threading
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any
@@ -44,6 +45,7 @@ class MonitorService:
             "status": "idle",
             "start_time": None,
         }
+        self._lock = threading.RLock()
 
     def update_node(self, node_id: str, state: str, message: str = "") -> bool:
         """
@@ -60,21 +62,22 @@ class MonitorService:
         if node_id not in self.VALID_NODES:
             return False
 
-        is_active = state.lower() == "active"
+        with self._lock:
+            is_active = state.lower() == "active"
 
-        # Deactivate previous node if different
-        if is_active and self.current_node and self.current_node != node_id:
-            self.nodes[self.current_node].active = False
+            # Deactivate previous node if different
+            if is_active and self.current_node and self.current_node != node_id:
+                self.nodes[self.current_node].active = False
 
-        # Update node
-        self.nodes[node_id].active = is_active
-        if is_active:
-            self.nodes[node_id].last_active = self._get_timestamp()
-            self.current_node = node_id
-        self.nodes[node_id].message = message[:200]  # Truncate message to 200 chars
+            # Update node
+            self.nodes[node_id].active = is_active
+            if is_active:
+                self.nodes[node_id].last_active = self._get_timestamp()
+                self.current_node = node_id
+            self.nodes[node_id].message = message[:200]  # Truncate message to 200 chars
 
-        # Add to event log
-        self.add_event(node_id, message)
+            # Add to event log
+            self.add_event(node_id, message)
 
         return True
 
@@ -85,12 +88,15 @@ class MonitorService:
         Returns:
             Dict with current node, nodes status, event log, and task info
         """
-        return {
-            "current_node": self.current_node,
-            "nodes": {node_id: asdict(node) for node_id, node in self.nodes.items()},
-            "event_log": self.event_log,
-            "task_info": self.task_info,
-        }
+        with self._lock:
+            return {
+                "current_node": self.current_node,
+                "nodes": {
+                    node_id: asdict(node) for node_id, node in self.nodes.items()
+                },
+                "event_log": self.event_log.copy(),  # Return copy for thread safety
+                "task_info": self.task_info.copy(),
+            }
 
     def add_event(self, node_id: str, message: str) -> None:
         """
@@ -100,27 +106,29 @@ class MonitorService:
             node_id: Node identifier
             message: Event message
         """
-        event = {
-            "timestamp": self._get_timestamp(),
-            "node": node_id,
-            "message": message[:200],  # Truncate to 200 chars
-        }
-        self.event_log.append(event)
+        with self._lock:
+            event = {
+                "timestamp": self._get_timestamp(),
+                "node": node_id,
+                "message": message[:200],  # Truncate to 200 chars
+            }
+            self.event_log.append(event)
 
-        # Keep log size manageable
-        if len(self.event_log) > self.max_events:
-            self.event_log = self.event_log[-self.max_events :]
+            # Keep log size manageable
+            if len(self.event_log) > self.max_events:
+                self.event_log = self.event_log[-self.max_events :]
 
     def reset(self) -> None:
         """Reset all monitoring state."""
-        self.current_node = None
-        self.nodes = {node_id: WorkflowNode() for node_id in self.VALID_NODES}
-        self.event_log = []
-        self.task_info = {
-            "title": "Waiting for task...",
-            "status": "idle",
-            "start_time": None,
-        }
+        with self._lock:
+            self.current_node = None
+            self.nodes = {node_id: WorkflowNode() for node_id in self.VALID_NODES}
+            self.event_log = []
+            self.task_info = {
+                "title": "Waiting for task...",
+                "status": "idle",
+                "start_time": None,
+            }
 
     def set_task_info(
         self, title: str = "", status: str = "", start_time: str | None = None
@@ -133,16 +141,18 @@ class MonitorService:
             status: Task status (idle, running, completed, failed)
             start_time: ISO timestamp when task started
         """
-        if title:
-            self.task_info["title"] = title[:100]  # Truncate to 100 chars
-        if status:
-            self.task_info["status"] = status
-        if start_time:
-            self.task_info["start_time"] = start_time
+        with self._lock:
+            if title:
+                self.task_info["title"] = title[:100]  # Truncate to 100 chars
+            if status:
+                self.task_info["status"] = status
+            if start_time:
+                self.task_info["start_time"] = start_time
 
     def get_task_info(self) -> dict[str, Any]:
         """Get current task information."""
-        return self.task_info.copy()
+        with self._lock:
+            return self.task_info.copy()
 
     @staticmethod
     def _get_timestamp() -> str:

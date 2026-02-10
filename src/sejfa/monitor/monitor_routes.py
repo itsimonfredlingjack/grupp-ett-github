@@ -5,6 +5,7 @@ Provides REST endpoints and WebSocket support for streaming workflow state updat
 to connected dashboard clients.
 """
 
+import os
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
@@ -29,6 +30,14 @@ def create_monitor_blueprint(service, socket_io):
 
     blueprint = Blueprint("monitor", __name__, url_prefix="/api/monitor")
 
+    def _check_auth():
+        """Validate API key for monitor endpoints."""
+        expected_key = os.environ.get("MONITOR_API_KEY", "dev-monitor-key")
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or auth_header != f"Bearer {expected_key}":
+            return False
+        return True
+
     @blueprint.route("/state", methods=["POST"])
     def update_state():
         """
@@ -44,8 +53,11 @@ def create_monitor_blueprint(service, socket_io):
         Returns:
             JSON response with success status and current state
         """
+        if not _check_auth():
+            return jsonify({"success": False, "error": "Unauthorized"}), 401
+
         try:
-            data = request.get_json()
+            data = request.get_json(silent=True)
 
             if not data:
                 err = {"success": False, "error": "No JSON data provided"}
@@ -115,6 +127,9 @@ def create_monitor_blueprint(service, socket_io):
         Returns:
             JSON response confirming reset
         """
+        if not _check_auth():
+            return jsonify({"success": False, "error": "Unauthorized"}), 401
+
         try:
             monitor_service.reset()
             state = monitor_service.get_state()
@@ -153,8 +168,11 @@ def create_monitor_blueprint(service, socket_io):
         Returns:
             JSON response with updated state
         """
+        if not _check_auth():
+            return jsonify({"success": False, "error": "Unauthorized"}), 401
+
         try:
-            data = request.get_json()
+            data = request.get_json(silent=True)
 
             if not data:
                 err = {"success": False, "error": "No JSON data provided"}

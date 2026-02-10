@@ -15,6 +15,7 @@ from typing import Optional
 # Monitor server configuration
 MONITOR_URL = os.environ.get("MONITOR_URL", "http://localhost:5000")
 MONITOR_ENABLED = os.environ.get("MONITOR_ENABLED", "1") == "1"
+MONITOR_API_KEY = os.environ.get("MONITOR_API_KEY", "dev-monitor-key")
 
 # Node mappings for different activities
 NODE_JIRA = "jira"
@@ -56,7 +57,10 @@ def send_update(
         req = urllib.request.Request(
             url,
             data=data,
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {MONITOR_API_KEY}",
+            },
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -91,7 +95,10 @@ def start_task(task_id: str, title: str, timeout: float = 2.0) -> bool:
         req = urllib.request.Request(
             url,
             data=data,
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {MONITOR_API_KEY}",
+            },
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -114,7 +121,10 @@ def complete_task(timeout: float = 2.0) -> bool:
         req = urllib.request.Request(
             url,
             data=data,
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {MONITOR_API_KEY}",
+            },
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:

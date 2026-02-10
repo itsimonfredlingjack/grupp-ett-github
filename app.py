@@ -9,6 +9,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+import os
 from flask import Flask, Response, jsonify, request
 from flask_socketio import SocketIO
 
@@ -37,7 +38,7 @@ def create_app() -> Flask:
     global socketio
 
     app = Flask(__name__)
-    app.secret_key = "dev-secret-key"  # In production, use environment variable
+    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
     # Initialize SocketIO for real-time monitoring
     socketio = SocketIO(app, cors_allowed_origins="*")
@@ -302,4 +303,12 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=5000, host="0.0.0.0", allow_unsafe_werkzeug=True)
+    debug_mode = os.environ.get("FLASK_DEBUG", "True").lower() == "true"
+    allow_unsafe = os.environ.get("FLASK_ALLOW_UNSAFE", "True").lower() == "true"
+    socketio.run(
+        app,
+        debug=debug_mode,
+        port=5000,
+        host="0.0.0.0",
+        allow_unsafe_werkzeug=allow_unsafe,
+    )

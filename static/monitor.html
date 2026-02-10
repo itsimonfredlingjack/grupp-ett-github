@@ -1484,14 +1484,31 @@
                 }
 
                 const timestamp = new Date(event.timestamp).toLocaleTimeString();
-                eventItem.innerHTML = `
-                    <div class="event-dot"></div>
-                    <div>
-                        <div style="font-weight: bold; text-transform: uppercase;">${event.node}</div>
-                        <div>${event.message || 'Active'}</div>
-                        <div style="font-size: 0.6rem; color: #999;">${timestamp}</div>
-                    </div>
-                `;
+
+                const dot = document.createElement('div');
+                dot.className = 'event-dot';
+
+                const content = document.createElement('div');
+
+                const nodeDiv = document.createElement('div');
+                nodeDiv.style.fontWeight = 'bold';
+                nodeDiv.style.textTransform = 'uppercase';
+                nodeDiv.textContent = event.node;
+
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = event.message || 'Active';
+
+                const timeDiv = document.createElement('div');
+                timeDiv.style.fontSize = '0.6rem';
+                timeDiv.style.color = '#999';
+                timeDiv.textContent = timestamp;
+
+                content.appendChild(nodeDiv);
+                content.appendChild(msgDiv);
+                content.appendChild(timeDiv);
+
+                eventItem.appendChild(dot);
+                eventItem.appendChild(content);
 
                 eventLog.appendChild(eventItem);
             });
