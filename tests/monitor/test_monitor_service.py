@@ -1,6 +1,5 @@
 """Tests for MonitorService."""
 
-from datetime import datetime
 from src.sejfa.monitor.monitor_service import MonitorService
 
 
@@ -11,7 +10,7 @@ class TestMonitorService:
         """Test initialization."""
         service = MonitorService()
         assert service.current_node is None
-        assert len(service.nodes) == 5
+        assert len(service.nodes) == len(MonitorService.VALID_NODES)
         assert len(service.event_log) == 0
         assert service.task_info["status"] == "idle"
 
