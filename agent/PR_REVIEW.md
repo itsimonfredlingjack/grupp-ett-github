@@ -1,29 +1,22 @@
 # PR Review Findings
 
-## Critical Severity
+1. **Critical: Missing Implementation in Active Module**
+   - The active application (registered in `app.py`) uses the `newsflash` module (`src/sejfa/newsflash`), but the PR does not update its styles. `src/sejfa/newsflash/presentation/static/css/style.css` still contains the old color scheme (`#0a0e1a`, `#3b82f6`) instead of the new one (`#1a1d29` -> `#0f1117`).
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+2. **Major: Modification of Dead/Legacy Code**
+   - The commit history indicates changes were made to `src/sejfa/cursorflash/presentation/templates/cursorflash/index.html`, which is part of the legacy `cursorflash` module. This module is imported but not registered as the root blueprint in `app.py`, meaning changes here are not visible to users.
 
-## High Severity
+3. **Major: Missing Code Changes in PR**
+   - The PR diff provided for review only contains `CURRENT_TASK.md`. No source code files (`.css`, `.html`) are included in the review context, making it impossible to verify the implementation details.
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+4. **Medium: Invalid Markdown in Task File**
+   - `CURRENT_TASK.md` uses Jira Wiki syntax (e.g., `h2. User Story`) instead of standard Markdown (e.g., `## User Story`), which will render incorrectly in most viewers.
 
-## Medium Severity
+5. **Medium: Regression in Task Tracking**
+   - The update to `CURRENT_TASK.md` replaces the actionable checklist format (e.g., `- [ ] Acceptance Criteria`) with a bulleted list, preventing programmatic tracking of task progress.
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+6. **Medium: Removal of Critical Agent Instructions**
+   - The header "CRITICAL: Read this file at EVERY iteration..." was removed from `CURRENT_TASK.md`. This instruction is vital for maintaining context across agent sessions.
 
-## Low Severity
-
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+7. **Low: Typos**
+   - The Summary section in `CURRENT_TASK.md` contains a typo: "Applicaiton" instead of "Application".
