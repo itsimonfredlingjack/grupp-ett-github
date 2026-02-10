@@ -108,9 +108,16 @@ jobs:
       - name: Check commit author for bot loop
         if: ${{ steps.secret_check.outputs.available == 'true' && steps.gate.outputs.should_run == 'true' }}
         id: commit_check
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         run: |
-          COMMIT_AUTHOR=$(git log -1 --format='%an')
-          COMMIT_MSG=$(git log -1 --format='%s')
+          if [ -n "$HEAD_SHA" ]; then
+            COMMIT_AUTHOR=$(git show -s --format='%an' "$HEAD_SHA")
+            COMMIT_MSG=$(git show -s --format='%s' "$HEAD_SHA")
+          else
+            COMMIT_AUTHOR=$(git log -1 --format='%an')
+            COMMIT_MSG=$(git log -1 --format='%s')
+          fi
 
           if [[ "$COMMIT_AUTHOR" == *"[bot]"* ]]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
