@@ -4,7 +4,8 @@
 - **Key:** GE-41
 - **Summary:** News Flash — Data Layer (SQLAlchemy + migrations + repository + full integration)
 - **Type:** Task
-- **Status:** In Progress
+- **Status:** ✅ Complete - In Review
+- **PR:** https://github.com/itsimonfredlingjack/grupp-ett-github/pull/312
 - **Priority:** Medium
 - **Branch:** feature/GE-41-news-flash-data-layer
 
