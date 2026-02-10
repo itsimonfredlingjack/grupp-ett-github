@@ -35,10 +35,7 @@ class AdminAuthService:
             bool: True if credentials are valid.
         """
         creds = AdminAuthService._get_admin_credentials()
-        return (
-            username == creds["username"]
-            and password == creds["password"]
-        )
+        return username == creds["username"] and password == creds["password"]
 
     @staticmethod
     def generate_session_token(username: str) -> str:
