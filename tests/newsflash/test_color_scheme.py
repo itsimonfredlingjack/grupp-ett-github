@@ -86,8 +86,7 @@ class TestColorSchemeUpdate:
         """Verify colors use CSS variables, not hardcoded values."""
         # Find all color property declarations
         color_props = re.findall(
-            r"(background-color|color|border-color):\s*([^;]+);",
-            css_content
+            r"(background-color|color|border-color):\s*([^;]+);", css_content
         )
 
         # Check that most use var() - allow a few exceptions for gradients
@@ -240,8 +239,7 @@ class TestAccessibilityContrast:
             ratio = self.contrast_ratio(text_secondary, bg_dark)
             # Secondary text can have slightly lower contrast (WCAG AA Large Text)
             assert ratio >= 3.0, (
-                f"Text secondary contrast ratio {ratio:.2f}:1 "
-                f"should be >= 3.0:1"
+                f"Text secondary contrast ratio {ratio:.2f}:1 should be >= 3.0:1"
             )
 
     def test_accent_color_on_bg_contrast(self, css_content):
