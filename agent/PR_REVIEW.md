@@ -2,28 +2,37 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. In-Memory State in Multi-Worker Environment (Reliability)
+The `MonitorService` relies on in-memory dictionaries (`self.nodes`, `self.event_log`) to track state. In a production environment running with `gunicorn` and multiple workers, this state will be fragmented across processes, leading to inconsistent monitoring data (split-brain).
+**Action:** Use a shared data store (e.g., Redis or a database) for `MonitorService` state, or configure `gunicorn` to use a single worker with threads (though thread safety must still be addressed).
 
-## High Severity
-
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 2. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`, `POST /api/monitor/reset`) are completely unauthenticated. This allows any network user to inject false events, reset the dashboard, or disrupt the monitoring service.
+**Action:** Implement authentication for these endpoints, such as requiring an API key or a shared secret header, and validate it in a `before_request` handler or decorator.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 3. API Schema Mismatch (Correctness)
+There is a schema mismatch between the client and server implementations for task updates:
+- `monitor_client.py` sends `action` ("start", "complete") and `task_id`.
+- `monitor_routes.py` expects `status` ("idle", "running", "completed") and ignores `action` and `task_id`.
+This prevents the dashboard from correctly tracking task start/completion events.
+**Action:** Update `monitor_routes.py` to handle the `action` field and map "start"/"complete" to appropriate status updates, or update `monitor_client.py` to send the expected `status` field.
+
+### 4. Incomplete Test Coverage (Testing)
+The new test `test_update_state_success` in `tests/monitor/test_monitor_routes.py` appears to lack assertions, making it a "happy path" check that doesn't verify the actual outcome (status code or response body).
+**Action:** Add assertions to verify `response.status_code == 200` and that the returned JSON contains the expected state.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
+### 5. Use of Global Variables (Maintainability)
+The `monitor_routes.py` module relies on module-level global variables (`monitor_service`, `socketio`) which are populated via `create_monitor_blueprint`. This makes testing difficult (requiring global state management) and is not thread-safe if the module is reloaded.
+**Action:** Register these services on `current_app` or use the `g` object to ensure proper application context and thread safety.
 
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 6. Hardcoded Node Configuration (Maintainability)
+The list of valid nodes (`jira`, `claude`, `github`, `jules`, `actions`) is hardcoded in `MonitorService.VALID_NODES`. Adding a new agent or tool requires code changes to the service.
+**Action:** Move the valid node list to a configuration file or allow dynamic registration of nodes.
+
+### 7. Unsafe Development Configuration (Security)
+The `app.py` entry point enables `debug=True` and `allow_unsafe_werkzeug=True` in the `__main__` block. While this only affects direct execution, it poses a risk if the application is started this way in a production-like environment.
+**Action:** Ensure these settings are disabled in production, preferably by using environment variables (e.g., `FLASK_DEBUG`) to control debug mode.
