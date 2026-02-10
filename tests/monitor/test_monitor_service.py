@@ -1,6 +1,5 @@
 """Tests for MonitorService."""
 
-from datetime import datetime
 from src.sejfa.monitor.monitor_service import MonitorService
 
 

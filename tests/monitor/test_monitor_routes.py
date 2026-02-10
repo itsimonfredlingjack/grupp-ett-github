@@ -3,8 +3,12 @@
 import pytest
 from flask import Flask
 from flask_socketio import SocketIO
+
+from src.sejfa.monitor.monitor_routes import (
+    create_monitor_blueprint,
+    init_socketio_events,
+)
 from src.sejfa.monitor.monitor_service import MonitorService
-from src.sejfa.monitor.monitor_routes import create_monitor_blueprint, init_socketio_events
 
 
 @pytest.fixture
@@ -44,11 +48,10 @@ class TestMonitorRoutes:
 
     def test_update_state_valid(self, client):
         """Test POST /state with valid data."""
-        response = client.post("/api/monitor/state", json={
-            "node": "claude",
-            "state": "active",
-            "message": "Working"
-        })
+        response = client.post(
+            "/api/monitor/state",
+            json={"node": "claude", "state": "active", "message": "Working"},
+        )
         assert response.status_code == 200
         data = response.get_json()
         assert data["success"]
@@ -56,10 +59,9 @@ class TestMonitorRoutes:
 
     def test_update_state_invalid_node(self, client):
         """Test POST /state with invalid node."""
-        response = client.post("/api/monitor/state", json={
-            "node": "invalid",
-            "state": "active"
-        })
+        response = client.post(
+            "/api/monitor/state", json={"node": "invalid", "state": "active"}
+        )
         assert response.status_code == 400
 
     def test_update_state_no_json(self, client):
@@ -80,10 +82,9 @@ class TestMonitorRoutes:
 
     def test_update_task(self, client):
         """Test POST /task."""
-        response = client.post("/api/monitor/task", json={
-            "title": "New Task",
-            "status": "running"
-        })
+        response = client.post(
+            "/api/monitor/task", json={"title": "New Task", "status": "running"}
+        )
         assert response.status_code == 200
         data = response.get_json()
         assert data["current_state"]["task_info"]["title"] == "New Task"
