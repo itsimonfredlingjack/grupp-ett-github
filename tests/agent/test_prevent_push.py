@@ -11,8 +11,7 @@ import pytest
 
 # The hook is at .claude/hooks/prevent-push.py
 HOOK_PATH = (
-    Path(__file__).resolve().parents[2]
-    / ".claude" / "hooks" / "prevent-push.py"
+    Path(__file__).resolve().parents[2] / ".claude" / "hooks" / "prevent-push.py"
 )
 
 
@@ -20,6 +19,7 @@ HOOK_PATH = (
 def import_hook():
     """Import the prevent-push hook module dynamically."""
     import importlib.util
+
     spec = importlib.util.spec_from_file_location("prevent_push", HOOK_PATH)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -89,7 +89,8 @@ class TestMainFunction:
         with (
             patch.object(sys, "stdin", mock_stdin),
             patch.object(
-                import_hook, "load_current_task_text",
+                import_hook,
+                "load_current_task_text",
                 return_value=task_text,
             ),
         ):
