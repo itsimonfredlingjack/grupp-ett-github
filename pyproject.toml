@@ -64,6 +64,9 @@ omit = [
     "venv/*",
     ".venv/*",
     "src/sejfa/monitor/*",
+    "scripts/*",
+    "docs/*",
+    "static/*",
 ]
 
 [tool.coverage.report]
