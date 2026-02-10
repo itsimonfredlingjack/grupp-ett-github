@@ -1,29 +1,28 @@
-# PR Review Findings
-
-## Critical Severity
-
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+# Automated PR Review Findings
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+1. **Missing `statuses: write` permission**
+   - **File:** `.github/workflows/jules_review.yml`
+   - **Location:** Line 17 (permissions block) and Line 127 (status step)
+   - **Description:** The `jules-review` job attempts to set a commit status using the GitHub API (`gh api repos/.../statuses/...`), but the `permissions` block lacks the necessary `statuses: write` permission. The existing `pull-requests: write` permission grants access to PR comments and labels but not commit statuses.
+   - **Impact:** The workflow will fail to report the review status to the commit, resulting in a "Failed to set commit status" error and potentially blocking merges if status checks are required.
+   - **Recommendation:** Add `statuses: write` to the `permissions` block.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+2. **Concurrency group collision for manual triggers**
+   - **File:** `.github/workflows/jules_review.yml`
+   - **Location:** Line 22 (concurrency group)
+   - **Description:** The concurrency group is defined as `jules-review-${{ github.event.pull_request.number }}`. For `workflow_dispatch` events, `github.event.pull_request` is not available, causing the group to evaluate to `jules-review-`. This results in all manual runs sharing the same concurrency group, where a newer run will cancel any pending or in-progress run regardless of the target PR.
+   - **Impact:** Concurrent manual reviews for different PRs will interfere with each other, leading to cancelled runs and missed reviews.
+   - **Recommendation:** Update the concurrency group expression to fallback to the input PR number: `jules-review-${{ github.event.pull_request.number || inputs.pr_number }}`.
 
-## Low Severity
-
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+3. **Removal of `synchronize` event disables feedback loop on updates**
+   - **File:** `.github/workflows/jules_review.yml`
+   - **Location:** Line 5 (on.pull_request.types)
+   - **Description:** Removing the `synchronize` event type prevents the workflow from automatically running when new commits are pushed to an existing PR.
+   - **Impact:**
+     - **Feedback Loop:** Users pushing fixes to address review comments will not receive automated verification that their changes resolved the issues.
+     - **Merge Blocking:** If `jules-review` is configured as a required status check, subsequent commits will lack a status report, potentially blocking the PR merge indefinitely.
+   - **Recommendation:** Verify that the intended workflow supports this limitation. If iterative reviews or required status checks are necessary, restore the `synchronize` event type.
