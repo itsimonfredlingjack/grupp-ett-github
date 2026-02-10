@@ -1,29 +1,27 @@
 # PR Review Findings
 
-## Critical Severity
-
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
-
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 1. Thread Safety Issue in MonitorService (Reliability)
+The `MonitorService` class manages state using in-memory dictionaries (`self.nodes`, `self.event_log`) without any locking mechanism. In a production environment with multiple workers (e.g., gunicorn), this will lead to a "split-brain" scenario where each worker maintains its own isolated state, causing inconsistent monitoring data.
+**Action:** Use a persistent backing store (e.g., Redis) or a singleton pattern compatible with the deployment architecture.
+
+### 2. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are completely unauthenticated. This allows any actor with network access to inject false events, reset the monitoring state, or disrupt the agentic loop visualization.
+**Action:** Implement authentication for these endpoints, such as requiring an API key or using the existing `AdminAuthService`.
+
+### 3. Missing Global CSRF Protection (Security)
+The application lacks global Cross-Site Request Forgery (CSRF) protection. While some forms might be protected manually, `app.py` does not initialize `CSRFProtect` from `Flask-WTF`, leaving the application vulnerable to CSRF attacks.
+**Action:** Initialize `CSRFProtect(app)` in `app.py` to enable global protection.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 4. Deprecated Datetime Usage (Maintainability)
+The `MonitorService` uses `datetime.utcnow()`, which is deprecated in Python 3.12+ and scheduled for removal. This will cause future compatibility issues.
+**Action:** Replace `datetime.utcnow()` with `datetime.now(datetime.timezone.utc)`.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
 ### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+The `app.py` file enables `debug=True` and `allow_unsafe_werkzeug=True` in the `if __name__ == "__main__":` block. While this block is guarded, it poses a risk if the application is executed directly in a production environment.
+**Action:** Ensure these settings are disabled in production environments, preferably by loading them from environment variables (e.g., `FLASK_DEBUG`).
