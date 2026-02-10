@@ -1,10 +1,9 @@
 """Tests for Monitor Routes."""
 
-import json
 import pytest
+
 import app as app_module
 from app import create_app
-from src.sejfa.monitor.monitor_service import MonitorService
 
 
 @pytest.fixture
