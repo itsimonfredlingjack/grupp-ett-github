@@ -488,10 +488,7 @@ class TestWritePromiseFlag:
 # ---------------------------------------------------------------------------
 # Quality gate tests — actually import and exercise the stop-hook module
 # ---------------------------------------------------------------------------
-HOOK_PATH = (
-    Path(__file__).resolve().parents[2]
-    / ".claude" / "hooks" / "stop-hook.py"
-)
+HOOK_PATH = Path(__file__).resolve().parents[2] / ".claude" / "hooks" / "stop-hook.py"
 
 
 @pytest.fixture
@@ -534,8 +531,10 @@ class TestRunCmd:
         mock_result = MagicMock(returncode=0, stdout="", stderr="")
         with patch.object(subprocess, "run", return_value=mock_result) as mock_run:
             stop_hook.run_cmd(["pytest"], timeout_s=300)
-        assert mock_run.call_args.kwargs.get("timeout") == 300 or \
-               mock_run.call_args[1].get("timeout") == 300
+        assert (
+            mock_run.call_args.kwargs.get("timeout") == 300
+            or mock_run.call_args[1].get("timeout") == 300
+        )
 
 
 class TestQualityGates:
@@ -559,8 +558,10 @@ class TestQualityGates:
         with patch.object(stop_hook, "resolve_tools", return_value=tools):
             # Simulate quality gate check
             cmd = [
-                *tools["pytest"], "-q",
-                "--cov=.", "--cov-report=term-missing",
+                *tools["pytest"],
+                "-q",
+                "--cov=.",
+                "--cov-report=term-missing",
                 "--cov-fail-under=80",
             ]
             code, out = stop_hook.run_cmd(cmd, timeout_s=180)
@@ -575,7 +576,9 @@ class TestQualityGates:
     ) -> None:
         """When pytest fails, the hook should report failure."""
         mock_run.return_value = MagicMock(
-            returncode=1, stdout="FAILED test_foo", stderr="",
+            returncode=1,
+            stdout="FAILED test_foo",
+            stderr="",
         )
 
         tools = {"pytest": ["python3", "-m", "pytest"], "ruff": ["ruff"]}
@@ -617,7 +620,9 @@ class TestQualityGates:
     ) -> None:
         """When ruff fails, the hook should report failure."""
         mock_run.return_value = MagicMock(
-            returncode=1, stdout="E501 line too long", stderr="",
+            returncode=1,
+            stdout="E501 line too long",
+            stderr="",
         )
 
         code, out = stop_hook.run_cmd(["ruff", "check", "."], timeout_s=120)
@@ -631,8 +636,15 @@ class TestQualityGates:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
         threshold = 80
-        cmd = ["python3", "-m", "pytest", "-q", "--cov=.", "--cov-report=term-missing",
-               f"--cov-fail-under={threshold}"]
+        cmd = [
+            "python3",
+            "-m",
+            "pytest",
+            "-q",
+            "--cov=.",
+            "--cov-report=term-missing",
+            f"--cov-fail-under={threshold}",
+        ]
         stop_hook.run_cmd(cmd, timeout_s=180)
 
         actual_cmd = mock_run.call_args[0][0]
@@ -648,15 +660,22 @@ class TestSaveProgressOnMaxIterations:
     ) -> None:
         """Max iterations should attempt to create a draft PR."""
         status_result = MagicMock(
-            returncode=0, stdout="M src/foo.py\n", stderr="",
+            returncode=0,
+            stdout="M src/foo.py\n",
+            stderr="",
         )
         ok_result = MagicMock(
-            returncode=0, stdout="", stderr="",
+            returncode=0,
+            stdout="",
+            stderr="",
         )
 
         mock_run.side_effect = [
-            status_result, ok_result, ok_result,
-            ok_result, ok_result,
+            status_result,
+            ok_result,
+            ok_result,
+            ok_result,
+            ok_result,
         ]
 
         state_file = tmp_path / "ralph-state.json"
@@ -676,9 +695,7 @@ class TestSaveProgressOnMaxIterations:
         assert mock_run.call_count >= 3  # status + add + commit + push + pr create
 
     @patch.object(subprocess, "run")
-    def test_skips_on_main_branch(
-        self, mock_run: MagicMock, stop_hook: Any
-    ) -> None:
+    def test_skips_on_main_branch(self, mock_run: MagicMock, stop_hook: Any) -> None:
         """Should not create PR if on main branch."""
         with patch.object(stop_hook, "get_git_branch", return_value="main"):
             stop_hook._save_progress_on_max_iterations(25)
