@@ -22,10 +22,6 @@ grupp-ett-github/
 ├── src/
 │   ├── sejfa/                  # Huvudpaket
 │   │   ├── core/               # Admin auth, subscriber service
-│   │   ├── cursorflash/        # Nyhetsflash-modul (GE-36)
-│   │   │   ├── data/           # Flash model + InMemoryFlashRepository
-│   │   │   ├── business/       # FlashService (validering, ingen Flask)
-│   │   │   └── presentation/   # Blueprint + templates
 │   │   ├── integrations/       # Jira API-klient
 │   │   ├── monitor/            # Real-time monitoring dashboard (SocketIO)
 │   │   └── utils/              # Health check, security
@@ -36,7 +32,6 @@ grupp-ett-github/
 ├── tests/                      # Testsvit (235+ tester)
 │   ├── agent/                  # Agent/Ralph loop-tester
 │   ├── core/                   # Admin & core-tester
-│   ├── cursorflash/            # Cursorflash-tester
 │   ├── expense_tracker/        # Expense tracker-tester
 │   ├── integrations/           # Jira-integrationstester
 │   └── utils/                  # Utility-tester
@@ -78,9 +73,6 @@ Dependency injection: Services far sitt repository via `__init__`.
 | `/admin/subscribers/search` | GET | Sok subscribers (auth) |
 | `/admin/subscribers/export` | GET | Exportera CSV (auth) |
 | `/expenses/` | GET | Expense tracker |
-| `/cursorflash/` | GET | Nyhetsflash-sida |
-| `/cursorflash/add` | POST | Lagg till flash |
-| `/cursorflash/clear` | GET | Rensa flashes |
 | `/monitor` | GET | Real-time monitoring dashboard |
 
 ---
