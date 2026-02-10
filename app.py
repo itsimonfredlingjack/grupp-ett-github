@@ -18,7 +18,6 @@ from src.expense_tracker.business.service import ExpenseService
 from src.expense_tracker.data.repository import InMemoryExpenseRepository
 from src.expense_tracker.presentation.routes import create_expense_blueprint
 from src.sejfa.core.admin_auth import AdminAuthService
-from src.sejfa.core.subscriber_service import SubscriberService
 from src.sejfa.monitor.monitor_routes import (
     create_monitor_blueprint,
     init_socketio_events,
@@ -157,6 +156,16 @@ def create_app(config: dict | None = None) -> Flask:
 
         return decorated_function
 
+    def _subscriber_to_dict(s):
+        """Serialize a Subscriber model to a JSON-safe dict."""
+        return {
+            "id": s.id,
+            "email": s.email,
+            "name": s.name,
+            "subscribed_date": s.subscribed_at.strftime("%Y-%m-%d"),
+            "active": s.active,
+        }
+
     @app.route("/admin", methods=["GET"])
     @require_admin_token
     def admin_dashboard():
@@ -165,7 +174,7 @@ def create_app(config: dict | None = None) -> Flask:
         Returns:
             Response: JSON with dashboard data.
         """
-        stats = SubscriberService.get_statistics()
+        stats = subscriber_repository.get_statistics()
         return jsonify({"dashboard": "admin", "statistics": stats}), 200
 
     @app.route("/admin/statistics", methods=["GET"])
@@ -176,7 +185,7 @@ def create_app(config: dict | None = None) -> Flask:
         Returns:
             Response: JSON with statistics data.
         """
-        stats = SubscriberService.get_statistics()
+        stats = subscriber_repository.get_statistics()
         return jsonify(stats), 200
 
     # Subscriber management endpoints
@@ -189,18 +198,10 @@ def create_app(config: dict | None = None) -> Flask:
             Response: JSON with subscriber list or created subscriber.
         """
         if request.method == "GET":
-            subscribers = SubscriberService.list_subscribers()
-            subscriber_dicts = [
-                {
-                    "id": s.id,
-                    "email": s.email,
-                    "name": s.name,
-                    "subscribed_date": s.subscribed_date,
-                    "active": s.active,
-                }
-                for s in subscribers
-            ]
-            return jsonify({"subscribers": subscriber_dicts}), 200
+            subscribers = subscriber_repository.list_all()
+            return jsonify(
+                {"subscribers": [_subscriber_to_dict(s) for s in subscribers]}
+            ), 200
 
         # POST - Create new subscriber
         data = request.get_json()
@@ -208,20 +209,11 @@ def create_app(config: dict | None = None) -> Flask:
         if not data or not all(field in data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
-        subscriber = SubscriberService.add_subscriber(
+        subscriber = subscriber_repository.create(
             email=data["email"],
             name=data["name"],
-            subscribed_date=data["subscribed_date"],
         )
-        return jsonify(
-            {
-                "id": subscriber.id,
-                "email": subscriber.email,
-                "name": subscriber.name,
-                "subscribed_date": subscriber.subscribed_date,
-                "active": subscriber.active,
-            }
-        ), 201
+        return jsonify(_subscriber_to_dict(subscriber)), 201
 
     @app.route(
         "/admin/subscribers/<int:subscriber_id>", methods=["GET", "PUT", "DELETE"]
@@ -237,26 +229,18 @@ def create_app(config: dict | None = None) -> Flask:
             Response: JSON with subscriber data or status.
         """
         if request.method == "GET":
-            subscriber = SubscriberService.get_subscriber(subscriber_id)
+            subscriber = subscriber_repository.get_by_id(subscriber_id)
             if not subscriber:
                 return jsonify({"error": "Subscriber not found"}), 404
-            return jsonify(
-                {
-                    "id": subscriber.id,
-                    "email": subscriber.email,
-                    "name": subscriber.name,
-                    "subscribed_date": subscriber.subscribed_date,
-                    "active": subscriber.active,
-                }
-            ), 200
+            return jsonify(_subscriber_to_dict(subscriber)), 200
 
         if request.method == "PUT":
-            subscriber = SubscriberService.get_subscriber(subscriber_id)
+            subscriber = subscriber_repository.get_by_id(subscriber_id)
             if not subscriber:
                 return jsonify({"error": "Subscriber not found"}), 404
 
             data = request.get_json()
-            updated = SubscriberService.update_subscriber(
+            updated = subscriber_repository.update(
                 subscriber_id,
                 email=data.get("email"),
                 name=data.get("name"),
@@ -265,18 +249,10 @@ def create_app(config: dict | None = None) -> Flask:
             if not updated:
                 return jsonify({"error": "Failed to update subscriber"}), 400
 
-            return jsonify(
-                {
-                    "id": updated.id,
-                    "email": updated.email,
-                    "name": updated.name,
-                    "subscribed_date": updated.subscribed_date,
-                    "active": updated.active,
-                }
-            ), 200
+            return jsonify(_subscriber_to_dict(updated)), 200
 
         if request.method == "DELETE":
-            deleted = SubscriberService.delete_subscriber(subscriber_id)
+            deleted = subscriber_repository.delete(subscriber_id)
             if not deleted:
                 return jsonify({"error": "Subscriber not found"}), 404
             return jsonify({"message": "Subscriber deleted"}), 204
@@ -293,18 +269,8 @@ def create_app(config: dict | None = None) -> Flask:
         if not query:
             return jsonify({"error": "Missing search query"}), 400
 
-        results = SubscriberService.search_subscribers(query)
-        result_dicts = [
-            {
-                "id": s.id,
-                "email": s.email,
-                "name": s.name,
-                "subscribed_date": s.subscribed_date,
-                "active": s.active,
-            }
-            for s in results
-        ]
-        return jsonify({"results": result_dicts}), 200
+        results = subscriber_repository.search(query)
+        return jsonify({"results": [_subscriber_to_dict(s) for s in results]}), 200
 
     @app.route("/admin/subscribers/export", methods=["GET"])
     @require_admin_token
@@ -314,7 +280,7 @@ def create_app(config: dict | None = None) -> Flask:
         Returns:
             Response: CSV file.
         """
-        csv_data = SubscriberService.export_csv()
+        csv_data = subscriber_repository.export_csv()
         return Response(
             csv_data,
             mimetype="text/csv",
