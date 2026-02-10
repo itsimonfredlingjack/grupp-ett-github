@@ -2,28 +2,40 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Incomplete Bug Fix: monitor_routes.py (Correctness)
+The commit message claims to fix 500 errors by adding `silent=True` to `request.get_json()`, but the code in `src/sejfa/monitor/monitor_routes.py` still uses `data = request.get_json()` without the argument. This means invalid JSON will still cause 500 errors (caught by the generic exception handler).
+**Action:** Update `monitor_routes.py` to use `request.get_json(silent=True)`.
+
+### 2. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are completely unauthenticated. This allows any network user to inject false events or reset the dashboard state.
+**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 3. Missing Dependencies: python-dotenv, Flask-WTF (Reliability)
+The commit message states that `python-dotenv` and `Flask-WTF` were added, but they are missing from `requirements.txt`. This will cause runtime errors and CI failures as the application depends on them.
+**Action:** Add `python-dotenv>=1.0.0` and `Flask-WTF>=1.0.0` to `requirements.txt`.
+
+### 4. Build Artifact Committed: coverage.xml (Repo Hygiene)
+The `coverage.xml` file (904 lines) has been committed to the repository. This is a build artifact and should not be versioned.
+**Action:** Remove `coverage.xml` and add it to `.gitignore`.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 5. Hardcoded Secret Key (Security)
+`app.py` sets `app.secret_key = "dev-secret-key"` without looking for an environment variable. This is a security risk if deployed.
+**Action:** Use `os.environ.get("SECRET_KEY", "dev-secret-key")`.
+
+### 6. Global State Usage (Reliability)
+`src/sejfa/monitor/monitor_routes.py` relies on global variables `monitor_service` and `socketio`. This is not thread-safe and makes testing difficult.
+**Action:** Refactor to use Flask's `current_app` context or dependency injection.
+
+### 7. Deprecated Date Method (Maintainability)
+`src/sejfa/monitor/monitor_routes.py` uses `datetime.utcnow()`, which is deprecated.
+**Action:** Use `datetime.now(datetime.UTC)`.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 8. Temporary File Committed (Repo Hygiene)
+`agent/PR_REVIEW.md` appears to be a temporary review artifact and should not be part of the repository.
+**Action:** Remove the file from the repository after review is addressed.
