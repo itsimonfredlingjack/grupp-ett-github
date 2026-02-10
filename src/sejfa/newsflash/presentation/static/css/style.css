@@ -1,13 +1,15 @@
 /* News Flash - Dark Theme Styles */
 
 :root {
-    --bg-dark: #0a0e1a;
-    --bg-card: #1a1f2e;
-    --accent-blue: #3b82f6;
-    --accent-glow: rgba(59, 130, 246, 0.3);
-    --text-primary: #e2e8f0;
+    --bg-dark: #1a1d29;
+    --bg-card: #0f1117;
+    --accent-blue: #2563eb;
+    --accent-glow: rgba(37, 99, 235, 0.3);
+    --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --border-color: #334155;
+    --accent-secondary: #06b6d4;
+    --accent-indigo: #4f46e5;
 }
 
 * {
@@ -17,7 +19,7 @@
 }
 
 body {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-primary);
     line-height: 1.6;
@@ -46,7 +48,6 @@ body {
     font-size: 1.5rem;
     font-weight: bold;
     color: var(--accent-blue);
-    text-shadow: 0 0 10px var(--accent-glow);
 }
 
 .header__nav {
@@ -71,11 +72,10 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-card) 100%);
     padding: 6rem 2rem;
     text-align: center;
     border-bottom: 2px solid var(--accent-blue);
-    box-shadow: 0 4px 20px var(--accent-glow);
 }
 
 .hero__container {
@@ -86,8 +86,7 @@ body {
 .hero__heading {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: var(--accent-blue);
-    text-shadow: 0 0 20px var(--accent-glow);
+    color: var(--text-primary);
 }
 
 .hero__subtitle {
@@ -105,12 +104,11 @@ body {
     border-radius: 4px;
     font-weight: bold;
     transition: all 0.3s;
-    box-shadow: 0 0 15px var(--accent-glow);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .hero__button:hover {
-    background-color: #2563eb;
-    box-shadow: 0 0 25px var(--accent-glow);
+    background-color: var(--accent-indigo);
     transform: translateY(-2px);
 }
 
@@ -137,11 +135,11 @@ body {
 
 .features__card:hover {
     border-color: var(--accent-blue);
-    box-shadow: 0 0 15px var(--accent-glow);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .features__title {
-    color: var(--accent-blue);
+    color: var(--accent-secondary);
     margin-bottom: 1rem;
 }
 
@@ -161,7 +159,7 @@ body {
     padding: 3rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .subscribe__heading {
@@ -200,14 +198,14 @@ body {
     color: var(--text-primary);
     padding: 0.75rem;
     border-radius: 4px;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: inherit;
     transition: all 0.3s;
 }
 
 .form__input:focus {
     outline: none;
     border-color: var(--accent-blue);
-    box-shadow: 0 0 10px var(--accent-glow);
+    box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .form__button {
@@ -217,15 +215,13 @@ body {
     border: none;
     border-radius: 4px;
     font-weight: bold;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: inherit;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .form__button:hover {
-    background-color: #2563eb;
-    box-shadow: 0 0 20px var(--accent-glow);
+    background-color: var(--accent-indigo);
     transform: translateY(-2px);
 }
 
@@ -240,8 +236,8 @@ body {
     background-color: var(--bg-card);
     padding: 3rem;
     border-radius: 8px;
-    border: 1px solid var(--accent-blue);
-    box-shadow: 0 0 20px var(--accent-glow);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
@@ -267,12 +263,10 @@ body {
     font-weight: bold;
     margin-top: 1rem;
     transition: all 0.3s;
-    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .thank-you__button:hover {
-    background-color: #2563eb;
-    box-shadow: 0 0 20px var(--accent-glow);
+    background-color: var(--accent-indigo);
     transform: translateY(-2px);
 }
 
