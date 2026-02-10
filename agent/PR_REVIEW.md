@@ -2,28 +2,36 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
+### 1. Incomplete Test Implementation (Correctness)
+The test `tests/monitor/test_monitor_routes.py:test_update_task` defines a payload but performs no action or assertion. This creates a false sense of security as the test passes without verifying anything.
+**Action:** Complete the test implementation to assert the expected behavior or remove the incomplete method.
+
+### 2. Deletion of Monitor Hooks Breaks Functionality (Correctness)
+The PR does not restore `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. The `stop-hook.py` script attempts to import `monitor_client`, which is now missing.
 **Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 3. Missing Authentication on Monitoring Endpoints (Security)
+The `monitor_routes.py` endpoints (e.g., `/api/monitor/state`) are unauthenticated. The new tests confirm this by successfully calling them without credentials. This allows unauthorized users to reset or modify monitoring state.
+**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 4. Global State in Monitor Routes (Reliability)
+The `monitor_routes.py` module uses module-level global variables (`monitor_service`, `socketio`) injected via `create_monitor_blueprint`. This makes tests brittle and thread-unsafe, as state may leak between tests.
+**Action:** Refactor to use a class-based view or dependency injection attached to the blueprint/app context.
+
+### 5. Lack of CSRF Protection (Security)
+The monitoring endpoints accept POST requests without CSRF protection. If these endpoints are intended for use by a browser-based dashboard, this is a security vulnerability.
+**Action:** Enable CSRF protection or ensure these endpoints are strict API endpoints with proper CORS/SameSite policies.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
+### 6. Dead Code in `stop-hook.py` (Maintainability)
+The `stop-hook.py` script contains import logic for `monitor_client`, which is dead code if the client module is permanently removed.
+**Action:** Remove the unused import logic if the client is not being restored.
 
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 7. Unsafe Application Configuration (Security)
+The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block.
+**Action:** Ensure these settings are disabled in production environments.
