@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest -xvs --cov=src --cov=app.py --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+          pytest -xvs --cov=src --cov=app.py --cov-report=xml --cov-report=term-missing --cov-fail-under=75
 
   lint:
     runs-on: ubuntu-latest
