@@ -1,14 +1,15 @@
 """Tests for the Monitor Routes."""
 
-import json
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from flask import Flask
-from src.sejfa.monitor.monitor_service import MonitorService
+
 from src.sejfa.monitor.monitor_routes import (
     create_monitor_blueprint,
     init_socketio_events,
 )
+from src.sejfa.monitor.monitor_service import MonitorService
 
 
 class MockSocketIO:
@@ -45,8 +46,10 @@ def client(monitor_service, mock_socketio):
     blueprint = create_monitor_blueprint(monitor_service, mock_socketio)
     app.register_blueprint(blueprint)
 
-    # Initialize events to test them too (though difficult without actual socketio context)
-    # create_monitor_blueprint sets global socketio in module, so init_socketio_events should use it
+    # Initialize events to test them too
+    # (though difficult without actual socketio context)
+    # create_monitor_blueprint sets global socketio in module,
+    # so init_socketio_events should use it
     init_socketio_events()
 
     with app.test_client() as client:
