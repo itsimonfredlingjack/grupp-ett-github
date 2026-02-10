@@ -235,7 +235,7 @@ jobs:
 
           # Stage and commit
           git add -A
-          git commit -m "fix(self-heal): auto-fix from Jules session ${SESSION_ID} [skip-jules-review]" \
+          git commit -m "fix(self-heal): auto-fix from Jules session ${SESSION_ID}" \
             -m "Triggered by CI failure on branch ${HEAD_BRANCH}." \
             -m "Co-Authored-By: Jules <jules[bot]@users.noreply.github.com>"
 
