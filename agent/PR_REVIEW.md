@@ -2,28 +2,24 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Reintroduction of Dead Code (Correctness)
+The PR adds `src/sejfa/cursorflash/presentation/templates/cursorflash/index.html` to the `cursorflash` module, which was removed in commit `288a8b0` because it was dead code (replaced by `newsflash`).
+**Action:** Remove the file and ensure `cursorflash` module remains deleted. If this is a new feature, implement it in the active `newsflash` module.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 2. Unreachable Template (Correctness)
+The added template is not referenced by any route in the application (`app.py` or any registered blueprint). It will never be rendered.
+**Action:** Remove the file or register a corresponding route in `newsflash` if intended for use.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 3. Incorrect File Location (Maintainability)
+The template is placed in `src/sejfa/cursorflash/`, which is a deprecated/removed path. The active application uses `src/sejfa/newsflash/`.
+**Action:** Move the template to `src/sejfa/newsflash/presentation/templates/newsflash/` if it is intended to replace or augment the existing design.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 4. Inline Styles (Maintainability)
+The template uses a large `<style>` block (398 lines) instead of an external CSS file or the existing `src/sejfa/newsflash/presentation/static/css/style.css`.
+**Action:** Extract styles to a CSS file or use the existing stylesheet to ensure consistency and cacheability.
