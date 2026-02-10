@@ -1,5 +1,6 @@
 """Admin authentication module."""
 
+import os
 from dataclasses import dataclass
 
 
@@ -14,8 +15,13 @@ class AdminCredentials:
 class AdminAuthService:
     """Service for handling admin authentication."""
 
-    # Simple hardcoded admin for MVP (in production, use database)
-    VALID_ADMIN = {"username": "admin", "password": "admin123"}
+    @staticmethod
+    def _get_admin_credentials() -> dict[str, str]:
+        """Get admin credentials from environment variables."""
+        return {
+            "username": os.environ.get("ADMIN_USERNAME", "admin"),
+            "password": os.environ.get("ADMIN_PASSWORD", "admin123"),
+        }
 
     @staticmethod
     def authenticate(username: str, password: str) -> bool:
@@ -28,9 +34,10 @@ class AdminAuthService:
         Returns:
             bool: True if credentials are valid.
         """
+        creds = AdminAuthService._get_admin_credentials()
         return (
-            username == AdminAuthService.VALID_ADMIN["username"]
-            and password == AdminAuthService.VALID_ADMIN["password"]
+            username == creds["username"]
+            and password == creds["password"]
         )
 
     @staticmethod
