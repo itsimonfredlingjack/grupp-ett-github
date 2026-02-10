@@ -41,9 +41,9 @@ Specifika färgkoder kan diskuteras i PR-review.
 - [x] Funktionaliteten påverkas inte
 - [x] Alla befintliga tester passerar: `pytest -xvs` (329 tests passed)
 - [x] Linting passerar: `ruff check .` (All checks passed)
-- [ ] Ändringar committade med format: `GE-47: [beskrivning]`
-- [ ] Branch pushed: `git push -u origin HEAD`
-- [ ] PR skapad via `gh pr create`
+- [x] Ändringar committade med format: `GE-47: [beskrivning]`
+- [x] Branch pushed: `git push -u origin HEAD`
+- [x] PR skapad via `gh pr create` (PR #223)
 
 ## Implementation Plan
 
