@@ -47,9 +47,7 @@ def create_app(config: dict | None = None) -> Flask:
     app.secret_key = "dev-secret-key"  # In production, use environment variable
 
     # Database configuration
-    app.config.setdefault(
-        "SQLALCHEMY_DATABASE_URI", "sqlite:///newsflash.db"
-    )
+    app.config.setdefault("SQLALCHEMY_DATABASE_URI", "sqlite:///newsflash.db")
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
 
     # Apply config overrides

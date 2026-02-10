@@ -149,9 +149,7 @@ class TestNewsFlashSubscription:
             assert subscriber is not None
             assert subscriber.name == "DB Test"
 
-    def test_subscribe_duplicate_email_shows_error(
-        self, client: FlaskClient
-    ) -> None:
+    def test_subscribe_duplicate_email_shows_error(self, client: FlaskClient) -> None:
         """Test that duplicate email shows error message."""
         # First subscription
         client.post(
