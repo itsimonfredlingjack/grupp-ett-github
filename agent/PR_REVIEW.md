@@ -2,28 +2,37 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Stored XSS in Monitor Dashboard (Security)
+The `static/monitor.html` file renders `event.message` using `innerHTML` without sanitization (Line 698). An attacker can inject malicious scripts via the `message` field in the monitoring API, executing code in the browser of any user viewing the dashboard.
+**Action:** Use `textContent` instead of `innerHTML` or sanitize the input using a library like DOMPurify.
+
+### 2. Hardcoded Admin Credentials (Security)
+The `AdminAuthService` in `src/sejfa/core/admin_auth.py` uses hardcoded credentials (`username: "admin"`, `password: "[REDACTED]"`). This allows anyone with access to the source code or who guesses these common credentials to gain admin access.
+**Action:** Move credentials to environment variables or a secure database, and use a strong hashing algorithm.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 3. Weak Secret Key Configuration (Security)
+The application `SECRET_KEY` in `app.py` falls back to a hardcoded "dev-secret-key" if the environment variable is unset. This compromises session security and cryptographic signatures in production.
+**Action:** Enforce loading `SECRET_KEY` from environment variables and fail startup if not present in production.
+
+### 4. In-Memory State in Multi-Worker Environment (Reliability)
+The `MonitorService` relies on in-memory dictionaries (`self.nodes`, `self.event_log`) to track state. In a production environment running with `gunicorn` and multiple workers, this state will be fragmented across processes, leading to inconsistent monitoring data (split-brain).
+**Action:** Use a shared data store (e.g., Redis or a database) for `MonitorService` state, or configure `gunicorn` to use a single worker with threads (though thread safety must still be addressed).
+
+### 5. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`, `POST /api/monitor/reset`) are completely unauthenticated. This allows any network user to inject false events, reset the dashboard, or disrupt the monitoring service.
+**Action:** Implement authentication for these endpoints, such as requiring an API key or a shared secret header, and validate it in a `before_request` handler or decorator.
+
+### 6. Missing CSRF Protection (Security)
+The News Flash subscription form in `src/sejfa/newsflash/presentation/templates/newsflash/subscribe.html` lacks a CSRF token. This makes the application vulnerable to Cross-Site Request Forgery attacks, where an attacker could trick a user into submitting the form without their consent.
+**Action:** Implement CSRF protection using `Flask-WTF` or manually verify CSRF tokens on form submission.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
-
-## Low Severity
-
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 7. API Schema Mismatch (Correctness)
+There is a schema mismatch between the client and server implementations for task updates:
+- `monitor_client.py` sends `action` ("start", "complete") and `task_id`.
+- `monitor_routes.py` expects `status` ("idle", "running", "completed") and ignores `action` and `task_id`.
+This prevents the dashboard from correctly tracking task start/completion events.
+**Action:** Update `monitor_routes.py` to handle the `action` field and map "start"/"complete" to appropriate status updates, or update `monitor_client.py` to match the server schema.
