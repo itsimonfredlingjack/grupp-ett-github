@@ -88,9 +88,9 @@ Byt från nuvarande blå/mörkblå tema till ett nytt färgschema. Specifika fä
 - [x] All acceptance criteria checked off above
 - [x] All tests pass: `pytest -xvs` (286/286 passed)
 - [x] No linting errors: `ruff check .` (all checks passed)
-- [ ] Changes committed with format: `GE-48: [description]`
-- [ ] Branch pushed to remote
-- [ ] Pull request created
+- [x] Changes committed with format: `GE-48: [description]` (d4a2749)
+- [x] Branch pushed to remote (origin/feature/GE-48-new-color-2-application)
+- [x] Pull request created (PR #237)
 
 ## Notes
 
