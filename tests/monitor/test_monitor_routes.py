@@ -1,11 +1,9 @@
 """Tests for the Monitor API and WebSocket events."""
 
 import pytest
-from flask import Flask
 
 import app as app_module  # Import module to access updated global socketio
 from app import create_app
-from src.sejfa.monitor.monitor_service import MonitorService
 
 
 @pytest.fixture
@@ -67,7 +65,8 @@ class TestMonitorRoutes:
 
     def test_update_state_missing_data(self, client):
         """Test updating without JSON data."""
-        # Using data="" to simulate missing/empty body which get_json(silent=True) handles
+        # Using data="" to simulate missing/empty body which
+        # get_json(silent=True) handles
         response = client.post("/api/monitor/state", data="")
         assert response.status_code == 400
         data = response.get_json()
@@ -93,7 +92,7 @@ class TestMonitorRoutes:
         payload = {
             "title": "Fix CI",
             "status": "running",
-            "start_time": "2026-01-01T12:00:00Z"
+            "start_time": "2026-01-01T12:00:00Z",
         }
         response = client.post("/api/monitor/task", json=payload)
         assert response.status_code == 200
@@ -146,11 +145,10 @@ class TestMonitorWebSocket:
         socketio_client.get_received(namespace="/monitor")
 
         # Trigger update via REST
-        client.post("/api/monitor/state", json={
-            "node": "github",
-            "state": "active",
-            "message": "Pushing..."
-        })
+        client.post(
+            "/api/monitor/state",
+            json={"node": "github", "state": "active", "message": "Pushing..."},
+        )
 
         # Check WebSocket for broadcast
         received = socketio_client.get_received(namespace="/monitor")
