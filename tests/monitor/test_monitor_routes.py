@@ -25,9 +25,7 @@ def monitor_service():
 def app(monitor_service, mock_socketio):
     """Create Flask app with monitor blueprint."""
     app = Flask(__name__)
-    app.register_blueprint(
-        create_monitor_blueprint(monitor_service, mock_socketio)
-    )
+    app.register_blueprint(create_monitor_blueprint(monitor_service, mock_socketio))
     return app
 
 
