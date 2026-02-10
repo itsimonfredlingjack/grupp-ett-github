@@ -142,6 +142,27 @@ jobs:
           include_last_commit: false
           include_commit_log: false
 
+      - name: Set Jules review status
+        if: ${{ always() && steps.gate.outputs.should_run == 'true' && steps.pr.outputs.head_sha }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          JULES_RESULT="${{ steps.jules.outcome || 'skipped' }}"
+          if [ "$JULES_RESULT" = "success" ]; then
+            STATE="success"
+            DESC="Jules review passed"
+          elif [ "$JULES_RESULT" = "skipped" ]; then
+            STATE="success"
+            DESC="Jules review skipped"
+          else
+            STATE="failure"
+            DESC="Jules review found issues"
+          fi
+          gh api "repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state="$STATE" \
+            -f description="$DESC" \
+            -f context="jules-review" || echo "::warning::Failed to set commit status"
+
       - name: Write metrics artifact
         if: always()
         id: metrics

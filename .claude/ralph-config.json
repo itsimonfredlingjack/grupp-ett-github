@@ -29,7 +29,7 @@
         "requirements": {
           "tests_must_pass": true,
           "lint_must_pass": true,
-          "coverage_threshold": 69
+          "coverage_threshold": 80
         }
       }
     }

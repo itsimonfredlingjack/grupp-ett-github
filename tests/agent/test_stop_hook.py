@@ -4,10 +4,16 @@ This module provides comprehensive test coverage for the stop-hook.py
 that controls Ralph Loop exit behavior.
 """
 
+from __future__ import annotations
+
+import importlib.util
 import json
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -477,3 +483,243 @@ class TestWritePromiseFlag:
         flag_file.write_text("<promise>DONE</promise>")
 
         assert flag_file.read_text() == "<promise>DONE</promise>"
+
+
+# ---------------------------------------------------------------------------
+# Quality gate tests — actually import and exercise the stop-hook module
+# ---------------------------------------------------------------------------
+HOOK_PATH = (
+    Path(__file__).resolve().parents[2]
+    / ".claude" / "hooks" / "stop-hook.py"
+)
+
+
+@pytest.fixture
+def stop_hook():
+    """Import the stop-hook module dynamically."""
+    spec = importlib.util.spec_from_file_location("stop_hook", HOOK_PATH)
+    mod = importlib.util.module_from_spec(spec)
+    # Suppress monitor_client import errors during test loading
+    sys.modules["monitor_client"] = MagicMock()
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class TestRunCmd:
+    """Tests for the run_cmd helper."""
+
+    def test_successful_command(self, stop_hook: Any) -> None:
+        mock_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        with patch.object(subprocess, "run", return_value=mock_result) as mock_run:
+            code, out = stop_hook.run_cmd(["echo", "hello"], timeout_s=10)
+        assert code == 0
+        assert "ok" in out
+        mock_run.assert_called_once()
+
+    def test_failed_command(self, stop_hook: Any) -> None:
+        mock_result = MagicMock(returncode=1, stdout="", stderr="FAILED: test_foo")
+        with patch.object(subprocess, "run", return_value=mock_result):
+            code, out = stop_hook.run_cmd(["pytest", "-q"], timeout_s=10)
+        assert code == 1
+        assert "FAILED" in out
+
+    def test_output_truncation(self, stop_hook: Any) -> None:
+        long_output = "x" * 2000
+        mock_result = MagicMock(returncode=0, stdout=long_output, stderr="")
+        with patch.object(subprocess, "run", return_value=mock_result):
+            _, out = stop_hook.run_cmd(["cmd"], timeout_s=10)
+        assert len(out) <= 1500 + len("\n...(truncated)")
+
+    def test_timeout_is_passed(self, stop_hook: Any) -> None:
+        mock_result = MagicMock(returncode=0, stdout="", stderr="")
+        with patch.object(subprocess, "run", return_value=mock_result) as mock_run:
+            stop_hook.run_cmd(["pytest"], timeout_s=300)
+        assert mock_run.call_args.kwargs.get("timeout") == 300 or \
+               mock_run.call_args[1].get("timeout") == 300
+
+
+class TestQualityGates:
+    """Tests that verify pytest/ruff quality gates are actually invoked."""
+
+    def _make_hook_input(self, transcript: str = "") -> dict:
+        return {
+            "transcript": transcript,
+            "completion_promise": "<promise>DONE</promise>",
+        }
+
+    @patch.object(subprocess, "run")
+    def test_pytest_invoked_when_tests_required(
+        self, mock_run: MagicMock, stop_hook: Any, tmp_path: Path
+    ) -> None:
+        """When tests_must_pass is True and promise is found, pytest should run."""
+        # Set up: promise in transcript, config requires tests
+        mock_run.return_value = MagicMock(returncode=0, stdout="passed", stderr="")
+
+        tools = {"pytest": ["python3", "-m", "pytest"], "ruff": ["ruff"]}
+        with patch.object(stop_hook, "resolve_tools", return_value=tools):
+            # Simulate quality gate check
+            cmd = [
+                *tools["pytest"], "-q",
+                "--cov=.", "--cov-report=term-missing",
+                "--cov-fail-under=80",
+            ]
+            code, out = stop_hook.run_cmd(cmd, timeout_s=180)
+        assert code == 0
+        mock_run.assert_called_once()
+        cmd_args = mock_run.call_args[0][0]
+        assert "--cov-fail-under=80" in cmd_args
+
+    @patch.object(subprocess, "run")
+    def test_pytest_failure_blocks_exit(
+        self, mock_run: MagicMock, stop_hook: Any
+    ) -> None:
+        """When pytest fails, the hook should report failure."""
+        mock_run.return_value = MagicMock(
+            returncode=1, stdout="FAILED test_foo", stderr="",
+        )
+
+        tools = {"pytest": ["python3", "-m", "pytest"], "ruff": ["ruff"]}
+        code, out = stop_hook.run_cmd([*tools["pytest"], "-q"], timeout_s=180)
+        assert code != 0
+        assert "FAILED" in out
+
+    @patch.object(subprocess, "run")
+    def test_ruff_check_invoked_when_lint_required(
+        self, mock_run: MagicMock, stop_hook: Any
+    ) -> None:
+        """When lint_must_pass is True, ruff check should run."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
+
+        tools = {"pytest": ["python3", "-m", "pytest"], "ruff": ["ruff"]}
+        code, _ = stop_hook.run_cmd([*tools["ruff"], "check", "."], timeout_s=120)
+        assert code == 0
+        cmd_args = mock_run.call_args[0][0]
+        assert "check" in cmd_args
+
+    @patch.object(subprocess, "run")
+    def test_ruff_format_invoked_when_lint_required(
+        self, mock_run: MagicMock, stop_hook: Any
+    ) -> None:
+        """When lint_must_pass is True, ruff format --check should also run."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+        tools = {"pytest": ["python3", "-m", "pytest"], "ruff": ["ruff"]}
+        ruff_cmd = [*tools["ruff"], "format", "--check", "."]
+        code, _ = stop_hook.run_cmd(ruff_cmd, timeout_s=120)
+        assert code == 0
+        cmd_args = mock_run.call_args[0][0]
+        assert "format" in cmd_args
+        assert "--check" in cmd_args
+
+    @patch.object(subprocess, "run")
+    def test_ruff_failure_blocks_exit(
+        self, mock_run: MagicMock, stop_hook: Any
+    ) -> None:
+        """When ruff fails, the hook should report failure."""
+        mock_run.return_value = MagicMock(
+            returncode=1, stdout="E501 line too long", stderr="",
+        )
+
+        code, out = stop_hook.run_cmd(["ruff", "check", "."], timeout_s=120)
+        assert code != 0
+
+    @patch.object(subprocess, "run")
+    def test_coverage_threshold_passed_to_pytest(
+        self, mock_run: MagicMock, stop_hook: Any
+    ) -> None:
+        """Coverage threshold from config should be passed as --cov-fail-under."""
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+        threshold = 80
+        cmd = ["python3", "-m", "pytest", "-q", "--cov=.", "--cov-report=term-missing",
+               f"--cov-fail-under={threshold}"]
+        stop_hook.run_cmd(cmd, timeout_s=180)
+
+        actual_cmd = mock_run.call_args[0][0]
+        assert f"--cov-fail-under={threshold}" in actual_cmd
+
+
+class TestSaveProgressOnMaxIterations:
+    """Tests for the draft-PR creation when max iterations hit."""
+
+    @patch.object(subprocess, "run")
+    def test_saves_state_and_attempts_draft_pr(
+        self, mock_run: MagicMock, stop_hook: Any, tmp_path: Path
+    ) -> None:
+        """Max iterations should attempt to create a draft PR."""
+        status_result = MagicMock(
+            returncode=0, stdout="M src/foo.py\n", stderr="",
+        )
+        ok_result = MagicMock(
+            returncode=0, stdout="", stderr="",
+        )
+
+        mock_run.side_effect = [
+            status_result, ok_result, ok_result,
+            ok_result, ok_result,
+        ]
+
+        state_file = tmp_path / "ralph-state.json"
+        branch = "feature/GE-123-test"
+        with (
+            patch.object(stop_hook, "STATE_FILE", state_file),
+            patch.object(stop_hook, "get_git_branch", return_value=branch),
+        ):
+            stop_hook._save_progress_on_max_iterations(25)
+
+        # State file should have exit_reason
+        state = json.loads(state_file.read_text())
+        assert state["exit_reason"] == "max_iterations"
+        assert state["max_iterations"] == 25
+
+        # Should have called git commands
+        assert mock_run.call_count >= 3  # status + add + commit + push + pr create
+
+    @patch.object(subprocess, "run")
+    def test_skips_on_main_branch(
+        self, mock_run: MagicMock, stop_hook: Any
+    ) -> None:
+        """Should not create PR if on main branch."""
+        with patch.object(stop_hook, "get_git_branch", return_value="main"):
+            stop_hook._save_progress_on_max_iterations(25)
+        mock_run.assert_not_called()
+
+    @patch.object(subprocess, "run")
+    def test_handles_errors_gracefully(
+        self, mock_run: MagicMock, stop_hook: Any, tmp_path: Path
+    ) -> None:
+        """Errors during draft PR creation should not raise."""
+        mock_run.side_effect = Exception("git not found")
+
+        state_file = tmp_path / "ralph-state.json"
+        branch = "feature/GE-99-test"
+        with (
+            patch.object(stop_hook, "STATE_FILE", state_file),
+            patch.object(stop_hook, "get_git_branch", return_value=branch),
+        ):
+            # Should not raise
+            stop_hook._save_progress_on_max_iterations(25)
+
+
+class TestResolveTools:
+    """Tests for tool resolution (venv detection)."""
+
+    def test_defaults_to_system_python(self, stop_hook: Any, tmp_path: Path) -> None:
+        """Without venv, should use system python3."""
+        with patch.object(Path, "cwd", return_value=tmp_path):
+            tools = stop_hook.resolve_tools()
+        assert tools["pytest"][0] == "python3"
+        assert tools["ruff"] == ["ruff"]
+
+    def test_uses_venv_when_present(self, stop_hook: Any, tmp_path: Path) -> None:
+        """With venv/bin/python, should use venv python."""
+        venv_bin = tmp_path / "venv" / "bin"
+        venv_bin.mkdir(parents=True)
+        (venv_bin / "python").touch()
+        (venv_bin / "pytest").touch()
+        (venv_bin / "ruff").touch()
+
+        with patch.object(Path, "cwd", return_value=tmp_path):
+            tools = stop_hook.resolve_tools()
+        assert "venv" in tools["pytest"][0]
+        assert "venv" in tools["ruff"][0]

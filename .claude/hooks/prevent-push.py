@@ -87,6 +87,9 @@ def main() -> None:
     if not cmd:
         sys.exit(0)
 
+    # Normalize whitespace to prevent bypass via double spaces/tabs
+    cmd = " ".join(cmd.split())
+
     is_push = bool(GIT_PUSH_RE.search(cmd))
     is_pr = bool(GH_PR_CREATE_RE.search(cmd))
     if not (is_push or is_pr):

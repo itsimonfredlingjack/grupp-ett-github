@@ -330,6 +330,69 @@ def build_continue_message(reason: str, suggestions: list[str]) -> dict[str, Any
     }
 
 
+def _save_progress_on_max_iterations(max_iterations: int) -> None:
+    """Best-effort: commit WIP, push, and create a draft PR when max iterations hit."""
+    try:
+        branch = get_git_branch()
+        if not branch or branch in ("main", "master"):
+            return
+
+        # Log progress to state file
+        state = _read_json_dict(STATE_FILE)
+        state["exit_reason"] = "max_iterations"
+        state["max_iterations"] = max_iterations
+        state["exited_at"] = datetime.now().isoformat()
+        _write_json_dict(STATE_FILE, state)
+
+        # Check for uncommitted changes
+        status_result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        if status_result.returncode != 0:
+            return
+
+        has_changes = bool(status_result.stdout.strip())
+        if has_changes:
+            subprocess.run(
+                ["git", "add", "-A"],
+                capture_output=True, timeout=10, check=False,
+            )
+            subprocess.run(
+                ["git", "commit", "-m",
+                 f"WIP: max iterations ({max_iterations}) reached - saving progress"],
+                capture_output=True, timeout=10, check=False,
+            )
+
+        # Push the branch
+        subprocess.run(
+            ["git", "push", "-u", "origin", branch],
+            capture_output=True, timeout=30, check=False,
+        )
+
+        # Create draft PR
+        task_match = JIRA_KEY_RE.search(branch)
+        task_id = task_match.group() if task_match else "TASK"
+        pr_title = f"WIP: {task_id} - max iterations reached"
+        pr_body = (
+            f"## Auto-created draft PR\n\n"
+            f"The Ralph loop reached {max_iterations} iterations without completing.\n"
+            f"This draft PR preserves the work done so far.\n\n"
+            f"**Iterations completed:** {max_iterations}\n"
+            f"**Branch:** {branch}\n"
+        )
+
+        subprocess.run(
+            ["gh", "pr", "create", "--draft",
+             "--title", pr_title,
+             "--body", pr_body],
+            capture_output=True, timeout=30, check=False,
+        )
+    except Exception:
+        # Best-effort only — never prevent exit
+        pass
+
+
 def main() -> None:
     try:
         input_data = sys.stdin.read()
@@ -393,10 +456,13 @@ def main() -> None:
                 activate_claude(f"Iteration {current_iteration}: Coding...")
 
         if current_iteration >= max_iterations:
+            # Try to save work before forced exit
+            _save_progress_on_max_iterations(max_iterations)
+
             json.dump(
                 {
                     "decision": "allow",
-                    "reason": f"Max iterations ({max_iterations}) reached. Forcing exit.",
+                    "reason": f"Max iterations ({max_iterations}) reached. Forcing exit. Draft PR created if possible.",
                     "timestamp": datetime.now().isoformat(),
                 },
                 sys.stderr,
