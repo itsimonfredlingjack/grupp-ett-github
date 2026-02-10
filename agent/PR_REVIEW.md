@@ -2,28 +2,40 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Unauthenticated Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
+**Action:** Implement authentication (e.g., `AdminAuthService` or API key) for these endpoints.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 2. Stored XSS in `monitor.html` (Security)
+The `static/monitor.html` dashboard renders `event.message` and `event.node` using `innerHTML` without sanitization. This allows an attacker to inject malicious scripts via the unauthenticated monitoring API.
+**Action:** Use `textContent` instead of `innerHTML` or sanitize the input before rendering.
+
+### 3. Potential Import Error in Hooks (Reliability)
+The hooks `.claude/hooks/stop-hook.py` and `monitor_hook.py` attempt to import `monitor_client` directly. When run from the repository root (as is standard for hooks), this import may fail if `.claude/hooks` is not in `PYTHONPATH`.
+**Action:** Add `sys.path.append(os.path.dirname(__file__))` before the import.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 4. Unsafe Application Configuration (Security)
+The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. This poses a security risk if the application is executed directly in production.
+**Action:** Use environment variables (e.g., `FLASK_DEBUG`) or ensure these settings are only enabled in local development.
+
+### 5. Missing Implementation in Active Module (Correctness)
+The active application uses the `newsflash` module, but `src/sejfa/newsflash/presentation/static/css/style.css` still contains the old color scheme (`#0a0e1a`, `#3b82f6`) instead of the new one (`#1a1d29` -> `#0f1117`).
+**Action:** Update the CSS variables to match the new design requirements.
+
+### 6. Missing Execution Permissions on Hooks (Reliability)
+The scripts `.claude/hooks/stop-hook.py` and `.claude/hooks/monitor_hook.py` lack executable permissions (`chmod +x`). This may prevent them from being executed as hooks by the agent environment.
+**Action:** Run `chmod +x .claude/hooks/stop-hook.py .claude/hooks/monitor_hook.py`.
+
+### 7. Missing Test Coverage for Monitor Hook (Test Coverage)
+There are no tests for `.claude/hooks/monitor_hook.py`. While `stop-hook.py` is well-tested, the monitor hook logic is unverified and could fail silently.
+**Action:** Add unit tests for `monitor_hook.py` covering tool-to-node mapping logic.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 8. Hardcoded Coverage Threshold (Maintainability)
+The coverage threshold is hardcoded to `80` in `.github/workflows/ci.yml`, duplicating the configuration in `.claude/ralph-config.json`. This can lead to inconsistency.
+**Action:** Centralize the configuration or ensure they are kept in sync.
