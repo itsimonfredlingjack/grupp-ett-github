@@ -105,7 +105,10 @@ class TestColorSchemeUpdate:
         """Verify News Flash routes are functional after color changes."""
         from app import create_app
 
-        app = create_app()
+        app = create_app({
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        })
         client = app.test_client()
 
         # Test index page (newsflash blueprint is registered at root)
@@ -121,7 +124,10 @@ class TestColorSchemeUpdate:
         """Verify CSS file is properly served by Flask."""
         from app import create_app
 
-        app = create_app()
+        app = create_app({
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+        })
         client = app.test_client()
 
         # Request the CSS file (static URL path is /static/newsflash)

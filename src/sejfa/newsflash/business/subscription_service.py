@@ -24,9 +24,21 @@ class SubscriptionService:
     - Valid email format (regex validation)
     - Email normalization (lowercase, strip whitespace)
     - Name normalization (strip whitespace, default to "Subscriber")
+    - Duplicate detection (when repository is provided)
+
+    Args:
+        repository: Optional SubscriberRepository for persistence.
     """
 
     EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+
+    def __init__(self, repository: Any | None = None) -> None:
+        """Initialize SubscriptionService.
+
+        Args:
+            repository: Optional repository for subscriber persistence.
+        """
+        self._repository = repository
 
     def validate_email(self, email: str | None) -> tuple[bool, str]:
         """Validate email format.
@@ -105,6 +117,52 @@ class SubscriptionService:
         normalized_name = self.normalize_name(name)
 
         # Return subscription data
+        return {
+            "email": normalized_email,
+            "name": normalized_name,
+            "subscribed_at": datetime.now().isoformat(),
+        }
+
+    def subscribe(self, email: str, name: str) -> dict[str, Any]:
+        """Process subscription with validation, duplicate check, and persistence.
+
+        Validates the email, normalizes data, checks for duplicates,
+        and saves to the database via the repository.
+
+        Args:
+            email: Email address to subscribe.
+            name: Subscriber name.
+
+        Returns:
+            Dictionary with email, name, and subscribed_at.
+
+        Raises:
+            ValidationError: If email is invalid or already subscribed.
+        """
+        # Validate and normalize via existing logic
+        valid, error_message = self.validate_email(email)
+        if not valid:
+            raise ValidationError(error_message)
+
+        normalized_email = self.normalize_email(email)
+        normalized_name = self.normalize_name(name)
+
+        # Check for duplicate
+        if self._repository and self._repository.exists(normalized_email):
+            raise ValidationError("This email is already subscribed")
+
+        # Persist via repository
+        if self._repository:
+            subscriber = self._repository.create(
+                email=normalized_email, name=normalized_name
+            )
+            return {
+                "email": subscriber.email,
+                "name": subscriber.name,
+                "subscribed_at": subscriber.subscribed_at.isoformat(),
+            }
+
+        # Fallback if no repository (backwards compat)
         return {
             "email": normalized_email,
             "name": normalized_name,

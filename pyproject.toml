@@ -24,6 +24,7 @@ exclude = [
     "__pycache__",
     ".git",
     ".pytest_cache",
+    "migrations",
 ]
 line-length = 88
 target-version = "py310"

@@ -10,6 +10,7 @@ from functools import wraps
 from typing import Any
 
 from flask import Flask, Response, jsonify, request
+from flask_migrate import Migrate
 from flask_socketio import SocketIO
 
 from src.expense_tracker.business.service import ExpenseService
@@ -22,14 +23,20 @@ from src.sejfa.monitor.monitor_routes import (
     init_socketio_events,
 )
 from src.sejfa.monitor.monitor_service import MonitorService
+from src.sejfa.newsflash.business.subscription_service import SubscriptionService
+from src.sejfa.newsflash.data.models import db
+from src.sejfa.newsflash.data.subscriber_repository import SubscriberRepository
 from src.sejfa.newsflash.presentation.routes import create_newsflash_blueprint
 
 # Global SocketIO instance
 socketio = None
 
 
-def create_app() -> Flask:
+def create_app(config: dict | None = None) -> Flask:
     """Create and configure the Flask application.
+
+    Args:
+        config: Optional configuration overrides.
 
     Returns:
         Flask: Configured Flask application instance.
@@ -38,6 +45,25 @@ def create_app() -> Flask:
 
     app = Flask(__name__)
     app.secret_key = "dev-secret-key"  # In production, use environment variable
+
+    # Database configuration
+    app.config.setdefault(
+        "SQLALCHEMY_DATABASE_URI", "sqlite:///newsflash.db"
+    )
+    app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
+
+    # Apply config overrides
+    if config:
+        app.config.update(config)
+
+    # Initialize SQLAlchemy and Migrate (two-phase pattern)
+    db.init_app(app)
+    Migrate(app, db)
+
+    # Create tables in testing mode (production uses migrations)
+    if app.config.get("TESTING"):
+        with app.app_context():
+            db.create_all()
 
     # Initialize SocketIO for real-time monitoring
     socketio = SocketIO(app, cors_allowed_origins="*")
@@ -52,8 +78,12 @@ def create_app() -> Flask:
     # Initialize SocketIO event handlers
     init_socketio_events()
 
-    # Register News Flash blueprint at root
-    newsflash_blueprint = create_newsflash_blueprint()
+    # Register News Flash blueprint at root with DI
+    subscriber_repository = SubscriberRepository()
+    subscription_service = SubscriptionService(repository=subscriber_repository)
+    newsflash_blueprint = create_newsflash_blueprint(
+        subscription_service=subscription_service
+    )
     app.register_blueprint(newsflash_blueprint)
 
     @app.route("/api")
