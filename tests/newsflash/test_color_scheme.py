@@ -35,9 +35,7 @@ class TestCursorBlackTheme:
 
     def test_bg_card_is_dark_gray(self, css_content):
         """Verify cards use #111111."""
-        assert "--bg-card: #111111;" in css_content, (
-            "Cards should use #111111"
-        )
+        assert "--bg-card: #111111;" in css_content, "Cards should use #111111"
 
     def test_accent_primary_is_cursor_green(self, css_content):
         """Verify primary accent is Cursor green #00e599."""
@@ -65,9 +63,7 @@ class TestCursorBlackTheme:
 
     def test_border_color_is_dark(self, css_content):
         """Verify borders use #222222."""
-        assert "--border-color: #222222;" in css_content, (
-            "Borders should use #222222"
-        )
+        assert "--border-color: #222222;" in css_content, "Borders should use #222222"
 
     def test_accent_glow_is_green(self, css_content):
         """Verify accent glow uses green rgba (not blue)."""
