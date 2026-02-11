@@ -12,18 +12,97 @@ from pathlib import Path
 import pytest
 
 
+@pytest.fixture(scope="module")
+def css_file_path():
+    """Path to the main News Flash CSS file."""
+    return Path("src/sejfa/newsflash/presentation/static/css/style.css")
+
+
+@pytest.fixture(scope="module")
+def css_content(css_file_path):
+    """Read CSS file content."""
+    return css_file_path.read_text()
+
+
+class TestCursorBlackTheme:
+    """Test suite for GE-51: Cursor SECOND UNIVERSE BLACK theme"""
+
+    def test_bg_dark_is_pure_black(self, css_content):
+        """Verify background is pure black #000000."""
+        assert "--bg-dark: #000000;" in css_content, (
+            "Background should be pure black #000000"
+        )
+
+    def test_bg_card_is_dark_gray(self, css_content):
+        """Verify cards use #111111."""
+        assert "--bg-card: #111111;" in css_content, (
+            "Cards should use #111111"
+        )
+
+    def test_accent_primary_is_cursor_green(self, css_content):
+        """Verify primary accent is Cursor green #00e599."""
+        assert "--accent-primary: #00e599;" in css_content, (
+            "Primary accent should be Cursor green #00e599"
+        )
+
+    def test_accent_secondary_is_purple(self, css_content):
+        """Verify secondary accent is purple #a855f7."""
+        assert "--accent-secondary: #a855f7;" in css_content, (
+            "Secondary accent should be purple #a855f7"
+        )
+
+    def test_text_primary_is_white(self, css_content):
+        """Verify primary text is white #ffffff."""
+        assert "--text-primary: #ffffff;" in css_content, (
+            "Primary text should be white #ffffff"
+        )
+
+    def test_text_secondary_is_gray(self, css_content):
+        """Verify secondary text is gray #888888."""
+        assert "--text-secondary: #888888;" in css_content, (
+            "Secondary text should be gray #888888"
+        )
+
+    def test_border_color_is_dark(self, css_content):
+        """Verify borders use #222222."""
+        assert "--border-color: #222222;" in css_content, (
+            "Borders should use #222222"
+        )
+
+    def test_accent_glow_is_green(self, css_content):
+        """Verify accent glow uses green rgba (not blue)."""
+        # Should have green glow, not blue
+        assert "rgba(0, 229, 153" in css_content or "rgba(0,229,153" in css_content, (
+            "Accent glow should be green (rgba with 0, 229, 153)"
+        )
+        # Old blue glow should NOT exist
+        assert "rgba(88, 166, 255" not in css_content, (
+            "Old blue glow rgba(88, 166, 255, ...) should be removed"
+        )
+
+    def test_no_github_blue_colors(self, css_content):
+        """Verify NO blue colors from GitHub theme remain."""
+        # GitHub blue colors that should be gone
+        github_blue_colors = ["#58a6ff", "#4184e4", "#0d1117", "#161b22", "#30363d"]
+
+        for blue_color in github_blue_colors:
+            assert blue_color not in css_content.lower(), (
+                f"GitHub blue color {blue_color} should be removed"
+            )
+
+    def test_no_hardcoded_blue_in_hovers(self, css_content):
+        """Verify hover states don't use hardcoded blue."""
+        # Look for :hover sections
+        hover_sections = re.findall(r":hover\s*\{[^}]+\}", css_content, re.DOTALL)
+
+        for section in hover_sections:
+            # Check for any blue hex codes in hover states
+            assert "#58a6ff" not in section, "Hover should not use #58a6ff"
+            assert "#4184e4" not in section, "Hover should not use #4184e4"
+
+
 class TestColorSchemeUpdate:
     """Test suite for GE-48: New Color Scheme"""
-
-    @pytest.fixture
-    def css_file_path(self):
-        """Path to the main News Flash CSS file."""
-        return Path("src/sejfa/newsflash/presentation/static/css/style.css")
-
-    @pytest.fixture
-    def css_content(self, css_file_path):
-        """Read CSS file content."""
-        return css_file_path.read_text()
 
     def test_css_file_exists(self, css_file_path):
         """Verify the CSS file exists."""
@@ -154,16 +233,6 @@ class TestColorSchemeUpdate:
 
 class TestAccessibilityContrast:
     """Test WCAG AA contrast ratios for the new color scheme."""
-
-    @pytest.fixture
-    def css_file_path(self):
-        """Path to the main News Flash CSS file."""
-        return Path("src/sejfa/newsflash/presentation/static/css/style.css")
-
-    @pytest.fixture
-    def css_content(self, css_file_path):
-        """Read CSS file content."""
-        return css_file_path.read_text()
 
     def extract_hex_color(self, color_string: str) -> str | None:
         """Extract hex color from CSS variable definition."""
