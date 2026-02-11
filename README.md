@@ -88,7 +88,7 @@ The full journey from idea to production looks like this:
 2. /start-task GE-xxx
    → Claude Code fetches ticket via Jira REST API
    → Creates branch: feature/GE-xxx-slug
-   → Populates docs/CURRENT_TASK.md
+   → Populates CURRENT_TASK.md
         │
         ▼
 3. Ralph Loop (TDD)
@@ -208,7 +208,7 @@ To use the autonomous development features, use the **Ralph Skills** located in 
 
 - **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Production deployment guide (Cloudflare Tunnel setup, troubleshooting Error 1033)
 - **[jules-playbook.md](docs/jules-playbook.md)** - Jules AI review system guide
-- **[CURRENT_TASK.md](docs/CURRENT_TASK.md)** - Active task context (agent memory)
+- **[CURRENT_TASK.md](CURRENT_TASK.md)** - Active task context (agent memory)
 
 ---
 

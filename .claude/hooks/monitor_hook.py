@@ -11,10 +11,15 @@ The Ralph high-five animation triggers when Claude node becomes active!
 import json
 import sys
 import os
+from pathlib import Path
 
 # Only run if monitor is enabled
 if os.environ.get("MONITOR_ENABLED", "1") != "1":
     sys.exit(0)
+
+HOOKS_DIR = Path(__file__).resolve().parent
+if str(HOOKS_DIR) not in sys.path:
+    sys.path.insert(0, str(HOOKS_DIR))
 
 try:
     from monitor_client import (

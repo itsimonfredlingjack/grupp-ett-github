@@ -129,7 +129,7 @@ Setup is complete. Now you ARE in Ralph Loop mode.
 
 **Your next action (do this NOW, not later):**
 
-1. Read docs/CURRENT_TASK.md
+1. Read CURRENT_TASK.md
 2. Identify the FIRST acceptance criterion
 3. Write a failing test for it
 4. Run the test to verify it fails

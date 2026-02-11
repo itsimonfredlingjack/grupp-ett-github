@@ -25,6 +25,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+HOOKS_DIR = Path(__file__).resolve().parent
+if str(HOOKS_DIR) not in sys.path:
+    sys.path.insert(0, str(HOOKS_DIR))
+
 # Monitor integration - sends real-time updates to the dashboard
 try:
     from monitor_client import (
