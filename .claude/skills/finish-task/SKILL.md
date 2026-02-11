@@ -6,6 +6,11 @@ args: none (uses current task from CURRENT_TASK.md)
 
 # Finish Task Skill
 
+> **⚠️ DO NOT invoke this skill manually.** This skill is executed AUTOMATICALLY
+> as part of the Ralph Loop triggered by `/start-task`. When all acceptance criteria
+> are met, the agent reads these steps and executes them without human intervention.
+> This file exists as a reference document — the entry point is always `/start-task`.
+
 This skill handles the completion workflow for a Ralph Loop task.
 
 ## Prerequisites
@@ -93,13 +98,21 @@ Implements {JIRA_ID}
 echo "Created PR: ${pr_url}"
 ```
 
-### Step 7: Enable Auto-Merge
+### Step 7: Wait for CI and Merge
 
-Only after successful PR creation, enable auto-merge so GitHub merges when required checks pass:
+Only after successful PR creation, wait for CI checks to pass, then merge directly:
 
 ```bash
-gh pr merge --auto --squash "${pr_url}"
+# Wait for all CI checks to complete (blocks until done)
+gh pr checks "${pr_url}" --watch
+
+# Merge directly with squash
+gh pr merge --squash "${pr_url}"
 ```
+
+**If merge fails** (e.g., review required, branch protection):
+- Log warning: `⚠️ Auto-merge failed — manual merge may be needed`
+- **Continue** with Jira update (Step 8) — do not abort
 
 ### Step 8: Update Jira
 
@@ -183,7 +196,7 @@ This signals to the stop-hook that we're no longer in an active task loop.
 - **Lint fails:** Do not proceed, fix linting issues
 - **Push fails:** Check for conflicts, resolve and retry
 - **PR creation fails:** Check gh auth status
-- **Auto-merge fails:** Confirm branch protection allows auto-merge and required checks are configured
+- **Merge fails:** Log warning and continue — manual merge may be needed if branch protection requires reviews
 - **Jira update fails:** Log warning but continue (non-blocking)
 
 ## Important

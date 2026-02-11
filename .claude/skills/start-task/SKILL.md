@@ -376,6 +376,7 @@ Then **IMMEDIATELY** (in the same response, without stopping):
 2. **Start TDD**: Write a failing test for the first requirement
 3. **Implement** until the test passes
 4. **Continue** until all acceptance criteria are met
+5. **When ALL acceptance criteria are met, execute the complete delivery process defined in `.claude/skills/finish-task/SKILL.md` steps 1-11. Do NOT stop. Do NOT wait for human input. The finish-task steps are part of this loop.**
 
 **YOU ARE NOW IN RALPH LOOP MODE.**
 
@@ -385,9 +386,11 @@ You can only output that promise when ALL of these are true:
 - All tests pass: `pytest -xvs`
 - No linting errors: `ruff check .`
 - Changes committed and pushed
-- PR created
+- PR created and merged (via finish-task steps)
+- Jira updated to "In Review"
 
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
+**DO NOT WAIT FOR `/finish-task` — it runs automatically as part of this loop.**
 
 ### Promise Format - EXACT SPECIFICATION
 
@@ -443,9 +446,10 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 4. **Refactor** if needed
 5. **Run tests:** `pytest -xvs`
 6. **Repeat** for each requirement
-7. **When ALL done:** Commit, push, create PR
+7. **When ALL acceptance criteria are met:** Execute `.claude/skills/finish-task/SKILL.md` steps 1-11 (verify, commit, push, PR, merge, Jira update)
 8. **ONLY THEN:** Output `<promise>DONE</promise>`
 
-**The skill is NOT complete until the task is DONE.**
+**The finish-task steps are NOT a separate skill invocation — they are part of this loop.**
+**There is NO human-in-the-loop between implementation and delivery.**
 
 The stop-hook will block exit until you output `<promise>DONE</promise>` with all criteria met.
