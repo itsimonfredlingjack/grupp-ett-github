@@ -1,29 +1,23 @@
-# PR Review Findings
-
-## Critical Severity
-
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+# PR Review Findings: docs/Bygga Agentic Dev Loop-system.md
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 1. Unrelated Change / Scope Creep (Correctness)
+The file `docs/Bygga Agentic Dev Loop-system.md` (505 lines of architectural documentation) is included in a PR titled "GE-51: Implement Cursor SECOND UNIVERSE BLACK theme". This suggests an accidental commit or mixed concerns, risking confusion and maintenance issues.
+**Action:** Remove the file from this PR or update the PR description to reflect the scope change. Ideally, move this to a separate PR.
+
+### 2. Filename Convention (Reliability)
+The filename `docs/Bygga Agentic Dev Loop-system.md` contains spaces. This is highly discouraged in code repositories as it breaks scripts, CLI tools, and CI/CD pipelines.
+**Action:** Rename the file to use kebab-case (e.g., `docs/agentic-dev-loop-blueprint.md`).
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 3. Missing Referenced File (Correctness)
+Section 9.2 of the new document references `scripts/agent-bootstrap.sh` as part of the implementation skeleton, but this file does not exist in the repository.
+**Action:** Clarify if this is a proposed file or missing from the PR. If proposed, mark it clearly as such.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 4. Language Consistency (Maintainability)
+The document is entirely in Swedish, whereas the repository appears to be standardizing on English (e.g., `CURRENT_TASK.md` headers).
+**Action:** Consider translating or clarifying the language policy for documentation to ensure consistency across the project.
