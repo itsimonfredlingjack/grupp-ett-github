@@ -1,29 +1,30 @@
 # PR Review Findings
 
-## Critical Severity
-
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
-
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 1. Hardcoded Secret Key (Security)
+The `create_app` function in `app.py` sets `app.secret_key = "dev-secret-key"` without checking for an environment variable override. This makes the session cookies vulnerable if deployed.
+**Action:** Update `app.py` to use `os.environ.get("SECRET_KEY", "dev-secret-key")` and ensure a unique key is set in production.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
+### 2. Unprotected Monitoring Endpoints (Security)
 The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
 **Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
 
+### 3. Inaccurate System Status (Correctness)
+The documentation in `docs/AGENTIC_DEVOPS_LOOP.md` contains inaccuracies regarding the codebase:
+- It states `scripts/preflight.sh` is missing, but it exists and is executable.
+- It states `start-task/SKILL.md` writes to the "wrong" `CURRENT_TASK.md`, but it correctly writes to the root file.
+- It lists `docs/DEPLOYMENT.md` which has been deleted.
+**Action:** Update `docs/AGENTIC_DEVOPS_LOOP.md` to accurately reflect the codebase state.
+
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
+### 4. Broken Documentation Reference (Correctness)
+`docs/DEPLOYMENT.md` is referenced in `docs/AGENTIC_DEVOPS_LOOP.md`, `README.md`, and `.claude/CLAUDE.md`, but the file has been deleted in this PR.
+**Action:** Remove the references to `docs/DEPLOYMENT.md` in all documentation files or restore the file.
 
 ### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While this is guarded by `if __name__ == "__main__":`, it encourages unsafe practices.
+**Action:** Ensure these settings are disabled in production environments.
