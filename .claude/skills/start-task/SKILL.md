@@ -443,9 +443,10 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 4. **Refactor** if needed
 5. **Run tests:** `pytest -xvs`
 6. **Repeat** for each requirement
-7. **When ALL done:** Commit, push, create PR
-8. **ONLY THEN:** Output `<promise>DONE</promise>`
+7. **When ALL acceptance criteria are met**, execute the complete delivery process defined in `.claude/skills/finish-task/SKILL.md` steps 1-11. Do NOT stop. Do NOT wait for human input. This includes: verify tests+lint, commit, push, create PR, wait for CI, merge, update Jira, and output the completion promise.
 
-**The skill is NOT complete until the task is DONE.**
+**DO NOT WAIT FOR /finish-task — it runs automatically as part of this loop.**
+
+**The skill is NOT complete until the task is DONE and merged.**
 
 The stop-hook will block exit until you output `<promise>DONE</promise>` with all criteria met.

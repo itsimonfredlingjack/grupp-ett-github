@@ -74,8 +74,8 @@ Fil: `.github/workflows/deploy.yml`
 #### Branch Cleanup
 Fil: `.github/workflows/cleanup-branches.yml`
 
-- Daglig cleanup (03:00 UTC) av mergade branches äldre än 7 dagar
-- Fungerar som förväntat.
+- **OBS: Inte daglig automatik.** Manuell `workflow_dispatch` med krav på att skriva "DELETE ALL BRANCHES" som confirmation. En nuke-knapp, inte schemalagd städning.
+- Har dry-run-läge och `production` environment gate.
 
 #### Applikationsarkitektur
 Tre-lager Flask-app med ren separation:
@@ -111,9 +111,9 @@ Två hooks ska skicka uppdateringar till dashboarden:
 - `.claude/hooks/monitor_hook.py` (PreToolUse) — ska skicka tool-use events
 - `.claude/hooks/stop-hook.py` — ska skicka status vid stopp
 
-Båda importerar från `monitor_client.py` som ligger i samma mapp. Men **Python hittar inte filen** pga trasig import-path. Importen wrappas i try/except → `MONITOR_AVAILABLE = False` → alla monitor-anrop skippas tyst.
+Båda importerar från `monitor_client.py` som ligger i samma mapp. ~~Men **Python hittar inte filen** pga trasig import-path.~~ ✅ Import-path fixad (2026-02-11): Båda hooks har nu `sys.path.insert(0, str(HOOKS_DIR))` innan importen.
 
-**Fix:** Lägg till `sys.path.insert(0, os.path.dirname(__file__))` innan importen i båda hooks, eller ändra till relativ import.
+**Kvarvarande problem:** `monitor_client.py` pratar med `http://localhost:5000` — fungerar bara om Flask-appen körs på samma maskin som Claude Code. I Cowork-sandbox eller CI-kontext nås servern aldrig. Fail-silent dock (try/except), så det skadar inget.
 
 #### Problem 4: Jules-integration är overifierad
 
@@ -128,7 +128,7 @@ Båda importerar från `monitor_client.py` som ligger i samma mapp. Men **Python
 
 Problem:
 1. **Action-referensen kan vara ogiltig** — `google-labs-code/jules-action@v1.0.0` kanske inte existerar eller har bytt namn. Om den inte finns failar ALLA Jules-workflows.
-2. **`scripts/preflight.sh` SAKNAS** — `jules_health_check.yml` rad 52 kör `bash scripts/preflight.sh` men filen finns inte i repot. Health check kraschar varje körning.
+2. ~~**`scripts/preflight.sh` SAKNAS**~~ ✅ LÖST — filen finns nu (`scripts/preflight.sh`, 225 rader). CI-aware: skippar Jira/GitHub auth i CI-kontext.
 3. **Säkerhetsrisk i `self_healing.yml`** — har `contents: write` permissions + checkout av `head_sha` från potentiella forks = RCE-risk.
 4. ~~**`jules_review.yml` saknade `statuses: write`** — "Set Jules review status" fick 403 vid commit status API-anrop.~~ ✅ LÖST (2026-02-11): `statuses: write` tillagd i permissions.
 5. ~~**Jules recursive loop** — Jules reviewar PR → skapar findings-PR → triggar sig själv → oändlig kedja (#320→#324→#325→...→#330).~~ ✅ LÖST (2026-02-11): Lagt till `if`-guard som skippar PRs från `jules-*` branches och `google-labs-jules[bot]` actor.
@@ -167,16 +167,16 @@ Problem:
 | `deploy.yml` | ✅ (men triggas aldrig pga ingen merge) | Docker → ACR → Azure |
 | `cleanup-branches.yml` | ✅ | Städar mergade branches dagligen |
 | `jules_review.yml` | ❓ Overifierad (✅ statuses: write fixad, ✅ recursion guard tillagd) | AI code review på PRs |
-| `jules_health_check.yml` | ❌ Trasig (preflight.sh saknas) | Daglig Jules health ping |
+| `jules_health_check.yml` | ❓ Overifierad (✅ preflight.sh finns nu) | Daglig Jules health ping |
 | `self_healing.yml` | ❓ Overifierad + säkerhetsrisk | Auto-fix vid CI-fail |
 | `self_heal_pr.yml` | ❓ Overifierad | Manuell self-heal per PR |
 
 ### Hooks (4 st)
 | Fil | Status | Funktion |
 |-----|--------|----------|
-| `stop-hook.py` | ✅ Logiken funkar, ❌ monitor-import trasig | Ralph Loop enforcer |
-| `monitor_hook.py` | ❌ Import trasig, gör inget | Ska skicka tool-use events till dashboard |
-| `monitor_client.py` | ❌ Hittas inte av hooks | HTTP-klient för monitor API |
+| `stop-hook.py` | ✅ Logiken funkar, ✅ monitor-import fixad | Ralph Loop enforcer |
+| `monitor_hook.py` | ✅ Import fixad, ❌ server onåbar i sandbox/CI | Ska skicka tool-use events till dashboard |
+| `monitor_client.py` | ✅ Hittas av hooks (sys.path fix), ❌ localhost:5000 onåbar | HTTP-klient för monitor API |
 | `prevent-push.py` | ⚠️ Läser fel CURRENT_TASK.md | Blockerar push vid no-push markers |
 
 ### Skills (2 st)
@@ -191,7 +191,7 @@ Problem:
 | `scripts/ci_check.sh` | ✅ | Lokal CI-simulering |
 | `scripts/classify_failure.py` | ✅ (kod ok, beroende på Jules) | Klassificerar CI-fel |
 | `scripts/jules_payload.py` | ✅ (kod ok, beroende på Jules) | Bygger Jules-payload |
-| `scripts/preflight.sh` | ❌ SAKNAS | Refereras av jules_health_check.yml |
+| `scripts/preflight.sh` | ✅ Finns (CI-aware) | Refereras av jules_health_check.yml |
 
 ### Docs (viktigast)
 | Fil | Status | Beskrivning |
@@ -232,9 +232,9 @@ Problem:
 | # | Problem | Svårighetsgrad | Impact |
 |---|---------|---------------|--------|
 | 1 | ~~Auto-merge saknas~~ | ✅ LÖST | finish-task kör `gh pr checks --watch` + `gh pr merge --squash` |
-| 2 | Monitor imports trasiga | Enkel (sys.path fix) | Dashboard helt död |
+| 2 | ~~Monitor imports trasiga~~ | ✅ LÖST (sys.path fix redan applicerad) | Dashboard nås ej i sandbox/CI men imports funkar |
 | 3 | CURRENT_TASK.md inkonsistens | Enkel (bestäm en plats) | Skills och hooks tittar på olika filer |
-| 4 | preflight.sh saknas | Enkel (skapa filen eller ta bort referensen) | Jules health check kraschar |
+| 4 | ~~preflight.sh saknas~~ | ✅ LÖST (filen finns, CI-aware) | Jules health check borde fungera |
 | 5 | Verifiera Jules action-referens | Kolla Actions-historik | Om ogiltig funkar inget Jules-relaterat |
 | 6 | ~~Claude avslutar innan finish-task~~ | ✅ LÖST | finish-task inlinad i start-task loopen |
 | 7 | self_healing.yml säkerhetsrisk | Medium (ta bort contents: write) | RCE-risk |

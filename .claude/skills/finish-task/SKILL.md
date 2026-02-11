@@ -6,6 +6,10 @@ args: none (uses current task from CURRENT_TASK.md)
 
 # Finish Task Skill
 
+> **⚠️ DO NOT invoke this skill manually via `/finish-task`.**
+> It is executed automatically as part of the Ralph Loop triggered by `/start-task`.
+> This file exists as a reference document for the delivery steps (1-11).
+
 This skill handles the completion workflow for a Ralph Loop task.
 
 ## Prerequisites
@@ -93,13 +97,18 @@ Implements {JIRA_ID}
 echo "Created PR: ${pr_url}"
 ```
 
-### Step 7: Enable Auto-Merge
+### Step 7: Wait for CI and Merge
 
-Only after successful PR creation, enable auto-merge so GitHub merges when required checks pass:
+Only after successful PR creation, wait for CI checks to pass, then merge directly:
 
 ```bash
-gh pr merge --auto --squash "${pr_url}"
+gh pr checks "${pr_url}" --watch
+gh pr merge --squash "${pr_url}"
 ```
+
+**If merge fails** (e.g., review required, branch protection):
+- Log warning: `⚠️ Auto-merge failed — manual merge may be needed`
+- **Continue** with Jira update (Step 8) — do not abort
 
 ### Step 8: Update Jira
 
