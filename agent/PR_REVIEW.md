@@ -2,28 +2,28 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Unsafe Production Server (Security/Reliability)
+The deployment guide in `docs/DEPLOYMENT.md` instructs running `python3 app.py` for the production environment. This uses the Flask development server, which is single-threaded, lacks security hardening, and is not suitable for production workloads.
+**Action:** Update the guide to use a WSGI server like `gunicorn` (already in `requirements.txt`) with a production-ready configuration (e.g., `gunicorn -w 4 -b 0.0.0.0:5000 app:app`).
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 2. Insecure Configuration Defaults (Security)
+The guide does not instruct users to set critical environment variables like `SECRET_KEY` or `DATABASE_URL`. Consequently, the application will default to the hardcoded `dev-secret-key` and local SQLite database, which is insecure for a production deployment exposed to the internet.
+**Action:** enhance the deployment instructions to mandate setting `SECRET_KEY` and `DATABASE_URL` environment variables.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 3. Hardcoded Paths and Infrastructure Details (Portability/Security)
+The documentation contains hardcoded absolute paths (e.g., `/home/aidev/`) and specific infrastructure UUIDs (e.g., Cloudflare Tunnel ID `62457ea9...`). This limits the guide's utility to a specific machine and user account, and unnecessarily exposes internal infrastructure details.
+**Action:** Replace hardcoded paths with environment variables (e.g., `$HOME`) and use placeholders for specific UUIDs to make the guide portable.
+
+### 4. Fragile Process Management (Reliability)
+The guide suggests using `nohup ... &` for running critical services (Flask app and Cloudflare Tunnel). This method provides no process supervision, logging rotation, or automatic restart capabilities if the process crashes or the server reboots.
+**Action:** Recommend using a proper process manager like `systemd` or containerization (Docker) to ensure service reliability.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 5. Missing Dependency Installation (Reliability)
+The deployment steps show activating the virtual environment but omit the step to install dependencies (`pip install -r requirements.txt`). This will cause the application to fail to start on a fresh deployment.
+**Action:** Add the explicit command to install dependencies after activating the virtual environment.
