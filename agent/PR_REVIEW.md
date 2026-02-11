@@ -2,28 +2,46 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Authentication Bypass in AdminAuthService (Security)
+The `AdminAuthService.validate_session_token` method accepts any token starting with `token_` (e.g. `token_fake`), allowing attackers to bypass authentication and access admin endpoints.
+**Action:** Implement proper token validation, preferably using a secure session management library or database lookup.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 2. Stored XSS in Monitoring Dashboard (Security)
+The `static/monitor.html` file renders event messages using `innerHTML` without sanitization. An attacker can inject malicious scripts via the unauthenticated `/api/monitor/state` endpoint, which will be executed in the dashboard viewer's browser.
+**Action:** Use `textContent` instead of `innerHTML` or sanitize the input before rendering.
+
+### 3. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated, allowing any network user to inject false events or trigger the XSS vulnerability.
+**Action:** Implement authentication for these endpoints.
+
+### 4. Hardcoded Admin Credentials (Security)
+The `AdminAuthService` uses hardcoded credentials (`admin`/`admin123`) which are easily guessable and insecure for production.
+**Action:** Move credentials to environment variables or a secure database.
+
+### 5. Hardcoded Secret Key (Security)
+The `app.py` file sets `app.secret_key = "dev-secret-key"` without checking environment variables, making sessions insecure in production if not overridden.
+**Action:** Use `os.environ.get("SECRET_KEY")` to load the secret key from the environment.
+
+### 6. MonitorService Split-Brain (Reliability)
+The `MonitorService` stores state in-memory. Since the application is deployed with Gunicorn using multiple workers (as seen in `Dockerfile`), each worker maintains its own isolated state, causing inconsistent dashboard data and "split-brain" behavior.
+**Action:** Use a shared data store (e.g., Redis) for monitoring state.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 7. Duplicate Documentation (Process)
+`docs/Bygga Agentic Dev Loop-system.md` is a Swedish duplicate of `docs/AGENTIC_DEVOPS_LOOP.md` and should be removed to avoid maintenance issues.
+**Action:** Delete `docs/Bygga Agentic Dev Loop-system.md`.
 
-## Low Severity
+### 8. Missing Dependency: python-dotenv (Reliability)
+`python-dotenv` is used in `scripts/preflight.sh` (and likely elsewhere) but is missing from `requirements.txt`.
+**Action:** Add `python-dotenv` to `requirements.txt`.
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
+## Verified Changes
 
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 1. Dependency: flask-socketio
+Verified that `flask-socketio>=5.0.0` is present in `requirements.txt`.
+
+### 2. Monitor Hooks
+Verified that `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py` exist and are not deleted.
