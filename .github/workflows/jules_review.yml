@@ -27,6 +27,13 @@ jobs:
   jules-review:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Prevent recursive loop: Jules creates branches like jules-70282508...
+    # which trigger new PRs that trigger Jules again → infinite chain.
+    # Only review PRs from human/Claude branches, never Jules' own findings PRs.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (!startsWith(github.head_ref, 'jules-') &&
+       github.actor != 'google-labs-jules[bot]')
 
     steps:
       - name: Start timer

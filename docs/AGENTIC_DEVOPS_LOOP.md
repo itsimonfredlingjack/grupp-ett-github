@@ -18,10 +18,10 @@ En Flask-applikation ("SEJFA") med en agentic DevOps-loop byggd ovanpå Claude C
 Jira ticket (GE-xxx)
     → /start-task hämtar ticket, skapar branch, sätter upp CURRENT_TASK.md
     → Ralph Loop (TDD: red → green → refactor, repeat)
-    → /finish-task verifierar kvalitet, pushar, skapar PR
+    → finish-task körs AUTOMATISKT som del av loopen (verify, commit, push, PR, merge, Jira)
     → CI kör (lint + test)
     → Jules AI reviewar PR
-    → Auto-merge
+    → gh pr merge --squash (direkt efter CI passerar)
     → deploy.yml bygger Docker → ACR → Azure Container Apps
     → Live
 ```
@@ -32,11 +32,11 @@ Jira ticket (GE-xxx)
 Jira ticket (GE-xxx)
     → /start-task ✅ funkar (med reservation, se CURRENT_TASK.md-problemet)
     → Ralph Loop ✅ funkar (stop-hook är fail-closed och solid)
-    → /finish-task ⚠️ OKLART — Claude kan avsluta INNAN finish-task körs (se Problem 1)
+    → finish-task ✅ FIXAT — körs automatiskt som del av start-task loopen (ingen separat /finish-task)
     → CI kör ✅ funkar (ci.yml + ci_branch.yml)
     → Jules AI reviewar ❓ OVERIFIERAT — alla 4 Jules-workflows beror på en action-referens som kan vara ogiltig
-    → Auto-merge ❌ SAKNAS — inget mergar PRn
-    → deploy.yml ✅ triggas av merge till main — men ingen merge sker automatiskt
+    → Merge ✅ FIXAT — finish-task kör gh pr checks --watch + gh pr merge --squash
+    → deploy.yml ✅ triggas av merge till main
     → Monitor-dashboard ❌ DÖD — trasiga imports, får inga uppdateringar
 ```
 
@@ -94,32 +94,13 @@ Tre-lager Flask-app med ren separation:
 
 **Symptom:** Claude Code tycker den är klar (tester passerar, kod skriven) och avslutar sessionen. Stop-hooken fångar inte upp detta. Ingen PR skapas.
 
-**Analys:**
-Stop-hooken i sig är solid (fail-closed). Men den kan bara fånga **stopp-events**. Problemet är troligen att Claude Codes interna completion-heuristik triggar **innan** ett stopp-event skickas. Det finns tre möjliga orsaker:
-
-1. **Claude bestämmer sig internt** — Claude Code har en intern gräns för turns och en heuristik för "uppgiften verkar klar". Om den bestämmer sig för att sluta skicka kommandon och istället producera en sammanfattning, triggas aldrig något stopp-event, och hooken körs aldrig.
-
-2. **Hooken returnerar exit 0 i edge cases** — Även om hooken är designad fail-closed, finns det kodstigar där den returnerar 0 (t.ex. om loopen inte är aktiv). Om loop-aktiveringen failar vid start har hooken inget att enforcea.
-
-3. **Hooken blockar men Claude ignorerar den** — Om hooken returnerar exit 2 men Claude Code inte respekterar det korrekt, avslutas sessionen ändå.
-
-**Status:** ⚠️ Ej löst. Kräver debugging med faktisk Claude Code-session för att fastställa vilken orsak det är.
+**Status:** ✅ LÖST (2026-02-11). Grundorsaken var att finish-task existerade som separat skill — agenten tolkade implementation och delivery som två separata steg med human-in-the-loop. Fix: start-task SKILL.md uppdaterad med explicit instruktion att finish-task steg 1-11 körs automatiskt som del av Ralph Loop. finish-task SKILL.md markerad som referensdokument (ska aldrig triggas manuellt).
 
 #### Problem 2: PRs mergas aldrig automatiskt
 
 **Symptom:** Även om finish-task lyckas skapa en PR, stannar flödet. Ingen merge sker.
 
-**Analys:**
-`finish-task` SKILL.md definierar `gh pr create` men innehåller INGEN merge-logik. Det finns ingen workflow som mergar PRs efter CI + review passerat. Flödet bryter vid:
-
-```
-PR skapad → CI kör ✅ → Jules reviewar ❓ → [INGENTING] → merge sker aldrig → deploy triggas aldrig
-```
-
-**Fix som behövs (välj en):**
-- A) Lägg till `gh pr merge --auto --squash` i finish-task (enklast — GitHub mergar när checks passerar)
-- B) Ny GitHub Actions workflow som mergar efter Jules approve + CI pass
-- C) Aktivera branch protection med "auto-merge" i GitHub repo settings + A
+**Status:** ✅ LÖST (2026-02-11). Grundorsaken var att `gh pr merge --auto --squash` kräver branch protection på main (repot har ingen). Kommandot failade tyst. Fix: Ersatt med `gh pr checks --watch` (väntar på CI) + `gh pr merge --squash` (mergar direkt). Om merge failar (t.ex. review krävs) loggas varning men Jira-uppdatering fortsätter.
 
 #### Problem 3: Monitor-dashboard är död
 
@@ -149,8 +130,10 @@ Problem:
 1. **Action-referensen kan vara ogiltig** — `google-labs-code/jules-action@v1.0.0` kanske inte existerar eller har bytt namn. Om den inte finns failar ALLA Jules-workflows.
 2. **`scripts/preflight.sh` SAKNAS** — `jules_health_check.yml` rad 52 kör `bash scripts/preflight.sh` men filen finns inte i repot. Health check kraschar varje körning.
 3. **Säkerhetsrisk i `self_healing.yml`** — har `contents: write` permissions + checkout av `head_sha` från potentiella forks = RCE-risk.
+4. ~~**`jules_review.yml` saknade `statuses: write`** — "Set Jules review status" fick 403 vid commit status API-anrop.~~ ✅ LÖST (2026-02-11): `statuses: write` tillagd i permissions.
+5. ~~**Jules recursive loop** — Jules reviewar PR → skapar findings-PR → triggar sig själv → oändlig kedja (#320→#324→#325→...→#330).~~ ✅ LÖST (2026-02-11): Lagt till `if`-guard som skippar PRs från `jules-*` branches och `google-labs-jules[bot]` actor.
 
-**Status:** ⚠️ Kräver verifiering. Kolla GitHub Actions run-historik för att se om Jules-workflows faktiskt har körts framgångsrikt.
+**Status:** ⚠️ Kräver verifiering. Kolla GitHub Actions run-historik för att se om Jules-workflows faktiskt har körts framgångsrikt. Commit status-permission och recursion-guard är fixade.
 
 #### Problem 5: CURRENT_TASK.md-inkonsistens
 
@@ -183,7 +166,7 @@ Problem:
 | `ci_branch.yml` | ✅ | Lint + test på feature branches |
 | `deploy.yml` | ✅ (men triggas aldrig pga ingen merge) | Docker → ACR → Azure |
 | `cleanup-branches.yml` | ✅ | Städar mergade branches dagligen |
-| `jules_review.yml` | ❓ Overifierad | AI code review på PRs |
+| `jules_review.yml` | ❓ Overifierad (✅ statuses: write fixad, ✅ recursion guard tillagd) | AI code review på PRs |
 | `jules_health_check.yml` | ❌ Trasig (preflight.sh saknas) | Daglig Jules health ping |
 | `self_healing.yml` | ❓ Overifierad + säkerhetsrisk | Auto-fix vid CI-fail |
 | `self_heal_pr.yml` | ❓ Overifierad | Manuell self-heal per PR |
@@ -199,8 +182,8 @@ Problem:
 ### Skills (2 st)
 | Fil | Status | Funktion |
 |-----|--------|----------|
-| `start-task/SKILL.md` | ⚠️ Skriver till fel CURRENT_TASK.md | Hämtar Jira ticket, skapar branch |
-| `finish-task/SKILL.md` | ⚠️ Saknar merge-logik | Verifierar kvalitet, skapar PR |
+| `start-task/SKILL.md` | ✅ Entry point för hela loopen | Hämtar Jira ticket, skapar branch, startar Ralph Loop inkl. finish-task |
+| `finish-task/SKILL.md` | ✅ Referensdokument (triggas aldrig manuellt) | Verifierar kvalitet, skapar PR, väntar CI, mergar, uppdaterar Jira |
 
 ### Scripts (3 st)
 | Fil | Status | Funktion |
@@ -226,8 +209,8 @@ Problem:
 ### För Claude Code (implementation)
 1. Läs DENNA fil först — den beskriver verkligheten
 2. `.claude/CLAUDE.md` har kodstil och arkitekturregler
-3. Skills finns i `.claude/skills/` — följ dem men var medveten om CURRENT_TASK.md-inkonsistensen
-4. Stop-hooken fungerar — lita på den, men kör alltid `/finish-task` explicit
+3. Skills finns i `.claude/skills/` — `/start-task` är entry point, finish-task körs automatiskt som del av loopen
+4. Stop-hooken fungerar — lita på den, finish-task körs automatiskt (trigga ALDRIG `/finish-task` manuellt)
 5. Monitor-hooks skickar INGET just nu — ignorera monitor-uppdateringar tills import-fixen är på plats
 
 ### För Jules (code review)
@@ -248,14 +231,15 @@ Problem:
 
 | # | Problem | Svårighetsgrad | Impact |
 |---|---------|---------------|--------|
-| 1 | Auto-merge saknas | Enkel (`gh pr merge --auto`) | Hela kedjan bryter utan detta |
+| 1 | ~~Auto-merge saknas~~ | ✅ LÖST | finish-task kör `gh pr checks --watch` + `gh pr merge --squash` |
 | 2 | Monitor imports trasiga | Enkel (sys.path fix) | Dashboard helt död |
 | 3 | CURRENT_TASK.md inkonsistens | Enkel (bestäm en plats) | Skills och hooks tittar på olika filer |
 | 4 | preflight.sh saknas | Enkel (skapa filen eller ta bort referensen) | Jules health check kraschar |
 | 5 | Verifiera Jules action-referens | Kolla Actions-historik | Om ogiltig funkar inget Jules-relaterat |
-| 6 | Claude avslutar innan finish-task | Svår (kräver debugging) | PRs skapas aldrig |
+| 6 | ~~Claude avslutar innan finish-task~~ | ✅ LÖST | finish-task inlinad i start-task loopen |
 | 7 | self_healing.yml säkerhetsrisk | Medium (ta bort contents: write) | RCE-risk |
 | 8 | Hardcoded credentials | Medium | Säkerhetsrisk |
+| 9 | ~~Jules 403 vid commit status~~ | ✅ LÖST | `statuses: write` tillagd i jules_review.yml |
 
 ---
 
@@ -264,3 +248,7 @@ Problem:
 | Datum | Ändring |
 |-------|---------|
 | 2026-02-11 | Skapad baserat på fullständig repo-audit. Ersätter alla tidigare fragmenterade docs som operativ referens. |
+| 2026-02-11 | Fix #1: finish-task merge — `--auto` ersatt med `pr checks --watch` + direkt `--squash` merge. |
+| 2026-02-11 | Fix #6: finish-task inlinad i start-task — ingen human-in-the-loop mellan implementation och delivery. |
+| 2026-02-11 | Fix #9: jules_review.yml — `statuses: write` tillagd för commit status API. |
+| 2026-02-11 | Fix #10: jules_review.yml — recursion guard: skippa `jules-*` branches och `google-labs-jules[bot]` actor. |
