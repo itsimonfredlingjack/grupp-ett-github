@@ -1,29 +1,39 @@
-# PR Review Findings
+# Automated PR Review Findings
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Authentication Bypass in AdminAuthService (Security)
+The `validate_session_token` method in `src/sejfa/core/admin_auth.py` accepts any token starting with `token_` (e.g., `token_fake`), allowing unauthorized access to admin endpoints.
+**Action:** Implement proper token validation (e.g., check against a stored list of active sessions or use signed JWTs).
+
+### 2. Stored Cross-Site Scripting (XSS) in Monitor Dashboard (Security)
+The `static/monitor.html` file renders event messages using `innerHTML` without sanitization. An attacker can inject malicious scripts via the `/api/monitor/state` endpoint which will execute in the browser of anyone viewing the dashboard.
+**Action:** Use `textContent` instead of `innerHTML` or sanitize the input using a library like DOMPurify.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 3. Hardcoded Admin Credentials (Security)
+The `AdminAuthService` in `src/sejfa/core/admin_auth.py` uses hardcoded credentials (`admin`/`admin123`). This is insecure for any deployment.
+**Action:** Use environment variables or a database for credential storage and hashing.
+
+### 4. Split-Brain Monitoring State (Reliability)
+The `MonitorService` stores state in-memory, but the `Dockerfile` configures `gunicorn` with 4 workers. This causes a "split-brain" issue where monitoring updates are isolated to a single worker process and not shared.
+**Action:** Use an external store (e.g., Redis) or configure gunicorn to use a single worker (`--workers 1`).
+
+### 5. Missing Global CSRF Protection (Security)
+The application (`app.py`) does not enable Cross-Site Request Forgery (CSRF) protection. State-changing endpoints are vulnerable to CSRF attacks.
+**Action:** Install `flask-wtf` and initialize `CSRFProtect(app)` in `app.py`.
+
+### 6. Hardcoded Flask Secret Key (Security)
+The `app.py` file sets `app.secret_key` to a hardcoded string (`"dev-secret-key"`). This compromises session security if deployed.
+**Action:** Load `SECRET_KEY` from environment variables.
+
+### 7. Duplicate Task Memory (Correctness)
+The repository contains two conflicting task memory files: the root `CURRENT_TASK.md` and `docs/CURRENT_TASK.md`. This violates the single source of truth principle and can lead to divergent task states.
+**Action:** Unify the task state in the root `CURRENT_TASK.md` and delete `docs/CURRENT_TASK.md`.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
-
-## Low Severity
-
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
-
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 8. Unprotected Monitoring Endpoints (Security)
+The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `/api/monitor/state`) are unauthenticated, allowing any network user to inject false events or reset the dashboard.
+**Action:** Implement authentication (e.g., API key or shared secret) for these endpoints.
