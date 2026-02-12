@@ -10,7 +10,6 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import time
 import urllib.error
 import urllib.request
@@ -89,7 +88,15 @@ def poll_session(api_key: str, session_name: str) -> dict | None:
             _log(f"  Session state: {state} ({elapsed}s)")
             last_state = state
 
-        if state.upper() in ("COMPLETED", "DONE", "SUCCEEDED", "FAILED", "CANCELLED", "ERROR"):
+        terminal_states = (
+            "COMPLETED",
+            "DONE",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED",
+            "ERROR",
+        )
+        if state.upper() in terminal_states:
             return session
 
         time.sleep(POLL_INTERVAL_SEC)
@@ -184,18 +191,23 @@ def post_review_comment(
     body: str,
 ) -> bool:
     """Post a PR review comment via gh CLI."""
-    payload = json.dumps({
-        "body": body,
-        "event": "COMMENT",
-        "commit_id": head_sha,
-    })
+    payload = json.dumps(
+        {
+            "body": body,
+            "event": "COMMENT",
+            "commit_id": head_sha,
+        }
+    )
 
     result = subprocess.run(
         [
-            "gh", "api",
+            "gh",
+            "api",
             f"repos/{repo}/pulls/{pr_number}/reviews",
-            "--method", "POST",
-            "--input", "-",
+            "--method",
+            "POST",
+            "--input",
+            "-",
         ],
         input=payload,
         capture_output=True,
@@ -208,10 +220,13 @@ def post_review_comment(
         _log("Falling back to regular issue comment...")
         fallback = subprocess.run(
             [
-                "gh", "api",
+                "gh",
+                "api",
                 f"repos/{repo}/issues/{pr_number}/comments",
-                "--method", "POST",
-                "-f", f"body={body}",
+                "--method",
+                "POST",
+                "-f",
+                f"body={body}",
             ],
             capture_output=True,
             text=True,
@@ -289,7 +304,8 @@ def main() -> int:
 
     if final_session is None:
         body = (
-            "\u23f1\ufe0f **Jules Review** \u2014 Session timed out after 9 minutes.\n\n"
+            "\u23f1\ufe0f **Jules Review** \u2014 "
+            "Session timed out after 9 minutes.\n\n"
             f"Session ID: `{session_id}`\n"
             "Manual review recommended."
         )
@@ -301,7 +317,9 @@ def main() -> int:
     _log(f"Session finished with state: {state}")
 
     if state in ("FAILED", "ERROR", "CANCELLED"):
-        error_msg = final_session.get("error", final_session.get("message", "Unknown error"))
+        error_msg = final_session.get(
+            "error", final_session.get("message", "Unknown error")
+        )
         body = (
             f"\u274c **Jules Review** \u2014 Session {state.lower()}.\n\n"
             f"Error: `{error_msg}`\n"
