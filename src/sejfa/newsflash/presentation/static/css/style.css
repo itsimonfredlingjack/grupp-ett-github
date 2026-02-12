@@ -1,14 +1,17 @@
-/* News Flash - Copilot Theme Styles */
+/* News Flash - Beer Theme Styles */
 
 :root {
-    --bg-dark: #0d1117;
-    --bg-card: #161b22;
-    --accent-primary: #2f81f7;
-    --accent-secondary: #a371f7;
-    --accent-glow: rgba(47, 129, 247, 0.15);
-    --text-primary: #ffffff;
-    --text-secondary: #8b949e;
-    --border-color: #30363d;
+    --bg-dark: #1e1611;
+    --bg-card: #3e2723;
+    --accent-primary: #e67e22;
+    --accent-secondary: #d35400;
+    --accent-glow: rgba(230, 126, 34, 0.15);
+    --text-primary: #fdfbf7;
+    --text-secondary: #d7ccc8;
+    --border-color: rgba(230, 126, 34, 0.3);
+    --focus-color: #f1c40f;
+    --success-color: #4caf50;
+    --error-color: #ef5350;
 }
 
 * {
@@ -64,6 +67,12 @@ body {
     color: var(--accent-primary);
 }
 
+.header__link:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 /* Main Content */
 .main {
     flex: 1;
@@ -108,6 +117,11 @@ body {
 .hero__button:hover {
     background-color: var(--accent-secondary);
     transform: translateY(-2px);
+}
+
+.hero__button:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
 }
 
 /* Features Section */
@@ -202,8 +216,8 @@ body {
 
 .form__input:focus {
     outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-glow);
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 2px rgba(241, 196, 15, 0.3);
 }
 
 .form__button {
@@ -221,6 +235,11 @@ body {
 .form__button:hover {
     background-color: var(--accent-secondary);
     transform: translateY(-2px);
+}
+
+.form__button:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
 }
 
 /* Thank You Page */
@@ -266,6 +285,11 @@ body {
 .thank-you__button:hover {
     background-color: var(--accent-secondary);
     transform: translateY(-2px);
+}
+
+.thank-you__button:focus {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
 }
 
 /* Footer */
