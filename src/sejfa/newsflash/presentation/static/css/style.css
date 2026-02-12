@@ -1,14 +1,14 @@
-/* News Flash - ChatGPT Theme Styles */
+/* News Flash - Copilot Theme Styles */
 
 :root {
-    --bg-dark: #ffffff;
-    --bg-card: #f7f7f8;
-    --accent-primary: #10a37f;
-    --accent-secondary: #e5e7eb;
-    --accent-glow: rgba(16, 163, 127, 0.15);
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --border-color: #e5e7eb;
+    --bg-dark: #0d1117;
+    --bg-card: #161b22;
+    --accent-primary: #2f81f7;
+    --accent-secondary: #a371f7;
+    --accent-glow: rgba(47, 129, 247, 0.15);
+    --text-primary: #ffffff;
+    --text-secondary: #8b949e;
+    --border-color: #30363d;
 }
 
 * {
@@ -71,7 +71,7 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, #f7f7f8 0%, #ffffff 100%);
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-dark) 100%);
     padding: 6rem 2rem;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
@@ -106,7 +106,7 @@ body {
 }
 
 .hero__button:hover {
-    background-color: #0d8a6a;
+    background-color: var(--accent-secondary);
     transform: translateY(-2px);
 }
 
@@ -219,7 +219,7 @@ body {
 }
 
 .form__button:hover {
-    background-color: #0d8a6a;
+    background-color: var(--accent-secondary);
     transform: translateY(-2px);
 }
 
@@ -264,7 +264,7 @@ body {
 }
 
 .thank-you__button:hover {
-    background-color: #0d8a6a;
+    background-color: var(--accent-secondary);
     transform: translateY(-2px);
 }
 
