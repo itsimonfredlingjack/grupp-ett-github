@@ -78,13 +78,13 @@ Byt fran nuvarande grona Cursor-tema till Synthwave med hot pink och cyan neon-a
 
 ## Completion Checklist
 
-- [ ] All acceptance criteria checked off
-- [ ] Tests passing: `pytest -xvs`
-- [ ] Linting passing: `ruff check .`
-- [ ] Changes committed
-- [ ] Branch pushed to remote
-- [ ] PR created
-- [ ] Jira ticket updated
+- [x] All acceptance criteria checked off
+- [x] Tests passing: `pytest -xvs` (320 tests)
+- [x] Linting passing: `ruff check .`
+- [x] Changes committed (fb07fdd)
+- [x] Branch pushed to remote
+- [x] PR created (#370)
+- [x] Jira ticket updated
 
 ---
 
