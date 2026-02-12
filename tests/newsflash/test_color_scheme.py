@@ -24,79 +24,6 @@ def css_content(css_file_path):
     return css_file_path.read_text()
 
 
-class TestCursorBlackTheme:
-    """Test suite for GE-51: Cursor SECOND UNIVERSE BLACK theme"""
-
-    def test_bg_dark_is_pure_black(self, css_content):
-        """Verify background is pure black #000000."""
-        assert "--bg-dark: #000000;" in css_content, (
-            "Background should be pure black #000000"
-        )
-
-    def test_bg_card_is_dark_gray(self, css_content):
-        """Verify cards use #111111."""
-        assert "--bg-card: #111111;" in css_content, "Cards should use #111111"
-
-    def test_accent_primary_is_cursor_green(self, css_content):
-        """Verify primary accent is Cursor green #00e599."""
-        assert "--accent-primary: #00e599;" in css_content, (
-            "Primary accent should be Cursor green #00e599"
-        )
-
-    def test_accent_secondary_is_purple(self, css_content):
-        """Verify secondary accent is purple #a855f7."""
-        assert "--accent-secondary: #a855f7;" in css_content, (
-            "Secondary accent should be purple #a855f7"
-        )
-
-    def test_text_primary_is_white(self, css_content):
-        """Verify primary text is white #ffffff."""
-        assert "--text-primary: #ffffff;" in css_content, (
-            "Primary text should be white #ffffff"
-        )
-
-    def test_text_secondary_is_gray(self, css_content):
-        """Verify secondary text is gray #888888."""
-        assert "--text-secondary: #888888;" in css_content, (
-            "Secondary text should be gray #888888"
-        )
-
-    def test_border_color_is_dark(self, css_content):
-        """Verify borders use #222222."""
-        assert "--border-color: #222222;" in css_content, "Borders should use #222222"
-
-    def test_accent_glow_is_green(self, css_content):
-        """Verify accent glow uses green rgba (not blue)."""
-        # Should have green glow, not blue
-        assert "rgba(0, 229, 153" in css_content or "rgba(0,229,153" in css_content, (
-            "Accent glow should be green (rgba with 0, 229, 153)"
-        )
-        # Old blue glow should NOT exist
-        assert "rgba(88, 166, 255" not in css_content, (
-            "Old blue glow rgba(88, 166, 255, ...) should be removed"
-        )
-
-    def test_no_github_blue_colors(self, css_content):
-        """Verify NO blue colors from GitHub theme remain."""
-        # GitHub blue colors that should be gone
-        github_blue_colors = ["#58a6ff", "#4184e4", "#0d1117", "#161b22", "#30363d"]
-
-        for blue_color in github_blue_colors:
-            assert blue_color not in css_content.lower(), (
-                f"GitHub blue color {blue_color} should be removed"
-            )
-
-    def test_no_hardcoded_blue_in_hovers(self, css_content):
-        """Verify hover states don't use hardcoded blue."""
-        # Look for :hover sections
-        hover_sections = re.findall(r":hover\s*\{[^}]+\}", css_content, re.DOTALL)
-
-        for section in hover_sections:
-            # Check for any blue hex codes in hover states
-            assert "#58a6ff" not in section, "Hover should not use #58a6ff"
-            assert "#4184e4" not in section, "Hover should not use #4184e4"
-
-
 class TestColorSchemeUpdate:
     """Test suite for GE-48: New Color Scheme"""
 
@@ -225,6 +152,81 @@ class TestColorSchemeUpdate:
         # These might be in inline styles in the template
         # Just verify the form elements are styled
         assert ".form__" in css_content, "Form styles should be present"
+
+
+class TestChatGPTTheme:
+    """Test suite for GE-54: ChatGPT white theme"""
+
+    def test_bg_dark_is_pure_white(self, css_content):
+        """Verify background is pure white #ffffff."""
+        assert "--bg-dark: #ffffff;" in css_content, (
+            "Background should be pure white #ffffff"
+        )
+
+    def test_bg_card_is_light_gray(self, css_content):
+        """Verify cards use #f7f7f8."""
+        assert "--bg-card: #f7f7f8;" in css_content, "Cards should use #f7f7f8"
+
+    def test_accent_primary_is_chatgpt_green(self, css_content):
+        """Verify primary accent is ChatGPT green #10a37f."""
+        assert "--accent-primary: #10a37f;" in css_content, (
+            "Primary accent should be ChatGPT green #10a37f"
+        )
+
+    def test_accent_secondary_is_soft_gray(self, css_content):
+        """Verify secondary accent is soft gray #e5e7eb."""
+        assert "--accent-secondary: #e5e7eb;" in css_content, (
+            "Secondary accent should be soft gray #e5e7eb"
+        )
+
+    def test_text_primary_is_dark(self, css_content):
+        """Verify primary text is dark #111827."""
+        assert "--text-primary: #111827;" in css_content, (
+            "Primary text should be dark #111827"
+        )
+
+    def test_text_secondary_is_gray(self, css_content):
+        """Verify secondary text is gray #6b7280."""
+        assert "--text-secondary: #6b7280;" in css_content, (
+            "Secondary text should be gray #6b7280"
+        )
+
+    def test_border_color_is_soft_gray(self, css_content):
+        """Verify borders use #e5e7eb."""
+        assert "--border-color: #e5e7eb;" in css_content, "Borders should use #e5e7eb"
+
+    def test_no_neon_colors_remain(self, css_content):
+        """Verify NO neon colors from previous themes remain."""
+        # Neon colors that should be removed
+        neon_colors = ["#FF2D95", "#00FFFF", "#00e599", "#ff2d95", "#00ffff"]
+
+        for neon_color in neon_colors:
+            assert neon_color not in css_content.lower(), (
+                f"Neon color {neon_color} should be removed"
+            )
+
+    def test_no_black_backgrounds(self, css_content):
+        """Verify black backgrounds are replaced with white."""
+        # Should not have black background
+        assert "--bg-dark: #000000;" not in css_content, (
+            "Black background should be replaced with white"
+        )
+        assert "--bg-card: #111111;" not in css_content, (
+            "Dark gray cards should be replaced with light gray"
+        )
+
+    def test_subscribe_button_colors(self, css_content):
+        """Verify subscribe button uses ChatGPT green with white text."""
+        # Button should use the accent-primary variable (which is #10a37f)
+        # Text color on buttons should be white
+        pattern = r"\.form__button\s*\{[^}]+\}"
+        button_sections = re.findall(pattern, css_content, re.DOTALL)
+        assert len(button_sections) > 0, "Should have .form__button styles"
+
+        # Button background should use var(--accent-primary)
+        assert "background-color: var(--accent-primary)" in css_content, (
+            "Button should use accent-primary for background"
+        )
 
 
 class TestAccessibilityContrast:

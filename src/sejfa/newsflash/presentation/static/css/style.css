@@ -1,14 +1,14 @@
-/* News Flash - Cursor Black Theme Styles */
+/* News Flash - ChatGPT Theme Styles */
 
 :root {
-    --bg-dark: #000000;
-    --bg-card: #111111;
-    --accent-primary: #00e599;
-    --accent-secondary: #a855f7;
-    --accent-glow: rgba(0, 229, 153, 0.3);
-    --text-primary: #ffffff;
-    --text-secondary: #888888;
-    --border-color: #222222;
+    --bg-dark: #ffffff;
+    --bg-card: #f7f7f8;
+    --accent-primary: #10a37f;
+    --accent-secondary: #e5e7eb;
+    --accent-glow: rgba(16, 163, 127, 0.15);
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
 }
 
 * {
@@ -47,7 +47,6 @@ body {
     font-size: 1.5rem;
     font-weight: bold;
     color: var(--accent-primary);
-    text-shadow: 0 0 10px var(--accent-glow);
 }
 
 .header__nav {
@@ -72,11 +71,10 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, #111111 0%, #000000 100%);
+    background: linear-gradient(135deg, #f7f7f8 0%, #ffffff 100%);
     padding: 6rem 2rem;
     text-align: center;
-    border-bottom: 2px solid var(--accent-primary);
-    box-shadow: 0 4px 20px var(--accent-glow);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .hero__container {
@@ -88,7 +86,6 @@ body {
     font-size: 3rem;
     margin-bottom: 1rem;
     color: var(--accent-primary);
-    text-shadow: 0 0 20px var(--accent-glow);
 }
 
 .hero__subtitle {
@@ -100,18 +97,16 @@ body {
 .hero__button {
     display: inline-block;
     background-color: var(--accent-primary);
-    color: #000000;
+    color: #ffffff;
     padding: 1rem 2rem;
     text-decoration: none;
     border-radius: 4px;
     font-weight: bold;
     transition: all 0.3s;
-    box-shadow: 0 0 15px var(--accent-glow);
 }
 
 .hero__button:hover {
-    background-color: #00cc88;
-    box-shadow: 0 0 25px var(--accent-glow);
+    background-color: #0d8a6a;
     transform: translateY(-2px);
 }
 
@@ -138,7 +133,7 @@ body {
 
 .features__card:hover {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 15px var(--accent-glow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .features__title {
@@ -162,7 +157,7 @@ body {
     padding: 3rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .subscribe__heading {
@@ -208,12 +203,12 @@ body {
 .form__input:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 10px var(--accent-glow);
+    box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .form__button {
     background-color: var(--accent-primary);
-    color: #000000;
+    color: #ffffff;
     padding: 1rem;
     border: none;
     border-radius: 4px;
@@ -221,12 +216,10 @@ body {
     font-family: 'Courier New', Courier, monospace;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .form__button:hover {
-    background-color: #00cc88;
-    box-shadow: 0 0 20px var(--accent-glow);
+    background-color: #0d8a6a;
     transform: translateY(-2px);
 }
 
@@ -241,8 +234,8 @@ body {
     background-color: var(--bg-card);
     padding: 3rem;
     border-radius: 8px;
-    border: 1px solid var(--accent-primary);
-    box-shadow: 0 0 20px var(--accent-glow);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
@@ -261,19 +254,17 @@ body {
 .thank-you__button {
     display: inline-block;
     background-color: var(--accent-primary);
-    color: #000000;
+    color: #ffffff;
     padding: 1rem 2rem;
     text-decoration: none;
     border-radius: 4px;
     font-weight: bold;
     margin-top: 1rem;
     transition: all 0.3s;
-    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .thank-you__button:hover {
-    background-color: #00cc88;
-    box-shadow: 0 0 20px var(--accent-glow);
+    background-color: #0d8a6a;
     transform: translateY(-2px);
 }
 
