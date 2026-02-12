@@ -2,28 +2,28 @@
 
 ## Critical Severity
 
-### 1. Deletion of Monitor Hooks Breaks Functionality (Correctness)
-The PR deletes `.claude/hooks/monitor_client.py` and `.claude/hooks/monitor_hook.py`, which are essential for the "Ralph Loop" monitoring feature. Without these hooks, the agent cannot report its status to the dashboard, rendering the monitoring system non-functional.
-**Action:** Restore the deleted hooks or remove the corresponding server-side monitoring code if the feature is being deprecated.
+### 1. Missing Implementation: CSS for Synthwave Theme (Correctness)
+The PR claims to implement a "Synthwave theme" (GE-52) and updates tests to expect hot pink and cyan colors, but the changes to `src/sejfa/newsflash/presentation/static/css/style.css` are missing from the PR. The file still contains the "Cursor Green" theme.
+**Action:** Include the updated `style.css` in the PR.
 
 ## High Severity
 
-### 2. Missing Dependency: flask-socketio (Reliability)
-The application code (`app.py`, `monitor_routes.py`) and tests depend on `flask-socketio`, but it is missing from `requirements.txt`. This causes runtime errors and CI failures.
-**Action:** Add `flask-socketio>=5.0.0` to `requirements.txt`.
+### 2. Test Failure: Expected Synthwave, Found Cursor Green (Reliability)
+The updated `tests/newsflash/test_color_scheme.py` will fail because it verifies the new theme colors against the old CSS file.
+**Action:** Update `style.css` to match the test expectations or revert the test changes until implementation is ready.
 
 ## Medium Severity
 
-### 3. Unprotected Monitoring Endpoints (Security)
-The monitoring endpoints in `src/sejfa/monitor/monitor_routes.py` (e.g., `POST /api/monitor/state`) are unauthenticated. This allows any network user to inject false events or reset the dashboard state.
-**Action:** Implement authentication for these endpoints, potentially using the existing `AdminAuthService` or a dedicated API key.
+### 3. Incomplete Task Marked as Complete (Process)
+The `CURRENT_TASK.md` file marks the task GE-52 as `COMPLETE`, but the implementation is incomplete due to missing CSS changes.
+**Action:** Revert the status to `IN_PROGRESS` or complete the implementation.
 
 ## Low Severity
 
-### 4. Dead Code in `stop-hook.py` (Maintainability)
-The `stop-hook.py` script contains a try-except block importing from `monitor_client`, which is now dead code due to the deletion of the module.
-**Action:** Remove the unused import logic from `stop-hook.py` if the client is permanently removed.
+### 4. Duplicate Task File: `docs/CURRENT_TASK.md` (Maintainability)
+A deprecated `docs/CURRENT_TASK.md` file exists, creating a risk of "split-brain" task state with the root `CURRENT_TASK.md`.
+**Action:** Delete `docs/CURRENT_TASK.md` as per repository guidelines.
 
-### 5. Unsafe Application Configuration (Security)
-The `app.py` file enables `allow_unsafe_werkzeug=True` and `debug=True` in the main block. While acceptable for local development, this poses a risk if deployed to production.
-**Action:** Ensure these settings are disabled in production environments, preferably via environment variables (e.g., `FLASK_DEBUG`).
+### 5. Redundant Swedish Documentation (Maintainability)
+The file `docs/Bygga Agentic Dev Loop-system.md` is a redundant Swedish translation of `docs/AGENTIC_DEVOPS_LOOP.md` and conflicts with the English language standard.
+**Action:** Delete `docs/Bygga Agentic Dev Loop-system.md`.
