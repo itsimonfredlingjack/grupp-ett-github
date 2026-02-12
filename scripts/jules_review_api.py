@@ -191,18 +191,23 @@ def post_review_comment(
     body: str,
 ) -> bool:
     """Post a PR review comment via gh CLI."""
-    payload = json.dumps({
-        "body": body,
-        "event": "COMMENT",
-        "commit_id": head_sha,
-    })
+    payload = json.dumps(
+        {
+            "body": body,
+            "event": "COMMENT",
+            "commit_id": head_sha,
+        }
+    )
 
     result = subprocess.run(
         [
-            "gh", "api",
+            "gh",
+            "api",
             f"repos/{repo}/pulls/{pr_number}/reviews",
-            "--method", "POST",
-            "--input", "-",
+            "--method",
+            "POST",
+            "--input",
+            "-",
         ],
         input=payload,
         capture_output=True,
@@ -215,10 +220,13 @@ def post_review_comment(
         _log("Falling back to regular issue comment...")
         fallback = subprocess.run(
             [
-                "gh", "api",
+                "gh",
+                "api",
                 f"repos/{repo}/issues/{pr_number}/comments",
-                "--method", "POST",
-                "-f", f"body={body}",
+                "--method",
+                "POST",
+                "-f",
+                f"body={body}",
             ],
             capture_output=True,
             text=True,
