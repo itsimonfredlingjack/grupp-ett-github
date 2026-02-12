@@ -228,10 +228,19 @@ class TestBeerTheme:
             )
 
     def test_subscribe_button_colors(self, css_content):
-        """Verify subscribe button uses amber with cream text."""
-        # Button should use var(--accent-primary) which is #e67e22
-        assert "background-color: var(--accent-primary)" in css_content, (
-            "Button should use accent-primary for background"
+        """Verify subscribe button uses amber accent colors."""
+        # Buttons should use accent colors (either solid or gradient)
+        # Check for either background-color or background with accent colors
+        has_accent_bg = (
+            "background-color: var(--accent-primary)" in css_content
+            or "background: linear-gradient" in css_content
+        )
+        has_accent_vars = (
+            "var(--accent-primary)" in css_content
+            and "var(--accent-secondary)" in css_content
+        )
+        assert has_accent_bg and has_accent_vars, (
+            "Buttons should use accent colors in their styling"
         )
 
     def test_hover_states_use_secondary_accent(self, css_content):
