@@ -385,7 +385,10 @@ You can only output that promise when ALL of these are true:
 - All tests pass: `pytest -xvs`
 - No linting errors: `ruff check .`
 - Changes committed and pushed
-- PR created
+- PR created via `gh pr create`
+- **CI checks pass: `gh pr checks "$PR_URL" --watch`**
+- **PR merged to main: `gh pr merge --squash "$PR_URL"`**
+- Jira updated
 
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
 
@@ -420,6 +423,12 @@ This exact format is detected by the stop-hook. Any deviation and exit will be b
 3. [ ] All linting passing
 4. [ ] Changes committed
 5. [ ] Branch pushed to remote
+6. [ ] PR created
+7. [ ] **CI checks passed (`gh pr checks` is green)**
+8. [ ] **PR merged to main (`gh pr merge --squash`)**
+9. [ ] Jira status updated
+
+**⚠️ MERGE IS MANDATORY. If you output DONE without merging the PR, the task is NOT complete. The stop-hook should block this, but if it doesn't, you are LYING about completion.**
 
 Only then output the promise on its own line.
 
@@ -443,7 +452,17 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 4. **Refactor** if needed
 5. **Run tests:** `pytest -xvs`
 6. **Repeat** for each requirement
-7. **When ALL acceptance criteria are met**, execute the complete delivery process defined in `.claude/skills/finish-task/SKILL.md` steps 1-11. Do NOT stop. Do NOT wait for human input. This includes: verify tests+lint, commit, push, create PR, wait for CI, merge, update Jira, and output the completion promise.
+7. **When ALL acceptance criteria are met**, execute the COMPLETE delivery process:
+   a. Verify tests + lint pass
+   b. Commit all changes
+   c. Push branch to remote
+   d. Create PR via `gh pr create`
+   e. **Wait for CI: `gh pr checks "$PR_URL" --watch`**
+   f. **Merge PR: `gh pr merge --squash "$PR_URL"`**
+   g. Update Jira status
+   h. Output `<promise>DONE</promise>`
+
+**Steps e and f are NON-NEGOTIABLE. Without merge, code never reaches main, deploy never triggers, and the task is NOT done.**
 
 **DO NOT WAIT FOR /finish-task — it runs automatically as part of this loop.**
 
