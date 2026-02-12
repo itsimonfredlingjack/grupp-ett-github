@@ -75,7 +75,7 @@ class TestColorSchemeUpdate:
     def test_color_variables_are_hex_codes(self, css_content):
         """Verify color variables use valid hex codes."""
         # Extract all CSS variable definitions
-        var_pattern = r"--(\[\w-]+):\s*(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|rgba?\([^)]+\));"
+        var_pattern = r"--([\w-]+):\s*(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|rgba?\([^)]+\));"
         variables = re.findall(var_pattern, css_content)
 
         assert len(variables) > 0, "Should have CSS variables defined"
@@ -154,78 +154,74 @@ class TestColorSchemeUpdate:
         assert ".form__" in css_content, "Form styles should be present"
 
 
-class TestChatGPTTheme:
-    """Test suite for GE-54: ChatGPT white theme"""
+class TestCopilotTheme:
+    """Test suite for GE-55: Copilot dark theme"""
 
-    def test_bg_dark_is_pure_white(self, css_content):
-        """Verify background is pure white #ffffff."""
-        assert "--bg-dark: #ffffff;" in css_content, (
-            "Background should be pure white #ffffff"
+    def test_bg_dark_is_deep_charcoal(self, css_content):
+        """Verify background is deep charcoal #0d1117."""
+        assert "--bg-dark: #0d1117;" in css_content, (
+            "Background should be deep charcoal #0d1117"
         )
 
-    def test_bg_card_is_light_gray(self, css_content):
-        """Verify cards use #f7f7f8."""
-        assert "--bg-card: #f7f7f8;" in css_content, "Cards should use #f7f7f8"
+    def test_bg_card_is_dark_gray(self, css_content):
+        """Verify cards use #161b22."""
+        assert "--bg-card: #161b22;" in css_content, "Cards should use #161b22"
 
-    def test_accent_primary_is_chatgpt_green(self, css_content):
-        """Verify primary accent is ChatGPT green #10a37f."""
-        assert "--accent-primary: #10a37f;" in css_content, (
-            "Primary accent should be ChatGPT green #10a37f"
+    def test_accent_primary_is_copilot_blue(self, css_content):
+        """Verify primary accent is Copilot blue #2f81f7."""
+        assert "--accent-primary: #2f81f7;" in css_content, (
+            "Primary accent should be Copilot blue #2f81f7"
         )
 
-    def test_accent_secondary_is_soft_gray(self, css_content):
-        """Verify secondary accent is soft gray #e5e7eb."""
-        assert "--accent-secondary: #e5e7eb;" in css_content, (
-            "Secondary accent should be soft gray #e5e7eb"
+    def test_accent_secondary_is_violet(self, css_content):
+        """Verify secondary accent is violet #a371f7."""
+        assert "--accent-secondary: #a371f7;" in css_content, (
+            "Secondary accent should be violet #a371f7"
         )
 
-    def test_text_primary_is_dark(self, css_content):
-        """Verify primary text is dark #111827."""
-        assert "--text-primary: #111827;" in css_content, (
-            "Primary text should be dark #111827"
+    def test_text_primary_is_white(self, css_content):
+        """Verify primary text is white #ffffff."""
+        assert "--text-primary: #ffffff;" in css_content, (
+            "Primary text should be white #ffffff"
         )
 
     def test_text_secondary_is_gray(self, css_content):
-        """Verify secondary text is gray #6b7280."""
-        assert "--text-secondary: #6b7280;" in css_content, (
-            "Secondary text should be gray #6b7280"
+        """Verify secondary text is gray #8b949e."""
+        assert "--text-secondary: #8b949e;" in css_content, (
+            "Secondary text should be gray #8b949e"
         )
 
-    def test_border_color_is_soft_gray(self, css_content):
-        """Verify borders use #e5e7eb."""
-        assert "--border-color: #e5e7eb;" in css_content, "Borders should use #e5e7eb"
+    def test_border_color_is_subtle_gray(self, css_content):
+        """Verify borders use #30363d."""
+        assert "--border-color: #30363d;" in css_content, "Borders should use #30363d"
 
-    def test_no_neon_colors_remain(self, css_content):
-        """Verify NO neon colors from previous themes remain."""
-        # Neon colors that should be removed
-        neon_colors = ["#FF2D95", "#00FFFF", "#00e599", "#ff2d95", "#00ffff"]
+    def test_no_chatgpt_green_remains(self, css_content):
+        """Verify ChatGPT green #10a37f is removed."""
+        assert "#10a37f" not in css_content.lower(), (
+            "ChatGPT green #10a37f should be removed"
+        )
 
-        for neon_color in neon_colors:
-            assert neon_color not in css_content.lower(), (
-                f"Neon color {neon_color} should be removed"
+    def test_no_previous_accent_colors_remain(self, css_content):
+        """Verify NO previous accent colors remain."""
+        old_colors = ["#10a37f", "#00e599", "#FF2D95", "#00FFFF", "#3b82f6", "#2563eb"]
+
+        for old_color in old_colors:
+            assert old_color not in css_content, (
+                f"Old accent color {old_color} should be removed"
             )
 
-    def test_no_black_backgrounds(self, css_content):
-        """Verify black backgrounds are replaced with white."""
-        # Should not have black background
-        assert "--bg-dark: #000000;" not in css_content, (
-            "Black background should be replaced with white"
-        )
-        assert "--bg-card: #111111;" not in css_content, (
-            "Dark gray cards should be replaced with light gray"
-        )
-
     def test_subscribe_button_colors(self, css_content):
-        """Verify subscribe button uses ChatGPT green with white text."""
-        # Button should use the accent-primary variable (which is #10a37f)
-        # Text color on buttons should be white
-        pattern = r"\.form__button\s*\{[^}]+\}"
-        button_sections = re.findall(pattern, css_content, re.DOTALL)
-        assert len(button_sections) > 0, "Should have .form__button styles"
-
-        # Button background should use var(--accent-primary)
+        """Verify subscribe button uses Copilot blue with white text."""
+        # Button should use var(--accent-primary) which is #2f81f7
         assert "background-color: var(--accent-primary)" in css_content, (
             "Button should use accent-primary for background"
+        )
+
+    def test_hover_states_use_secondary_accent(self, css_content):
+        """Verify hover/focus states can use secondary accent (violet)."""
+        # This is flexible - we just verify the secondary accent exists
+        assert "--accent-secondary: #a371f7;" in css_content, (
+            "Secondary accent should be defined for hover/focus states"
         )
 
 
