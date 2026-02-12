@@ -212,8 +212,14 @@ class TestBeerTheme:
     def test_no_previous_accent_colors_remain(self, css_content):
         """Verify NO previous accent colors remain."""
         old_colors = [
-            "#10a37f", "#00e599", "#FF2D95", "#00FFFF",
-            "#3b82f6", "#2563eb", "#2f81f7", "#a371f7"
+            "#10a37f",
+            "#00e599",
+            "#FF2D95",
+            "#00FFFF",
+            "#3b82f6",
+            "#2563eb",
+            "#2f81f7",
+            "#a371f7",
         ]
 
         for old_color in old_colors:
