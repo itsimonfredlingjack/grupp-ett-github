@@ -169,6 +169,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref || github.head_ref || 'main' }}
           JULES_CONTEXT: ${{ steps.payload.outputs.jules_context }}
         run: |
           python3 scripts/jules_review_api.py
