@@ -23,7 +23,10 @@ Jira ticket (GE-xxx)
     → Jules AI reviewar PR
     → gh pr merge --squash (direkt efter CI passerar)
     → deploy.yml bygger Docker → ACR → Azure Container Apps
-    → Live
+    → post_deploy_verify.yml hälsokontroll (5 retries × 10s)
+    → OK? → Jira-kommentar "✅ Deployed & Verified"
+    → FAIL? → Rollback till föregående revision + Jira-kommentar "❌ Rolled back"
+    → Live (verified)
 ```
 
 ### Vad som FAKTISKT händer
@@ -37,6 +40,7 @@ Jira ticket (GE-xxx)
     → Jules AI reviewar ❓ OVERIFIERAT — alla 4 Jules-workflows beror på en action-referens som kan vara ogiltig
     → Merge ✅ FIXAT — finish-task kör gh pr checks --watch + gh pr merge --squash
     → deploy.yml ✅ triggas av merge till main
+    → post_deploy_verify.yml ✅ NY — hälsokontroll + rollback + Jira-uppdatering
     → Monitor-dashboard ❌ DÖD — trasiga imports, får inga uppdateringar
 ```
 
@@ -165,6 +169,7 @@ Problem:
 | `ci.yml` | ✅ | Lint + test på PRs/push till main |
 | `ci_branch.yml` | ✅ | Lint + test på feature branches |
 | `deploy.yml` | ✅ (men triggas aldrig pga ingen merge) | Docker → ACR → Azure |
+| `post_deploy_verify.yml` | ✅ NY | Hälsokontroll → rollback vid fail → Jira-uppdatering |
 | `cleanup-branches.yml` | ✅ | Städar mergade branches dagligen |
 | `jules_review.yml` | ❓ Overifierad (✅ statuses: write fixad, ✅ recursion guard tillagd) | AI code review på PRs |
 | `jules_health_check.yml` | ❓ Overifierad (✅ preflight.sh finns nu) | Daglig Jules health ping |
@@ -240,6 +245,8 @@ Problem:
 | 7 | self_healing.yml säkerhetsrisk | Medium (ta bort contents: write) | RCE-risk |
 | 8 | Hardcoded credentials | Medium | Säkerhetsrisk |
 | 9 | ~~Jules 403 vid commit status~~ | ✅ LÖST | `statuses: write` tillagd i jules_review.yml |
+| 10 | ~~Post-deploy verification saknas~~ | ✅ LÖST | `post_deploy_verify.yml` — hälsokontroll + rollback + Jira |
+| 11 | ~~Jules skapar PRs istf kommentarer~~ | ✅ LÖST | jules-action ersatt med direkt Jules API (session utan automationMode) |
 
 ---
 
@@ -252,3 +259,5 @@ Problem:
 | 2026-02-11 | Fix #6: finish-task inlinad i start-task — ingen human-in-the-loop mellan implementation och delivery. |
 | 2026-02-11 | Fix #9: jules_review.yml — `statuses: write` tillagd för commit status API. |
 | 2026-02-11 | Fix #10: jules_review.yml — recursion guard: skippa `jules-*` branches och `google-labs-jules[bot]` actor. |
+| 2026-02-12 | Fix #11: jules-action ersatt med direkt Jules API-anrop. 30 spam-PRs stängda. |
+| 2026-02-12 | Fix #10: post_deploy_verify.yml — closed-loop deploy verification med hälsokontroll, rollback och Jira-uppdatering. |

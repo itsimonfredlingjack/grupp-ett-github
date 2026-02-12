@@ -166,6 +166,16 @@ Mark task as complete:
 **Completed:** {timestamp}
 ```
 
+### Note: Automatic Post-Deploy Verification
+
+After merge to main, `deploy.yml` triggers automatically, followed by `post_deploy_verify.yml` which:
+1. Verifies the new Azure Container Apps revision is live
+2. Runs health check (5 retries × 10s interval)
+3. On success → comments Jira ticket with "✅ Deployed & Verified"
+4. On failure → rolls back to previous revision + comments Jira "❌ Rolled back"
+
+**The agent does NOT need to verify deployment manually.** The pipeline handles this end-to-end.
+
 ### Step 10: Output Completion Promise
 
 Only after ALL steps are verified:

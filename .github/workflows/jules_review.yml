@@ -28,12 +28,15 @@ jobs:
   jules-review:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Prevent recursive loop: Jules creates branches like jules-70282508...
-    # which trigger new PRs that trigger Jules again → infinite chain.
-    # Only review PRs from human/Claude branches, never Jules' own findings PRs.
+    # Prevent recursive loop: block ALL known Jules branch patterns
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (!startsWith(github.head_ref, 'jules-') &&
+       !startsWith(github.head_ref, 'review/') &&
+       !startsWith(github.head_ref, 'update-pr-review') &&
+       !startsWith(github.head_ref, 'automated-review') &&
+       !startsWith(github.head_ref, 'pr-review-') &&
+       !startsWith(github.head_ref, 'review-findings') &&
        github.actor != 'google-labs-jules[bot]')
 
     steps:
@@ -157,20 +160,18 @@ jobs:
             --output-file artifacts/jules_context.json \
             --github-output "$GITHUB_OUTPUT"
 
-      - name: Invoke Jules review
+      - name: Call Jules API and post review
         if: ${{ steps.secret_check.outputs.available == 'true' && steps.gate.outputs.should_run == 'true' && steps.commit_check.outputs.skip != 'true' }}
         id: jules
-        uses: google-labs-code/jules-action@v1.0.0
-        with:
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
-          prompt: |
-            You are the automated PR reviewer for this repository.
-            Keep feedback concise and actionable.
-            Prioritize correctness, security, reliability, and test coverage.
-            Return at most 8 findings sorted by severity.
-            JULES_CONTEXT: ${{ steps.payload.outputs.jules_context }}
-          include_last_commit: false
-          include_commit_log: false
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          JULES_CONTEXT: ${{ steps.payload.outputs.jules_context }}
+        run: |
+          python3 scripts/jules_review_api.py
 
       - name: Set Jules review status
         if: ${{ always() && steps.gate.outputs.should_run == 'true' && steps.commit_check.outputs.skip != 'true' && steps.pr.outputs.head_sha }}
@@ -180,13 +181,13 @@ jobs:
           JULES_RESULT="${{ steps.jules.outcome || 'skipped' }}"
           if [ "$JULES_RESULT" = "success" ]; then
             STATE="success"
-            DESC="Jules review passed"
+            DESC="Jules review completed (API direct)"
           elif [ "$JULES_RESULT" = "skipped" ]; then
             STATE="success"
             DESC="Jules review skipped"
           else
             STATE="failure"
-            DESC="Jules review found issues"
+            DESC="Jules review failed or found issues"
           fi
           gh api "repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.head_sha }}" \
             -f state="$STATE" \
@@ -199,7 +200,6 @@ jobs:
         env:
           START_EPOCH: ${{ steps.start.outputs.epoch }}
           JULES_RESULT: ${{ steps.jules.outcome || 'skipped' }}
-          SESSION_ID: ${{ steps.jules.outputs.session_id || '' }}
           FILES_CHANGED_COUNT: ${{ steps.payload.outputs.files_changed_count || '0' }}
           DIFF_BYTES_SENT: ${{ steps.payload.outputs.diff_bytes_sent || '0' }}
           LOG_LINES_SENT: ${{ steps.payload.outputs.log_lines_sent || '0' }}
@@ -218,6 +218,7 @@ jobs:
 
           metrics = {
               "workflow_name": "jules_review.yml",
+              "mode": "api_direct_review_comment",
               "run_id": os.environ.get("GITHUB_RUN_ID"),
               "sha": os.environ.get("GITHUB_SHA"),
               "pr_number": os.environ.get("PR_NUMBER", ""),
@@ -227,7 +228,6 @@ jobs:
               "files_changed_count": int(os.environ.get("FILES_CHANGED_COUNT", "0")),
               "diff_bytes_sent": int(os.environ.get("DIFF_BYTES_SENT", "0")),
               "log_lines_sent": int(os.environ.get("LOG_LINES_SENT", "0")),
-              "jules_session_id": os.environ.get("SESSION_ID", ""),
               "jules_result": os.environ.get("JULES_RESULT", "skipped"),
               "fix_outcome": "no_change",
           }
@@ -251,7 +251,8 @@ jobs:
         if: always()
         run: |
           echo "## Jules Review Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Result: \\`${{ steps.jules.outcome || 'skipped' }}\\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Skip reason: \\`${{ steps.gate.outputs.skip_reason || '' }}\\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Mode: \`api_direct_review_comment\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Result: \`${{ steps.jules.outcome || 'skipped' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Skip reason: \`${{ steps.gate.outputs.skip_reason || '' }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Metrics artifact: \\`jules-review-metrics-${{ github.run_id }}\\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Metrics artifact: \`jules-review-metrics-${{ github.run_id }}\`" >> "$GITHUB_STEP_SUMMARY"
