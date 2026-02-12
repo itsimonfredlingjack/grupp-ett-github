@@ -24,29 +24,29 @@ def css_content(css_file_path):
     return css_file_path.read_text()
 
 
-class TestCursorBlackTheme:
-    """Test suite for GE-51: Cursor SECOND UNIVERSE BLACK theme"""
+class TestSynthwaveTheme:
+    """Test suite for GE-52: Synthwave theme with Hot Pink and Cyan"""
 
-    def test_bg_dark_is_pure_black(self, css_content):
-        """Verify background is pure black #000000."""
-        assert "--bg-dark: #000000;" in css_content, (
-            "Background should be pure black #000000"
+    def test_bg_dark_is_deep_navy(self, css_content):
+        """Verify background is deep dark navy #0a0a1a."""
+        assert "--bg-dark: #0a0a1a;" in css_content, (
+            "Background should be deep dark navy #0a0a1a"
         )
 
-    def test_bg_card_is_dark_gray(self, css_content):
-        """Verify cards use #111111."""
-        assert "--bg-card: #111111;" in css_content, "Cards should use #111111"
+    def test_bg_card_is_dark_purple(self, css_content):
+        """Verify cards use #12121f."""
+        assert "--bg-card: #12121f;" in css_content, "Cards should use #12121f"
 
-    def test_accent_primary_is_cursor_green(self, css_content):
-        """Verify primary accent is Cursor green #00e599."""
-        assert "--accent-primary: #00e599;" in css_content, (
-            "Primary accent should be Cursor green #00e599"
+    def test_accent_primary_is_hot_pink(self, css_content):
+        """Verify primary accent is hot pink #FF2D95."""
+        assert "--accent-primary: #FF2D95;" in css_content, (
+            "Primary accent should be hot pink #FF2D95"
         )
 
-    def test_accent_secondary_is_purple(self, css_content):
-        """Verify secondary accent is purple #a855f7."""
-        assert "--accent-secondary: #a855f7;" in css_content, (
-            "Secondary accent should be purple #a855f7"
+    def test_accent_secondary_is_cyan(self, css_content):
+        """Verify secondary accent is cyan #00FFFF."""
+        assert "--accent-secondary: #00FFFF;" in css_content, (
+            "Secondary accent should be cyan #00FFFF"
         )
 
     def test_text_primary_is_white(self, css_content):
@@ -55,46 +55,51 @@ class TestCursorBlackTheme:
             "Primary text should be white #ffffff"
         )
 
-    def test_text_secondary_is_gray(self, css_content):
-        """Verify secondary text is gray #888888."""
-        assert "--text-secondary: #888888;" in css_content, (
-            "Secondary text should be gray #888888"
+    def test_text_secondary_is_purple_gray(self, css_content):
+        """Verify secondary text is purple-tinted gray #8888aa."""
+        assert "--text-secondary: #8888aa;" in css_content, (
+            "Secondary text should be purple-gray #8888aa"
         )
 
-    def test_border_color_is_dark(self, css_content):
-        """Verify borders use #222222."""
-        assert "--border-color: #222222;" in css_content, "Borders should use #222222"
+    def test_border_color_is_dark_purple(self, css_content):
+        """Verify borders use #1a1a2e."""
+        assert "--border-color: #1a1a2e;" in css_content, "Borders should use #1a1a2e"
 
-    def test_accent_glow_is_green(self, css_content):
-        """Verify accent glow uses green rgba (not blue)."""
-        # Should have green glow, not blue
-        assert "rgba(0, 229, 153" in css_content or "rgba(0,229,153" in css_content, (
-            "Accent glow should be green (rgba with 0, 229, 153)"
+    def test_accent_glow_is_hot_pink(self, css_content):
+        """Verify accent glow uses hot pink rgba (not green)."""
+        # Should have hot pink glow
+        assert "rgba(255, 45, 149" in css_content or "rgba(255,45,149" in css_content, (
+            "Accent glow should be hot pink (rgba with 255, 45, 149)"
         )
-        # Old blue glow should NOT exist
-        assert "rgba(88, 166, 255" not in css_content, (
-            "Old blue glow rgba(88, 166, 255, ...) should be removed"
+        # Old green glow should NOT exist
+        assert "rgba(0, 229, 153" not in css_content, (
+            "Old green glow rgba(0, 229, 153, ...) should be removed"
         )
 
-    def test_no_github_blue_colors(self, css_content):
-        """Verify NO blue colors from GitHub theme remain."""
-        # GitHub blue colors that should be gone
-        github_blue_colors = ["#58a6ff", "#4184e4", "#0d1117", "#161b22", "#30363d"]
+    def test_no_green_colors(self, css_content):
+        """Verify NO green colors from previous theme remain."""
+        # Old green colors that should be gone
+        old_green_colors = ["#00e599", "#00cc88"]
 
-        for blue_color in github_blue_colors:
-            assert blue_color not in css_content.lower(), (
-                f"GitHub blue color {blue_color} should be removed"
+        for green_color in old_green_colors:
+            assert green_color not in css_content.lower(), (
+                f"Old green color {green_color} should be removed"
             )
 
-    def test_no_hardcoded_blue_in_hovers(self, css_content):
-        """Verify hover states don't use hardcoded blue."""
+    def test_no_hardcoded_green_in_hovers(self, css_content):
+        """Verify hover states don't use hardcoded green."""
         # Look for :hover sections
         hover_sections = re.findall(r":hover\s*\{[^}]+\}", css_content, re.DOTALL)
 
         for section in hover_sections:
-            # Check for any blue hex codes in hover states
-            assert "#58a6ff" not in section, "Hover should not use #58a6ff"
-            assert "#4184e4" not in section, "Hover should not use #4184e4"
+            # Check for any green hex codes in hover states
+            assert "#00e599" not in section, "Hover should not use #00e599"
+            assert "#00cc88" not in section, "Hover should not use #00cc88"
+
+    def test_button_text_is_white(self, css_content):
+        """Verify subscribe button has white text on hot pink background."""
+        # Find button styles
+        assert "color: #ffffff;" in css_content, "Buttons should have white text"
 
 
 class TestColorSchemeUpdate:
