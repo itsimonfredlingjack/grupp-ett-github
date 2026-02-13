@@ -85,8 +85,8 @@ Follow these steps to set up your own Agentic DevOps environment.
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/your-org/sejfa.git
-    cd sejfa
+    gh repo clone itsimonfredlingjack/grupp-ett-github
+    cd grupp-ett-github
     ```
 
 2.  **Set Up Virtual Environment**
