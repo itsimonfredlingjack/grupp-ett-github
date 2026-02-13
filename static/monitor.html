@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agentic Loop Monitor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=JetBrains+Mono:wght@300;400&family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
         * {
@@ -48,13 +48,13 @@
 
         body {
             font-family: 'JetBrains Mono', monospace;
-            background: linear-gradient(180deg, #ff9933 0%, #ff8c1a 100%);
+            background: #87CEEB; /* Sky blue */
             color: var(--text-primary);
             overflow: hidden;
             position: relative;
         }
 
-        /* Background image overlay */
+        /* Background cloud decorations */
         body::before {
             content: '';
             position: fixed;
@@ -62,11 +62,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('background.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background-image:
+                radial-gradient(ellipse 200px 100px at 15% 20%, rgba(255, 255, 255, 0.9), transparent),
+                radial-gradient(ellipse 250px 120px at 75% 15%, rgba(255, 255, 255, 0.85), transparent),
+                radial-gradient(ellipse 180px 90px at 50% 80%, rgba(255, 255, 255, 0.9), transparent),
+                radial-gradient(ellipse 220px 110px at 85% 70%, rgba(255, 255, 255, 0.88), transparent),
+                radial-gradient(ellipse 160px 80px at 25% 60%, rgba(255, 255, 255, 0.92), transparent);
             z-index: -1;
+            animation: cloudFloat 60s ease-in-out infinite;
         }
 
         /* Cartoon decorative elements background */
@@ -146,9 +149,9 @@
         }
 
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 800;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.2rem;
+            font-weight: 400;
             letter-spacing: 2px;
             color: #000;
             text-shadow: 3px 3px 0 var(--simpson-yellow),
@@ -209,12 +212,12 @@
         }
 
         .center-image-placeholder {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
             color: #000;
             text-align: center;
             padding: 20px;
-            font-weight: 600;
+            font-weight: 400;
             background: var(--simpson-yellow);
             border: 4px solid #000;
             border-radius: 50%;
@@ -503,8 +506,8 @@
         }
 
         .node-label {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.65rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -650,8 +653,8 @@
         }
 
         .section-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.7rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.55rem;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -726,13 +729,13 @@
         }
 
         .step-status {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
             color: #000;
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 800;
+            font-weight: 400;
         }
 
         .step-description {
@@ -770,8 +773,8 @@
         }
 
         .timer {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
             color: var(--accent-blue);
         }
 
@@ -834,9 +837,9 @@
         border: 3px solid rgba(0, 0, 0, 0.3);
         border-radius: 20px;
         padding: 18px 32px;
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.95rem;
-        font-weight: 600;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 0.7rem;
+        font-weight: 400;
         color: #000;
         text-align: center;
         z-index: 10000;
