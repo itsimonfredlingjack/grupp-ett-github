@@ -28,14 +28,14 @@ Beskrivning: Gör om hela appens utseende till en tecknad 2D-stil inspirerad av 
 
 ## Acceptance Criteria
 
-- [ ] Background: Light blue sky (#87CEEB) with soft white clouds spread across screen
-- [ ] Style: Flat design with thick black borders (strokes) around all boxes, cards, and icons
-- [ ] Colors: Simpsons yellow (#FFD90F) for active states/warnings, white backgrounds on panels
-- [ ] Typography: Pixel-art/8-bit style headers, Monospace/Terminal font for body text and logs
-- [ ] Cards & Panels: White with rounded corners, thick black borders, sharp black drop-shadows (no soft shadows)
-- [ ] Layout: Circular visualization in center with dashed lines connecting round nodes
-- [ ] All tests pass: `pytest -xvs`
-- [ ] No linting errors: `ruff check .`
+- [x] Background: Light blue sky (#87CEEB) with soft white clouds spread across screen
+- [x] Style: Flat design with thick black borders (strokes) around all boxes, cards, and icons
+- [x] Colors: Simpsons yellow (#FFD90F) for active states/warnings, white backgrounds on panels
+- [x] Typography: Pixel-art/8-bit style headers, Monospace/Terminal font for body text and logs
+- [x] Cards & Panels: White with rounded corners, thick black borders, sharp black drop-shadows (no soft shadows)
+- [x] Layout: Circular visualization in center with dashed lines connecting round nodes
+- [x] All tests pass: `pytest -xvs`
+- [x] No linting errors: `ruff check .`
 - [ ] Changes committed and pushed
 - [ ] PR created and merged
 - [ ] Jira status updated
