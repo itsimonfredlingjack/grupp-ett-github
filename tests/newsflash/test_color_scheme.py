@@ -34,8 +34,9 @@ class TestColorSchemeUpdate:
     def test_css_has_root_variables(self, css_content):
         """Verify :root section exists with CSS variables."""
         assert ":root {" in css_content, "CSS should have :root section"
-        assert "--bg-dark:" in css_content, "Should define --bg-dark variable"
-        assert "--bg-card:" in css_content, "Should define --bg-card variable"
+        # Theme-agnostic: check for any background and text variables
+        has_bg_vars = "--bg-primary:" in css_content or "--bg-dark:" in css_content
+        assert has_bg_vars, "Should define background variables"
         assert "--text-primary:" in css_content, "Should define --text-primary"
         assert "--text-secondary:" in css_content, "Should define --text-secondary"
         assert "--border-color:" in css_content, "Should define --border-color"
@@ -154,8 +155,9 @@ class TestColorSchemeUpdate:
         assert ".form__" in css_content, "Form styles should be present"
 
 
+@pytest.mark.skip(reason="Beer theme replaced by Simpson 2 theme in GE-60")
 class TestBeerTheme:
-    """Test suite for GE-56: Beer theme"""
+    """Test suite for GE-56: Beer theme (DEPRECATED - replaced by Simpson 2)"""
 
     def test_bg_dark_is_stout_dark(self, css_content):
         """Verify background is stout dark #1e1611."""
@@ -249,6 +251,87 @@ class TestBeerTheme:
         assert "--accent-secondary: #d35400;" in css_content, (
             "Secondary accent should be defined for hover/focus states"
         )
+
+
+class TestSimpson2Theme:
+    """Test suite for GE-60: Simpson 2 theme - Simpsons Sky/Retro-tech."""
+
+    def test_bg_primary_is_sky_blue(self, css_content):
+        """Verify background is sky blue #87CEEB."""
+        assert "--bg-primary: #87ceeb;" in css_content.lower(), (
+            "Background should be sky blue #87CEEB"
+        )
+
+    def test_accent_primary_is_simpsons_yellow(self, css_content):
+        """Verify primary accent is Simpsons yellow #FFD90F."""
+        assert "--accent-primary: #ffd90f;" in css_content.lower(), (
+            "Primary accent should be Simpsons yellow #FFD90F"
+        )
+
+    def test_panel_bg_is_white(self, css_content):
+        """Verify panels use white background #FFFFFF."""
+        assert "--panel-bg: #ffffff;" in css_content.lower(), (
+            "Panels should use white background #FFFFFF"
+        )
+
+    def test_text_primary_is_black(self, css_content):
+        """Verify primary text is black #000000."""
+        assert "--text-primary: #000000;" in css_content.lower(), (
+            "Primary text should be black #000000"
+        )
+
+    def test_border_style_is_thick_black(self, css_content):
+        """Verify borders use thick black strokes."""
+        # Should have thick borders (4-5px) with solid black
+        has_thick_border = re.search(r"border:\s*[4-5]px\s+solid\s+#000", css_content)
+        assert has_thick_border or "--border-width: 5px;" in css_content, (
+            "Should have thick (4-5px) black borders for cartoon style"
+        )
+
+    def test_uses_pixel_art_font(self, css_content):
+        """Verify headers use pixel-art/8-bit font."""
+        # Should reference "Press Start 2P" or similar pixel font
+        assert "Press Start 2P" in css_content or "pixel" in css_content.lower(), (
+            "Headers should use pixel-art font like 'Press Start 2P'"
+        )
+
+    def test_uses_monospace_font(self, css_content):
+        """Verify body text uses monospace/terminal font."""
+        assert "monospace" in css_content.lower() or "JetBrains Mono" in css_content, (
+            "Body text should use monospace font"
+        )
+
+    def test_no_soft_shadows(self, css_content):
+        """Verify no soft shadows - only sharp/flat shadows."""
+        # Should NOT have blur radius in box-shadow (sharp shadows only)
+        # Format: box-shadow: 0 6px 0 #000 (no blur = 0 in third position)
+        pattern = r"box-shadow:[^;]*\d+px\s+\d+px\s+(\d+)px"
+        soft_shadows = re.findall(pattern, css_content)
+        blur_values = [int(blur) for blur in soft_shadows if blur]
+
+        # Allow some blur for special effects, but most should be 0 (sharp)
+        sharp_shadows = [b for b in blur_values if b == 0]
+        if blur_values:
+            sharp_ratio = len(sharp_shadows) / len(blur_values)
+            msg = (
+                f"At least 50% of shadows should be sharp (no blur), "
+                f"got {sharp_ratio:.0%}"
+            )
+            assert sharp_ratio >= 0.5, msg
+
+    def test_no_beer_theme_colors_remain(self, css_content):
+        """Verify NO beer theme colors remain."""
+        beer_colors = [
+            "#1e1611",  # Stout dark
+            "#3e2723",  # Barrel brown
+            "#e67e22",  # Amber
+            "#d35400",  # Dark amber
+        ]
+
+        for beer_color in beer_colors:
+            assert beer_color not in css_content.lower(), (
+                f"Beer theme color {beer_color} should be replaced"
+            )
 
 
 class TestAccessibilityContrast:
