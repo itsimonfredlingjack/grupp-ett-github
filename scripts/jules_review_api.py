@@ -60,7 +60,7 @@ def _jules_request(
 def derive_source_name(repo: str) -> str:
     """Derive Jules source name from GITHUB_REPOSITORY (owner/repo)."""
     owner, name = repo.split("/", 1)
-    return f"sources/github-{owner}-{name}"
+    return f"sources/github/{owner}/{name}"
 
 
 def list_sources(api_key: str) -> list[dict]:
@@ -275,7 +275,7 @@ def main() -> int:
         _log("GITHUB_REPOSITORY or PR_NUMBER missing", "error")
         return 1
 
-    # Derive source name from repo (owner/repo -> sources/github-owner-repo)
+    # Derive source name from repo (owner/repo -> sources/github/owner/repo)
     source_name = derive_source_name(repo)
     _log(f"Derived source: {source_name}")
 
