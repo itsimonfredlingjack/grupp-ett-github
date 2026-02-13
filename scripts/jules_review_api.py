@@ -46,9 +46,7 @@ def _jules_request(
             raw = resp.read().decode("utf-8")
             return json.loads(raw) if raw.strip() else {}
     except urllib.error.HTTPError as exc:
-        resp_body = (
-            exc.read().decode("utf-8", errors="replace") if exc.fp else ""
-        )
+        resp_body = exc.read().decode("utf-8", errors="replace") if exc.fp else ""
         _log(
             f"Jules API {method} {path} -> {exc.code}: {resp_body}",
             "error",
@@ -161,9 +159,7 @@ def extract_review_text(session: dict) -> str:
                 if isinstance(item, str) and item.strip():
                     step_texts.append(f"- {item.strip()}")
                 elif isinstance(item, dict):
-                    desc = item.get(
-                        "description", item.get("content", "")
-                    )
+                    desc = item.get("description", item.get("content", ""))
                     if desc:
                         step_texts.append(f"- {str(desc).strip()}")
             if step_texts:
@@ -255,9 +251,7 @@ def post_review_comment(
             text=True,
         )
         if fallback.returncode != 0:
-            _log(
-                f"Fallback comment also failed: {fallback.stderr}", "error"
-            )
+            _log(f"Fallback comment also failed: {fallback.stderr}", "error")
             return False
         _log(f"Posted as regular comment on PR #{pr_number}")
         return True
@@ -338,11 +332,7 @@ def main() -> int:
 
     # Extract session ID (API returns "name": "sessions/abc123")
     session_name = session.get("name", "")
-    session_id = (
-        session_name.split("/")[-1]
-        if session_name
-        else session.get("id", "")
-    )
+    session_id = session_name.split("/")[-1] if session_name else session.get("id", "")
     session_url = session.get("url", "")
 
     if not session_id:
