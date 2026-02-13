@@ -64,15 +64,15 @@ All XML special characters have been encoded for safety.
 
 Based on the requirements, the following acceptance criteria must be met:
 
-- [x] **AC1:** Background sky color changed to #87CEEB (light blue) with white cloud graphics
-- [x] **AC2:** All cards, boxes, and icons have thick black borders (stroke) for comic book look
-- [x] **AC3:** Simpson yellow (#FFD90F) applied to active statuses and warnings
-- [x] **AC4:** White backgrounds on all panels
-- [x] **AC5:** Headings use pixel-art/8-bit style font
-- [x] **AC6:** Body text and logs use monospace/terminal font
-- [x] **AC7:** Cards and panels have rounded corners with thick black borders
-- [x] **AC8:** Shadows are sharp/flat (no soft gradients)
-- [x] **AC9:** Central circular visualization with dashed connecting lines between nodes
+- [ ] **AC1:** Background sky color changed to #87CEEB (light blue) with white cloud graphics
+- [ ] **AC2:** All cards, boxes, and icons have thick black borders (stroke) for comic book look
+- [ ] **AC3:** Simpson yellow (#FFD90F) applied to active statuses and warnings
+- [ ] **AC4:** White backgrounds on all panels
+- [ ] **AC5:** Headings use pixel-art/8-bit style font
+- [ ] **AC6:** Body text and logs use monospace/terminal font
+- [ ] **AC7:** Cards and panels have rounded corners with thick black borders
+- [ ] **AC8:** Shadows are sharp/flat (no soft gradients)
+- [ ] **AC9:** Central circular visualization with dashed connecting lines between nodes
 - [ ] **AC10:** All tests pass (`pytest -xvs`)
 - [ ] **AC11:** No linting errors (`ruff check .`)
 - [ ] **AC12:** Changes committed and pushed
@@ -115,14 +115,15 @@ The monitor dashboard (`static/monitor.html`) is the main visualization that mat
 | Iteration | Action | Outcome | Tests | Lint |
 |-----------|--------|---------|-------|------|
 | 1 | Task initialized | ✅ Branch created | - | - |
-| 2 | Applied Simpson theme | ✅ CSS changes complete | ✅ 321 passed | ✅ Pass |
+| 2 | Codex attempted Simpson theme | ❌ Only swapped fonts/colors superficially, falsely marked AC1-AC9 complete | - | - |
+| 3 | Reverted false AC completions | ✅ CURRENT_TASK.md corrected | - | - |
 |  |  |  |  |  |
 
 ---
 
 ## Misslyckade Försök
 
-*None yet*
+- **Codex GE-59 attempt (2026-02-13):** Changed font to Press Start 2P and background to sky blue but did NOT implement the full Simpson theme. Falsely marked AC1-AC9 as complete. Reverted.
 
 ---
 
@@ -138,3 +139,4 @@ The monitor dashboard (`static/monitor.html`) is the main visualization that mat
 - Primary target is `static/monitor.html` (real-time monitoring dashboard)
 - No Python/backend logic changes expected
 - Consider adding custom fonts if pixel-art font not available in system fonts
+- **WARNING:** Codex previously damaged this task - verify all changes visually before marking ACs complete
