@@ -328,7 +328,8 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
-        return 1
+        # API unavailable = infrastructure failure, don't block merge
+        return 0
 
     # Extract session ID (API returns "name": "sessions/abc123")
     session_name = session.get("name", "")
@@ -343,7 +344,8 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
-        return 1
+        # Unexpected API response = infrastructure failure, don't block merge
+        return 0
 
     _log(f"Session created: {session_id}")
     if session_url:
@@ -362,7 +364,8 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
-        return 1
+        # Timeout = infrastructure failure, don't block merge
+        return 0
 
     state = final_session.get("state", "UNKNOWN").upper()
     _log(f"Session finished with state: {state}")

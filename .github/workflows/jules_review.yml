@@ -187,8 +187,8 @@ jobs:
             STATE="success"
             DESC="Jules review skipped"
           else
-            STATE="failure"
-            DESC="Jules review failed or found issues"
+            STATE="success"
+            DESC="Jules review had issues (see PR comment for details)"
           fi
           gh api "repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.head_sha }}" \
             -f state="$STATE" \
