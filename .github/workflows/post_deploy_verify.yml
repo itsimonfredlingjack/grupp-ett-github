@@ -66,9 +66,12 @@ jobs:
       - name: Extract Jira ticket from commit
         id: jira
         run: |
-          COMMIT_MSG="${{ github.event.workflow_run.head_commit.message }}"
-          TICKET_ID=$(echo "$COMMIT_MSG" | grep -oP 'GE-\d+' | head -1 || echo "")
-          echo "ticket_id=$TICKET_ID" >> "$GITHUB_OUTPUT"
+          COMMIT_MSG="${{ github.event.workflow_run.head_commit.message || '' }}"
+          TICKET_ID=$(echo "$COMMIT_MSG" | grep -oP 'GE-\d+' | head -1 || true)
+          if [ -z "$TICKET_ID" ]; then
+            echo "No GE-ticket found in commit message — skipping Jira comment"
+          fi
+          echo "ticket_id=${TICKET_ID:-}" >> "$GITHUB_OUTPUT"
           echo "Extracted ticket: ${TICKET_ID:-none}"
 
       - name: Comment Jira — deploy verified
