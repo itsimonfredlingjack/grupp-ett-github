@@ -386,8 +386,7 @@ You can only output that promise when ALL of these are true:
 - No linting errors: `ruff check .`
 - Changes committed and pushed
 - PR created via `gh pr create`
-- **CI checks pass: `gh pr checks "$PR_URL" --watch`**
-- **PR merged to main: `gh pr merge --squash "$PR_URL"`**
+- **Auto-merge enabled: `gh pr merge --squash --auto "$PR_URL"`**
 - Jira updated
 
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
@@ -424,11 +423,10 @@ This exact format is detected by the stop-hook. Any deviation and exit will be b
 4. [ ] Changes committed
 5. [ ] Branch pushed to remote
 6. [ ] PR created
-7. [ ] **CI checks passed (`gh pr checks` is green)**
-8. [ ] **PR merged to main (`gh pr merge --squash`)**
+7. [ ] **Auto-merge enabled (`gh pr merge --squash --auto`)**
 9. [ ] Jira status updated
 
-**⚠️ MERGE IS MANDATORY. If you output DONE without merging the PR, the task is NOT complete. The stop-hook should block this, but if it doesn't, you are LYING about completion.**
+**⚠️ AUTO-MERGE IS MANDATORY. If you output DONE without enabling auto-merge on the PR, the task is NOT complete. Use `gh pr merge --squash --auto` — do NOT use `gh pr checks --watch` (it blocks indefinitely).**
 
 Only then output the promise on its own line.
 
@@ -457,12 +455,11 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
    b. Commit all changes
    c. Push branch to remote
    d. Create PR via `gh pr create`
-   e. **Wait for CI: `gh pr checks "$PR_URL" --watch`**
-   f. **Merge PR: `gh pr merge --squash "$PR_URL"`**
+   e. **Enable auto-merge: `gh pr merge --squash --auto "$PR_URL"`**
    g. Update Jira status
    h. Output `<promise>DONE</promise>`
 
-**Steps e and f are NON-NEGOTIABLE. Without merge, code never reaches main, deploy never triggers, and the task is NOT done.**
+**Step e is NON-NEGOTIABLE. Without auto-merge, code never reaches main, deploy never triggers, and the task is NOT done.**
 
 **DO NOT WAIT FOR /finish-task — it runs automatically as part of this loop.**
 

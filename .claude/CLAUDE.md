@@ -11,6 +11,38 @@
 
 ---
 
+## KRITISKT: Produktions-filkarta (vad Azure FAKTISKT serverar)
+
+**Om du andrar UI/frontend MASTE du andra filerna nedan. Annars syns INGENTING pa Azure.**
+
+### Flask-renderade templates (DET HAR ar produktions-UI:t)
+
+| Route | Template-fil |
+|-------|-------------|
+| `/` (root) | `src/sejfa/newsflash/presentation/templates/newsflash/index.html` |
+| `/subscribe` | `src/sejfa/newsflash/presentation/templates/newsflash/subscribe.html` |
+| `/thank-you` | `src/sejfa/newsflash/presentation/templates/newsflash/thank_you.html` |
+| Base layout | `src/sejfa/newsflash/presentation/templates/base.html` |
+| `/expenses/` | `src/expense_tracker/templates/expense_tracker/index.html` |
+| `/expenses/summary` | `src/expense_tracker/templates/expense_tracker/summary.html` |
+| Expense base | `src/expense_tracker/templates/expense_tracker/base.html` |
+
+### VARNING: Filer som INTE serveras av Flask pa Azure
+
+| Fil | Status | Forklaring |
+|-----|--------|------------|
+| `static/monitor.html` | **SERVERAS INTE** | Fristaende HTML, ingen Flask-route. Andra den INTE for UI-tickets. |
+| `static/*.png` | Bilder | Anvands av monitor.html, inte av Flask-templates |
+
+### Regel for UI-tickets
+
+1. **"Andra appens UI"** = Andra Flask-templates ovan
+2. **"Andra monitor dashboard"** = `static/monitor.html` (men det syns INTE pa Azure)
+3. Om en ticket sager "app UI" eller "produktion" — andra ALLTID Flask-templates
+4. Om du ar osaker: kolla `render_template()` anropen i `src/` for att se vad som faktiskt renderas
+
+---
+
 ## Projektstruktur
 
 ```
@@ -23,7 +55,7 @@ grupp-ett-github/
 │   ├── sejfa/                  # Huvudpaket
 │   │   ├── core/               # Admin auth, subscriber service
 │   │   ├── integrations/       # Jira API-klient
-│   │   ├── monitor/            # Real-time monitoring dashboard (SocketIO)
+│   │   ├── monitor/            # Monitor API (JSON only, INTE UI — se filkarta ovan)
 │   │   └── utils/              # Health check, security
 │   └── expense_tracker/        # Expense tracking-modul
 │       ├── data/               # Expense model + repository
@@ -35,7 +67,7 @@ grupp-ett-github/
 │   ├── expense_tracker/        # Expense tracker-tester
 │   ├── integrations/           # Jira-integrationstester
 │   └── utils/                  # Utility-tester
-├── static/                     # Frontend-tillgangar (monitor.html, bilder)
+├── static/                     # FRISTAENDE filer — INTE Flask-serverade (se filkarta)
 ├── docs/                       # Dokumentation
 │   ├── DEPLOYMENT.md           # Deployment-guide (Cloudflare Tunnel)
 │   └── jules-playbook.md       # Jules AI review-system
