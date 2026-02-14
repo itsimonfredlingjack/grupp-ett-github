@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ExpenseTracker{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,112 +11,97 @@
             box-sizing: border-box;
         }
 
-        @keyframes border-glow {
-            0%, 100% {
-                border-color: rgba(94, 106, 210, 0.3);
-                box-shadow: 0 0 8px rgba(94, 106, 210, 0.2);
-            }
-            50% {
-                border-color: rgba(94, 106, 210, 0.6);
-                box-shadow: 0 0 16px rgba(94, 106, 210, 0.4);
-            }
-        }
-
-        @keyframes focus-glow {
-            0%, 100% { box-shadow: 0 0 0 1px rgba(94, 106, 210, 0.5); }
-            50% { box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.8), 0 0 12px rgba(94, 106, 210, 0.3); }
-        }
-
         body {
             min-height: 100vh;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #080808;
-            color: #E5E5E5;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            background: #008080;
+            color: #000000;
             position: relative;
             overflow-x: hidden;
-            padding: 40px;
-            font-size: 14px;
-            line-height: 1.6;
+            padding: 10px;
+            font-size: 11px;
+            line-height: 1.4;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
+            font-smooth: never;
         }
 
         nav {
             position: relative;
             z-index: 10;
-            margin-bottom: 40px;
+            margin-bottom: 10px;
             display: flex;
-            gap: 2px;
-            background: transparent;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0 0 20px 0;
+            gap: 0;
+            background: #C0C0C0;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            padding: 4px;
             max-width: 1000px;
-            margin: 0 auto 40px;
+            margin: 0 auto 10px;
         }
 
         nav a {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            color: #A0A0A0;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-weight: normal;
+            color: #000000;
             text-decoration: none;
-            letter-spacing: -0.01em;
-            padding: 8px 16px;
-            border: 1px solid transparent;
-            background: transparent;
-            font-size: 0.875rem;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0;
+            padding: 4px 8px;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            background: #C0C0C0;
+            font-size: 11px;
+            margin-right: 2px;
         }
 
         nav a:hover {
-            color: #FFFFFF;
-            border-color: rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.02);
+            background: #C0C0C0;
         }
 
         nav a:active {
-            border-color: #5E6AD2;
-            animation: focus-glow 0.6s ease;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            padding: 5px 7px 3px 9px;
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            color: #FFFFFF;
-            margin-bottom: 16px;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 8px;
             position: relative;
             z-index: 10;
-            line-height: 1.3;
-            letter-spacing: -0.02em;
+            line-height: 1.2;
+            letter-spacing: 0;
         }
 
-        h1 { font-size: 2rem; }
-        h2 { font-size: 1.5rem; }
-        h3 { font-size: 1.125rem; }
+        h1 { font-size: 18px; }
+        h2 { font-size: 14px; }
+        h3 { font-size: 12px; }
 
         .flash-messages {
             position: relative;
             z-index: 10;
-            margin-bottom: 24px;
+            margin-bottom: 10px;
             max-width: 1000px;
-            margin: 0 auto 24px;
+            margin: 0 auto 10px;
         }
 
         .flash {
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8125rem;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            border: 2px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-size: 11px;
+            background: #FFFFFF;
         }
 
         .flash.error {
-            border-color: #E57373;
-            background: rgba(229, 115, 115, 0.1);
-            color: #E57373;
+            color: #FF0000;
         }
 
         .flash.success {
-            border-color: #81C784;
-            background: rgba(129, 199, 132, 0.1);
-            color: #81C784;
+            color: #008000;
         }
 
         .expense-list {
@@ -130,133 +114,134 @@
         }
 
         .expense-item {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 20px;
-            margin-bottom: 12px;
+            background: #C0C0C0;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            padding: 8px;
+            margin-bottom: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
         }
 
         .expense-item:hover {
-            border-color: rgba(255, 255, 255, 0.12);
-            animation: border-glow 1.5s ease infinite;
+            background: #C0C0C0;
         }
 
         .expense-title {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            color: #FFFFFF;
-            font-size: 0.9375rem;
-            letter-spacing: -0.01em;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-weight: bold;
+            color: #000000;
+            font-size: 11px;
+            letter-spacing: 0;
         }
 
         .expense-category {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
             font-style: normal;
-            color: #A0A0A0;
-            font-size: 0.8125rem;
-            font-weight: 400;
+            color: #000000;
+            font-size: 10px;
+            font-weight: normal;
         }
 
         .expense-amount {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #E5E5E5;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            font-weight: bold;
+            color: #000000;
         }
 
         form {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 32px;
-            margin-bottom: 32px;
+            background: #C0C0C0;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            padding: 12px;
+            margin-bottom: 12px;
             position: relative;
             z-index: 10;
             max-width: 1000px;
-            margin: 0 auto 32px;
+            margin: 0 auto 12px;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 10px;
         }
 
         label {
-            font-family: 'Inter', sans-serif;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
             display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #E5E5E5;
-            font-size: 0.875rem;
-            letter-spacing: -0.01em;
+            margin-bottom: 4px;
+            font-weight: normal;
+            color: #000000;
+            font-size: 11px;
+            letter-spacing: 0;
         }
 
         input, select {
             width: 100%;
-            padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #E5E5E5;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 2px 4px;
+            background: #FFFFFF;
+            border: 2px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            color: #000000;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-size: 11px;
+            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: #5E6AD2;
-            background: rgba(255, 255, 255, 0.04);
-            animation: focus-glow 0.6s ease;
+            background: #FFFFFF;
         }
 
         input::placeholder {
-            color: #6B6B6B;
+            color: #808080;
         }
 
         button {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            background: transparent;
-            color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 10px 20px;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-weight: normal;
+            background: #C0C0C0;
+            color: #000000;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            padding: 4px 12px;
             cursor: pointer;
-            font-size: 0.875rem;
-            letter-spacing: -0.01em;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 11px;
+            letter-spacing: 0;
+            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
         }
 
         button:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.04);
+            background: #C0C0C0;
         }
 
         button:active, button:focus {
-            border-color: #5E6AD2;
-            animation: focus-glow 0.6s ease;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            padding: 5px 11px 3px 13px;
+            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .total {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            margin: 40px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 32px;
+            font-weight: bold;
+            color: #000000;
+            margin: 12px 0;
             text-align: center;
             position: relative;
             z-index: 10;
-            letter-spacing: -0.02em;
+            letter-spacing: 0;
         }
 
         .empty-message {
-            font-family: 'Inter', sans-serif;
+            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
             font-style: normal;
-            color: #6B6B6B;
+            color: #000000;
             text-align: center;
-            font-size: 0.875rem;
-            font-weight: 400;
+            font-size: 11px;
+            font-weight: normal;
             position: relative;
             z-index: 10;
         }
