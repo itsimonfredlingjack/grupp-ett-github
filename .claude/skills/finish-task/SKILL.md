@@ -33,14 +33,14 @@ Extract: JIRA_ID, branch_name
 Run verification checks:
 
 ```bash
-# Check tests pass
-pytest -xvs --cov=src --cov=app.py --cov-report=term-missing --cov-fail-under=80
+# MASTE aktivera venv forst — annars ImportError!
+source venv/bin/activate && pytest -xvs --cov=src --cov=app.py --cov-report=term-missing --cov-fail-under=80
 
-# Check linting
-ruff check .
+# Check linting (med venv)
+source venv/bin/activate && ruff check .
 
-# Check formatting
-ruff format --check .
+# Check formatting (med venv)
+source venv/bin/activate && ruff format --check .
 ```
 
 If any check fails, DO NOT proceed. Fix the issues first.
@@ -133,44 +133,50 @@ echo "Created PR: ${pr_url}"
 
 ### Step 7: Merge PR (MANDATORY — code MUST reach main)
 
-**DO NOT use `gh pr checks --watch`** — it blocks indefinitely waiting
-for slow checks like `jules-review` (5-10+ min), burning context tokens.
+**FORBJUDET:**
+- `gh pr checks --watch` (blockerar oandligt)
+- `sleep 30` i manuella loopar (brannen context)
+- Separata `gh pr merge` kommandon (kora blocket nedan som ETT kommando)
 
-**Strategy: Try auto-merge first, fall back to --admin merge.**
+**Kopiera och kor detta EXAKT som ett Bash-kommando (byt ut `${pr_url}`):**
 
 ```bash
-# Step 7a: Try auto-merge (non-blocking, GitHub merges when checks pass)
-if gh pr merge --squash --auto "${pr_url}" 2>/dev/null; then
-  echo "✅ Auto-merge enabled — GitHub will merge when checks pass"
+PR_URL="${pr_url}" && \
+echo "=== MERGE ATTEMPT ===" && \
+if gh pr merge --squash --auto "${PR_URL}" 2>/dev/null; then
+  echo "✅ Auto-merge enabled"
 else
-  echo "⚠️ Auto-merge not available — using direct merge"
-  # Step 7b: Wait briefly for critical checks, then merge with --admin
-  sleep 10  # Give fast checks (lint, security) time to start
-  if gh pr merge --squash --admin "${pr_url}" 2>/dev/null; then
-    echo "✅ PR merged with --admin flag"
-  else
-    # Step 7c: Last resort — direct squash merge
-    gh pr merge --squash "${pr_url}" \
-      && echo "✅ PR merged directly" \
-      || echo "❌ MERGE FAILED — PR is NOT merged. DO NOT say DONE."
+  echo "⚠️ Auto-merge unavailable, trying --admin with retries..."
+  MERGED=false
+  for i in 1 2 3 4; do
+    echo "Attempt ${i}/4: waiting 15s for CI..."
+    sleep 15
+    if gh pr merge --squash --admin "${PR_URL}" 2>/dev/null; then
+      echo "✅ PR merged with --admin (attempt ${i})"
+      MERGED=true
+      break
+    fi
+  done
+  if [ "${MERGED}" = false ]; then
+    echo "⚠️ --admin failed, trying direct --squash..."
+    if gh pr merge --squash "${PR_URL}" 2>/dev/null; then
+      echo "✅ PR merged directly"
+      MERGED=true
+    else
+      echo "❌ ALL MERGE ATTEMPTS FAILED — DO NOT SAY DONE"
+    fi
   fi
-fi
+fi && \
+echo "=== VERIFY ===" && \
+gh pr view "${PR_URL}" --json state,mergedAt -q '{state: .state, mergedAt: .mergedAt}'
 ```
 
-**⚠️ CRITICAL: The task is NOT complete unless the PR is merged or auto-merge is confirmed enabled.**
-- If ALL merge attempts fail → **DO NOT output `<promise>DONE</promise>`**
-- If auto-merge succeeded → PR will merge when checks pass, you MAY proceed
-- If direct merge succeeded → PR is merged, proceed to Step 8
-
-**Verify merge status:**
-```bash
-pr_state=$(gh pr view "${pr_url}" --json state -q '.state')
-echo "PR state: ${pr_state}"
-# Must be MERGED or have auto-merge enabled
-```
-
-**NEVER run `gh pr checks --watch` without a timeout.** If you must
-poll, use: `timeout 120 gh pr checks "${pr_url}" --watch || true`
+**Regler:**
+- Max vantetid: 4 retries × 15s = 60s (INTE mer)
+- Om alla misslyckas → **DO NOT output `<promise>DONE</promise>`**
+- Auto-merge = GitHub merger nar checks passar, du FAR fortsatta till Step 8
+- Direkt merge = PR ar mergad, fortsatt till Step 8
+- Verifiera ALLTID med `gh pr view --json state` efterat
 
 ### Step 8: Update Jira
 
