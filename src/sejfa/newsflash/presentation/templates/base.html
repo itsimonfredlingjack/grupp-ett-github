@@ -11,92 +11,141 @@
             box-sizing: border-box;
         }
 
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.97; }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
         body {
             min-height: 100vh;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            background: #008080;
-            color: #000000;
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: #000000;
+            color: #14F514;
             position: relative;
             overflow-x: hidden;
-            font-size: 11px;
-            line-height: 1.4;
-            -webkit-font-smoothing: none;
-            -moz-osx-font-smoothing: grayscale;
-            font-smooth: never;
+            font-size: 14px;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #14F514, 0 0 10px #14F514;
+            animation: flicker 0.15s infinite;
+        }
+
+        /* CRT Scanlines effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Vignette effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                transparent 70%,
+                rgba(0, 0, 0, 0.6) 100%
+            );
+            pointer-events: none;
+            z-index: 9998;
         }
 
         .header {
             position: relative;
             z-index: 10;
-            background: #000080;
-            border: none;
-            box-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #1084D0;
-            padding: 2px;
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: dashed;
+            padding: 10px;
+            margin: 10px;
+            box-shadow: 0 0 10px #14F514;
         }
 
         .header__container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 3px 6px;
+            padding: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .header__logo {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 18px;
             font-weight: bold;
-            color: #FFFFFF;
-            letter-spacing: 0;
-            text-shadow: none;
+            color: #14F514;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #14F514, 0 0 20px #14F514;
+            text-transform: uppercase;
         }
 
         .header__nav {
             display: flex;
-            gap: 0;
+            gap: 15px;
         }
 
         .header__link {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
             font-weight: normal;
-            color: #000000;
+            color: #14F514;
             text-decoration: none;
-            letter-spacing: 0;
-            padding: 4px 8px;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            background: #C0C0C0;
-            margin-left: 2px;
+            letter-spacing: 1px;
+            padding: 5px 10px;
+            border: 1px solid #14F514;
+            background: transparent;
             position: relative;
+            text-shadow: 0 0 5px #14F514;
+            transition: all 0.2s;
         }
 
         .header__link:hover {
-            background: #C0C0C0;
+            background: rgba(20, 245, 20, 0.1);
+            box-shadow: 0 0 15px #14F514;
         }
 
         .header__link:active {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            padding: 5px 7px 3px 9px;
+            background: rgba(20, 245, 20, 0.2);
         }
 
         .main {
             position: relative;
             z-index: 10;
             max-width: 1200px;
-            margin: 10px auto;
-            padding: 10px;
-            min-height: calc(100vh - 80px);
+            margin: 20px auto;
+            padding: 20px;
+            min-height: calc(100vh - 180px);
         }
 
         .footer {
             position: relative;
             z-index: 10;
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 4px 8px;
+            background: transparent;
+            border: 1px solid #14F514;
+            border-style: dotted;
+            padding: 10px;
             margin: 10px;
         }
 
@@ -107,238 +156,289 @@
         }
 
         .footer__text {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-style: normal;
             text-align: center;
-            color: #000000;
-            font-size: 11px;
+            color: #14F514;
+            font-size: 12px;
             font-weight: normal;
-            letter-spacing: 0;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
         }
 
-        /* Global card/panel styling - Windows 95 style */
+        /* Global card/panel styling - Wireframe terminal style */
         .card, .panel, [class*="card"], [class*="panel"] {
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 12px;
-            margin-bottom: 10px;
-            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: solid;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.3);
+            position: relative;
         }
 
         .card:hover, .panel:hover, [class*="card"]:hover, [class*="panel"]:hover {
-            background: #C0C0C0;
+            box-shadow: 0 0 25px rgba(20, 245, 20, 0.5);
         }
 
-        /* Headings - Windows 95 style */
+        /* ASCII corner decorations for cards */
+        .card::before, .panel::before {
+            content: '+';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            color: #14F514;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .card::after, .panel::after {
+            content: '+';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            color: #14F514;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* Headings - Terminal style */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-weight: bold;
-            color: #000000;
-            margin-bottom: 8px;
-            line-height: 1.2;
-            letter-spacing: 0;
+            color: #14F514;
+            margin-bottom: 15px;
+            line-height: 1.3;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #14F514, 0 0 20px #14F514;
+            text-transform: uppercase;
         }
 
-        h1 { font-size: 18px; }
-        h2 { font-size: 14px; }
-        h3 { font-size: 12px; }
-        h4 { font-size: 11px; }
+        h1 { font-size: 28px; }
+        h2 { font-size: 22px; }
+        h3 { font-size: 18px; }
+        h4 { font-size: 16px; }
 
-        /* Code/data - Monospace */
+        /* Code/data - Terminal monospace */
         code, pre, .data, [class*="code"], [class*="data"] {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-style: normal;
-            color: #000000;
-            background: #FFFFFF;
-            padding: 2px 4px;
-            border: 1px solid #808080;
-            font-size: 10px;
+            color: #14F514;
+            background: rgba(20, 245, 20, 0.05);
+            padding: 5px 10px;
+            border: 1px solid #14F514;
+            font-size: 13px;
+            text-shadow: 0 0 5px #14F514;
         }
 
-        /* Button styling - Windows 95 style */
+        /* Button styling - Terminal style */
         button, .button, input[type="submit"] {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-weight: normal;
-            background: #C0C0C0;
-            color: #000000;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 4px 12px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-weight: bold;
+            background: transparent;
+            color: #14F514;
+            border: 2px solid #14F514;
+            padding: 10px 20px;
             cursor: pointer;
-            font-size: 11px;
-            letter-spacing: 0;
-            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
+            box-shadow: 0 0 10px rgba(20, 245, 20, 0.3);
+            transition: all 0.2s;
+            text-transform: uppercase;
         }
 
         button:hover, .button:hover, input[type="submit"]:hover {
-            background: #C0C0C0;
+            background: rgba(20, 245, 20, 0.1);
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.5);
         }
 
         button:active, .button:active, input[type="submit"]:active {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            padding: 5px 11px 3px 13px;
-            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
+            background: rgba(20, 245, 20, 0.2);
+            transform: translateY(1px);
         }
 
         button:focus, .button:focus, input[type="submit"]:focus {
-            outline: 1px dotted #000000;
-            outline-offset: -4px;
+            outline: 1px dashed #14F514;
+            outline-offset: 3px;
         }
 
-        /* Input fields - Windows 95 style */
+        /* Input fields - Terminal style */
         input, textarea, select {
-            background: #FFFFFF;
-            border: 2px solid;
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            color: #000000;
-            padding: 2px 4px;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
-            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #14F514;
+            color: #14F514;
+            padding: 8px 12px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            text-shadow: 0 0 5px #14F514;
+            box-shadow: 0 0 10px rgba(20, 245, 20, 0.2);
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            background: #FFFFFF;
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.4);
         }
 
         input::placeholder, textarea::placeholder {
-            color: #808080;
+            color: rgba(20, 245, 20, 0.5);
+            text-shadow: none;
         }
 
-        /* Hero section */
+        /* Hero section - Terminal style */
         .hero {
-            padding: 20px 0;
+            padding: 40px 0;
             text-align: center;
         }
 
         .hero__container {
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 16px;
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: double;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(20, 245, 20, 0.3);
         }
 
         .hero__heading {
-            font-size: 24px;
+            font-size: 36px;
             font-weight: bold;
-            margin-bottom: 12px;
-            letter-spacing: 0;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
         }
 
         .hero__subtitle {
-            font-size: 11px;
-            color: #000000;
-            margin-bottom: 16px;
-            line-height: 1.4;
+            font-size: 16px;
+            color: #14F514;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #14F514;
         }
 
         .hero__button {
             display: inline-block;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-weight: normal;
-            background: #C0C0C0;
-            color: #000000;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 6px 16px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-weight: bold;
+            background: transparent;
+            color: #14F514;
+            border: 2px solid #14F514;
+            padding: 12px 30px;
             text-decoration: none;
-            font-size: 11px;
-            letter-spacing: 0;
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #14F514;
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.3);
+            transition: all 0.2s;
         }
 
         .hero__button:hover {
-            background: #C0C0C0;
+            background: rgba(20, 245, 20, 0.1);
+            box-shadow: 0 0 30px rgba(20, 245, 20, 0.5);
         }
 
         .hero__button:active {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            padding: 7px 15px 5px 17px;
+            background: rgba(20, 245, 20, 0.2);
+            transform: translateY(1px);
         }
 
-        /* Features section */
+        /* Features section - Terminal wireframe */
         .features {
-            padding: 12px 0;
+            padding: 40px 0;
         }
 
         .features__container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             max-width: 1000px;
             margin: 0 auto;
         }
 
         .features__card {
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 12px;
-            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+            background: transparent;
+            border: 2px solid #14F514;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.2);
+            position: relative;
         }
 
         .features__card:hover {
-            background: #C0C0C0;
+            box-shadow: 0 0 30px rgba(20, 245, 20, 0.4);
+        }
+
+        .features__card::before {
+            content: '>';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            color: #14F514;
+            font-size: 14px;
         }
 
         .features__title {
-            font-size: 12px;
+            font-size: 16px;
             font-weight: bold;
-            margin-bottom: 6px;
-            color: #000000;
+            margin-bottom: 10px;
+            color: #14F514;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
         }
 
         .features__text {
-            font-size: 11px;
-            color: #000000;
-            line-height: 1.4;
+            font-size: 14px;
+            color: #14F514;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #14F514;
         }
 
-        /* Subscribe section */
+        /* Subscribe section - Terminal form */
         .subscribe {
-            padding: 16px 0;
+            padding: 40px 0;
         }
 
         .subscribe__container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
         .subscribe__heading {
-            font-size: 18px;
-            margin-bottom: 8px;
+            font-size: 24px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
         .subscribe__subtitle {
-            font-size: 11px;
-            color: #000000;
-            margin-bottom: 12px;
+            font-size: 14px;
+            color: #14F514;
+            margin-bottom: 25px;
             text-align: center;
+            text-shadow: 0 0 5px #14F514;
         }
 
         .subscribe__form {
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 12px;
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: dashed;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.2);
         }
 
         .form__group {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .form__label {
             display: block;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
-            font-weight: normal;
-            color: #000000;
-            margin-bottom: 4px;
-            letter-spacing: 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #14F514;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
         }
 
         .form__input {
@@ -347,89 +447,110 @@
 
         .form__input--error {
             border-color: #FF0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
 
         .form__button {
             width: 100%;
-            padding: 6px 12px;
-            font-size: 11px;
+            padding: 12px 20px;
+            font-size: 16px;
         }
 
-        /* Error and flash messages */
+        /* Error and flash messages - Terminal alerts */
         .error-banner, .flash-message {
-            padding: 6px 8px;
-            margin-bottom: 10px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
             border: 2px solid;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            text-shadow: 0 0 5px currentColor;
         }
 
         .error-banner, .flash-message.error {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            background: #FFFFFF;
+            border-color: #FF0000;
+            background: rgba(255, 0, 0, 0.1);
             color: #FF0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
         }
 
         .flash-message.success {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            background: #FFFFFF;
-            color: #008000;
+            border-color: #14F514;
+            background: rgba(20, 245, 20, 0.1);
+            color: #14F514;
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.3);
         }
 
-        /* Thank you section */
+        .error-banner::before, .flash-message.error::before {
+            content: '! ERROR: ';
+            font-weight: bold;
+        }
+
+        .flash-message.success::before {
+            content: '✓ SUCCESS: ';
+            font-weight: bold;
+        }
+
+        /* Thank you section - Terminal confirmation */
         .thank-you {
-            padding: 20px 0;
+            padding: 40px 0;
         }
 
         .thank-you__container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             text-align: center;
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 16px;
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: double;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(20, 245, 20, 0.3);
         }
 
         .thank-you__heading {
-            font-size: 18px;
-            margin-bottom: 12px;
+            font-size: 32px;
+            margin-bottom: 25px;
         }
 
         .thank-you__text {
-            font-size: 11px;
-            color: #000000;
-            margin-bottom: 8px;
-            line-height: 1.4;
+            font-size: 16px;
+            color: #14F514;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #14F514;
         }
 
         .thank-you__text strong {
-            color: #000000;
+            color: #14F514;
             font-weight: bold;
+            text-shadow: 0 0 10px #14F514;
         }
 
         .thank-you__button {
             display: inline-block;
-            margin-top: 12px;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-weight: normal;
-            background: #C0C0C0;
-            color: #000000;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 6px 16px;
+            margin-top: 25px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-weight: bold;
+            background: transparent;
+            color: #14F514;
+            border: 2px solid #14F514;
+            padding: 12px 30px;
             text-decoration: none;
-            font-size: 11px;
-            letter-spacing: 0;
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #14F514;
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.3);
+            transition: all 0.2s;
         }
 
         .thank-you__button:hover {
-            background: #C0C0C0;
+            background: rgba(20, 245, 20, 0.1);
+            box-shadow: 0 0 30px rgba(20, 245, 20, 0.5);
         }
 
         .thank-you__button:active {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            padding: 7px 15px 5px 17px;
+            background: rgba(20, 245, 20, 0.2);
+            transform: translateY(1px);
         }
     </style>
     {% block extra_css %}{% endblock %}

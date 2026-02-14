@@ -11,97 +11,158 @@
             box-sizing: border-box;
         }
 
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.97; }
+        }
+
         body {
             min-height: 100vh;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            background: #008080;
-            color: #000000;
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: #000000;
+            color: #14F514;
             position: relative;
             overflow-x: hidden;
-            padding: 10px;
-            font-size: 11px;
-            line-height: 1.4;
-            -webkit-font-smoothing: none;
-            -moz-osx-font-smoothing: grayscale;
-            font-smooth: never;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            text-shadow: 0 0 5px #14F514, 0 0 10px #14F514;
+            animation: flicker 0.15s infinite;
+        }
+
+        /* CRT Scanlines effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Vignette effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                transparent 70%,
+                rgba(0, 0, 0, 0.6) 100%
+            );
+            pointer-events: none;
+            z-index: 9998;
         }
 
         nav {
             position: relative;
             z-index: 10;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             display: flex;
-            gap: 0;
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 4px;
+            gap: 15px;
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: dashed;
+            padding: 15px;
             max-width: 1000px;
-            margin: 0 auto 10px;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.3);
         }
 
         nav a {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-weight: normal;
-            color: #000000;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-weight: bold;
+            color: #14F514;
             text-decoration: none;
-            letter-spacing: 0;
-            padding: 4px 8px;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            background: #C0C0C0;
-            font-size: 11px;
-            margin-right: 2px;
+            letter-spacing: 1px;
+            padding: 8px 15px;
+            border: 1px solid #14F514;
+            background: transparent;
+            font-size: 14px;
+            text-shadow: 0 0 5px #14F514;
+            transition: all 0.2s;
+            text-transform: uppercase;
         }
 
         nav a:hover {
-            background: #C0C0C0;
+            background: rgba(20, 245, 20, 0.1);
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.5);
         }
 
         nav a:active {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            padding: 5px 7px 3px 9px;
+            background: rgba(20, 245, 20, 0.2);
+            transform: translateY(1px);
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-weight: bold;
-            color: #000000;
-            margin-bottom: 8px;
+            color: #14F514;
+            margin-bottom: 15px;
             position: relative;
             z-index: 10;
-            line-height: 1.2;
-            letter-spacing: 0;
+            line-height: 1.3;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #14F514, 0 0 20px #14F514;
+            text-transform: uppercase;
         }
 
-        h1 { font-size: 18px; }
-        h2 { font-size: 14px; }
-        h3 { font-size: 12px; }
+        h1 { font-size: 28px; }
+        h2 { font-size: 22px; }
+        h3 { font-size: 18px; }
 
         .flash-messages {
             position: relative;
             z-index: 10;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             max-width: 1000px;
-            margin: 0 auto 10px;
+            margin: 0 auto 20px;
         }
 
         .flash {
-            padding: 6px 8px;
-            margin-bottom: 6px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
             border: 2px solid;
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
-            background: #FFFFFF;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            text-shadow: 0 0 5px currentColor;
         }
 
         .flash.error {
+            border-color: #FF0000;
+            background: rgba(255, 0, 0, 0.1);
             color: #FF0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .flash.error::before {
+            content: '! ERROR: ';
+            font-weight: bold;
         }
 
         .flash.success {
-            color: #008000;
+            border-color: #14F514;
+            background: rgba(20, 245, 20, 0.1);
+            color: #14F514;
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.3);
+        }
+
+        .flash.success::before {
+            content: '✓ SUCCESS: ';
+            font-weight: bold;
         }
 
         .expense-list {
@@ -114,136 +175,168 @@
         }
 
         .expense-item {
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 8px;
-            margin-bottom: 6px;
+            background: transparent;
+            border: 2px solid #14F514;
+            padding: 15px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 15px rgba(20, 245, 20, 0.2);
+            position: relative;
         }
 
         .expense-item:hover {
-            background: #C0C0C0;
+            box-shadow: 0 0 25px rgba(20, 245, 20, 0.4);
+        }
+
+        .expense-item::before {
+            content: '>';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #14F514;
+            font-size: 14px;
         }
 
         .expense-title {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-weight: bold;
-            color: #000000;
-            font-size: 11px;
-            letter-spacing: 0;
+            color: #14F514;
+            font-size: 16px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
+            margin-left: 20px;
         }
 
         .expense-category {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-style: normal;
-            color: #000000;
-            font-size: 10px;
+            color: #14F514;
+            font-size: 12px;
             font-weight: normal;
+            text-shadow: 0 0 5px #14F514;
         }
 
         .expense-amount {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 18px;
             font-weight: bold;
-            color: #000000;
+            color: #14F514;
+            text-shadow: 0 0 10px #14F514;
         }
 
         form {
-            background: #C0C0C0;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 12px;
-            margin-bottom: 12px;
+            background: transparent;
+            border: 2px solid #14F514;
+            border-style: dashed;
+            padding: 25px;
+            margin-bottom: 25px;
             position: relative;
             z-index: 10;
             max-width: 1000px;
-            margin: 0 auto 12px;
+            margin: 0 auto 25px;
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.2);
         }
 
         .form-group {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         label {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             display: block;
-            margin-bottom: 4px;
-            font-weight: normal;
-            color: #000000;
-            font-size: 11px;
-            letter-spacing: 0;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #14F514;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
         }
 
         input, select {
             width: 100%;
-            padding: 2px 4px;
-            background: #FFFFFF;
-            border: 2px solid;
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            color: #000000;
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-size: 11px;
-            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #14F514;
+            color: #14F514;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            text-shadow: 0 0 5px #14F514;
+            box-shadow: 0 0 10px rgba(20, 245, 20, 0.2);
         }
 
         input:focus, select:focus {
             outline: none;
-            background: #FFFFFF;
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.4);
         }
 
         input::placeholder {
-            color: #808080;
+            color: rgba(20, 245, 20, 0.5);
+            text-shadow: none;
         }
 
         button {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
-            font-weight: normal;
-            background: #C0C0C0;
-            color: #000000;
-            border: 2px solid;
-            border-color: #FFFFFF #808080 #808080 #FFFFFF;
-            padding: 4px 12px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-weight: bold;
+            background: transparent;
+            color: #14F514;
+            border: 2px solid #14F514;
+            padding: 10px 20px;
             cursor: pointer;
-            font-size: 11px;
-            letter-spacing: 0;
-            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #14F514;
+            box-shadow: 0 0 10px rgba(20, 245, 20, 0.3);
+            transition: all 0.2s;
+            text-transform: uppercase;
         }
 
         button:hover {
-            background: #C0C0C0;
+            background: rgba(20, 245, 20, 0.1);
+            box-shadow: 0 0 20px rgba(20, 245, 20, 0.5);
         }
 
         button:active, button:focus {
-            border-color: #808080 #FFFFFF #FFFFFF #808080;
-            padding: 5px 11px 3px 13px;
-            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
+            background: rgba(20, 245, 20, 0.2);
+            transform: translateY(1px);
+            outline: 1px dashed #14F514;
+            outline-offset: 3px;
         }
 
         .total {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 32px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 48px;
             font-weight: bold;
-            color: #000000;
-            margin: 12px 0;
+            color: #14F514;
+            margin: 30px 0;
             text-align: center;
             position: relative;
             z-index: 10;
-            letter-spacing: 0;
+            letter-spacing: 3px;
+            text-shadow: 0 0 15px #14F514, 0 0 30px #14F514;
+        }
+
+        .total::before {
+            content: '>>> ';
+        }
+
+        .total::after {
+            content: ' <<<';
         }
 
         .empty-message {
-            font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif;
+            font-family: 'Courier New', 'Consolas', monospace;
             font-style: normal;
-            color: #000000;
+            color: #14F514;
             text-align: center;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: normal;
             position: relative;
             z-index: 10;
+            text-shadow: 0 0 5px #14F514;
         }
 
         /* Container for main content */
