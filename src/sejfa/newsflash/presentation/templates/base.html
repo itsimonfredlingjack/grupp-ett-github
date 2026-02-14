@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}News Flash{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,32 +12,31 @@
             box-sizing: border-box;
         }
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+        @keyframes gentle-sway {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(5px) rotate(1deg); }
         }
 
-        @keyframes sparkle {
-            0%, 100% { box-shadow: 0 0 10px #FF00CC, 0 0 20px #00FFFF; }
-            50% { box-shadow: 0 0 20px #FF00CC, 0 0 40px #00FFFF, 0 0 60px #FF00CC; }
+        @keyframes leaf-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
+            50% { transform: translateY(-10px) rotate(2deg); opacity: 0.3; }
         }
 
-        @keyframes rainbow-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        @keyframes soft-glow {
+            0%, 100% { box-shadow: 0 4px 20px rgba(46, 125, 50, 0.1); }
+            50% { box-shadow: 0 6px 30px rgba(46, 125, 50, 0.15); }
         }
 
         body {
             min-height: 100vh;
-            font-family: 'Orbitron', monospace;
-            background: linear-gradient(180deg, #2e003e 0%, #4a0e4e 50%, #7f3f7f 100%);
-            color: #fff;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(180deg, #F1F8E9 0%, #E8F5E0 50%, #F1F8E9 100%);
+            color: #2E7D32;
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Starfield effect */
+        /* Monstera leaf shadows in background */
         body::before {
             content: '';
             position: fixed;
@@ -46,97 +45,95 @@
             width: 100%;
             height: 100%;
             background-image:
-                radial-gradient(2px 2px at 20% 30%, white, transparent),
-                radial-gradient(2px 2px at 60% 70%, white, transparent),
-                radial-gradient(1px 1px at 50% 50%, white, transparent),
-                radial-gradient(1px 1px at 80% 10%, white, transparent),
-                radial-gradient(2px 2px at 90% 60%, white, transparent),
-                radial-gradient(1px 1px at 33% 80%, white, transparent),
-                radial-gradient(1px 1px at 15% 55%, white, transparent);
-            background-size: 200% 200%;
-            background-position: 0% 0%, 100% 100%, 50% 50%, 0% 100%, 100% 0%, 33% 80%, 80% 20%;
-            animation: twinkle 3s ease-in-out infinite;
+                radial-gradient(ellipse 200px 300px at 10% 20%, rgba(46, 125, 50, 0.03), transparent),
+                radial-gradient(ellipse 250px 350px at 85% 15%, rgba(46, 125, 50, 0.04), transparent),
+                radial-gradient(ellipse 180px 280px at 70% 80%, rgba(46, 125, 50, 0.03), transparent),
+                radial-gradient(ellipse 220px 320px at 30% 70%, rgba(46, 125, 50, 0.04), transparent);
+            opacity: 0.5;
             pointer-events: none;
             z-index: 1;
+            animation: leaf-float 8s ease-in-out infinite;
         }
 
-        /* Perspective grid at bottom */
+        /* Subtle texture overlay */
         body::after {
             content: '';
             position: fixed;
-            bottom: 0;
+            top: 0;
             left: 0;
             width: 100%;
-            height: 300px;
+            height: 100%;
             background-image:
-                linear-gradient(0deg, transparent 24%, rgba(255, 0, 204, 0.3) 25%, rgba(255, 0, 204, 0.3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.3) 75%, rgba(0, 255, 255, 0.3) 76%, transparent 77%, transparent),
-                linear-gradient(90deg, transparent 24%, rgba(255, 0, 204, 0.3) 25%, rgba(255, 0, 204, 0.3) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.3) 75%, rgba(0, 255, 255, 0.3) 76%, transparent 77%, transparent);
-            background-size: 50px 50px;
-            transform: perspective(500px) rotateX(60deg);
-            transform-origin: bottom;
-            opacity: 0.4;
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(46, 125, 50, 0.01) 2px,
+                    rgba(46, 125, 50, 0.01) 4px
+                );
             pointer-events: none;
             z-index: 1;
+            opacity: 0.3;
         }
 
         .header {
             position: relative;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
-            border-bottom: 2px solid;
-            border-image: linear-gradient(90deg, #FF00CC, #00FFFF, #FF00CC) 1;
-            box-shadow: 0 4px 20px rgba(255, 0, 204, 0.3);
+            border-bottom: none;
+            box-shadow: 0 2px 10px rgba(46, 125, 50, 0.1);
+            border-radius: 0 0 20px 20px;
         }
 
         .header__container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .header__logo {
-            font-family: 'Cinzel', serif;
+            font-family: 'Merriweather', serif;
             font-size: 2.5em;
-            font-weight: 900;
-            background: linear-gradient(90deg, #FF00CC, #00FFFF, #FF00CC);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: rainbow-shift 3s ease infinite;
-            text-shadow: 0 0 30px rgba(255, 0, 204, 0.8);
-            filter: drop-shadow(0 0 10px #00FFFF);
+            font-weight: 700;
+            color: #2E7D32;
+            text-shadow: 0 2px 4px rgba(46, 125, 50, 0.1);
+            animation: gentle-sway 4s ease-in-out infinite;
         }
 
         .header__nav {
             display: flex;
-            gap: 30px;
+            gap: 20px;
         }
 
         .header__link {
-            font-family: 'Cinzel', serif;
-            font-size: 1.1em;
-            color: #00FFFF;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            color: #2E7D32;
             text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            padding: 10px 20px;
-            border: 2px solid #00FFFF;
-            border-radius: 5px;
-            background: rgba(0, 255, 255, 0.1);
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow:
+                5px 5px 15px rgba(46, 125, 50, 0.1),
+                -5px -5px 15px rgba(255, 255, 255, 0.9);
             transition: all 0.3s ease;
             position: relative;
         }
 
         .header__link:hover {
-            background: rgba(255, 0, 204, 0.2);
-            border-color: #FF00CC;
-            color: #FF00CC;
-            animation: sparkle 1s ease infinite;
+            background: rgba(241, 248, 233, 1);
+            box-shadow:
+                inset 3px 3px 8px rgba(46, 125, 50, 0.1),
+                inset -3px -3px 8px rgba(255, 255, 255, 0.8);
+            color: #1B5E20;
         }
 
         .main {
@@ -144,18 +141,19 @@
             z-index: 10;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 50px 20px;
             min-height: calc(100vh - 200px);
         }
 
         .footer {
             position: relative;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(10px);
-            border-top: 2px solid;
-            border-image: linear-gradient(90deg, #00FFFF, #FF00CC, #00FFFF) 1;
-            padding: 20px 0;
+            border-top: none;
+            border-radius: 20px 20px 0 0;
+            padding: 25px 0;
+            box-shadow: 0 -2px 10px rgba(46, 125, 50, 0.1);
         }
 
         .footer__container {
@@ -165,82 +163,112 @@
         }
 
         .footer__text {
-            font-family: 'Orbitron', monospace;
-            font-style: italic;
+            font-family: 'Nunito', sans-serif;
+            font-style: normal;
             text-align: center;
-            color: #00FFFF;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+            color: #2E7D32;
+            font-size: 0.95em;
+            font-weight: 400;
         }
 
-        /* Global card/panel styling */
+        /* Global card/panel styling - Neumorphism */
         .card, .panel, [class*="card"], [class*="panel"] {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border: 2px solid;
-            border-image: linear-gradient(135deg,
-                rgba(192, 192, 192, 0.8),
-                rgba(255, 255, 255, 0.9),
-                rgba(192, 192, 192, 0.8)
-            ) 1;
-            border-radius: 10px;
+            border: none;
+            border-radius: 25px;
             box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 2px rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        /* Headings - Gothic/fantasy style */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Cinzel', serif;
-            font-weight: 900;
-            color: #FF00CC;
-            text-shadow: 0 0 20px rgba(255, 0, 204, 0.8);
-            margin-bottom: 15px;
-        }
-
-        /* Code/data - futuristic monospace */
-        code, pre, .data, [class*="code"], [class*="data"] {
-            font-family: 'Orbitron', monospace;
-            font-style: italic;
-            color: #00FFFF;
-        }
-
-        /* Button styling */
-        button, .button, input[type="submit"] {
-            font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg, #FF00CC, #00FFFF);
-            color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 30px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1em;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+                8px 8px 20px rgba(46, 125, 50, 0.1),
+                -8px -8px 20px rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            margin-bottom: 25px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 0, 204, 0.4);
+        }
+
+        .card:hover, .panel:hover, [class*="card"]:hover, [class*="panel"]:hover {
+            animation: soft-glow 2s ease infinite;
+        }
+
+        /* Headings - Elegant serif style */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Merriweather', serif;
+            font-weight: 700;
+            color: #2E7D32;
+            text-shadow: 0 2px 4px rgba(46, 125, 50, 0.1);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        h1 { font-size: 2.5em; }
+        h2 { font-size: 2em; }
+        h3 { font-size: 1.6em; }
+        h4 { font-size: 1.3em; }
+
+        /* Code/data - Rounded sans-serif */
+        code, pre, .data, [class*="code"], [class*="data"] {
+            font-family: 'Nunito', sans-serif;
+            font-style: normal;
+            color: #1B5E20;
+            background: rgba(46, 125, 50, 0.05);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        /* Button styling - Organic neumorphism */
+        button, .button, input[type="submit"] {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(241, 248, 233, 1));
+            color: #2E7D32;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow:
+                5px 5px 15px rgba(46, 125, 50, 0.15),
+                -5px -5px 15px rgba(255, 255, 255, 0.9);
         }
 
         button:hover, .button:hover, input[type="submit"]:hover {
-            animation: sparkle 1s ease infinite;
-            transform: scale(1.05);
+            box-shadow:
+                inset 4px 4px 10px rgba(46, 125, 50, 0.1),
+                inset -4px -4px 10px rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
         }
 
-        /* Input fields */
+        button:active, .button:active, input[type="submit"]:active {
+            box-shadow:
+                inset 6px 6px 12px rgba(46, 125, 50, 0.15),
+                inset -6px -6px 12px rgba(255, 255, 255, 0.7);
+            transform: translateY(0);
+        }
+
+        /* Input fields - Soft neumorphism */
         input, textarea, select {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid #00FFFF;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: 'Orbitron', monospace;
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            color: #2E7D32;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-family: 'Nunito', sans-serif;
+            box-shadow:
+                inset 3px 3px 8px rgba(46, 125, 50, 0.08),
+                inset -3px -3px 8px rgba(255, 255, 255, 0.9);
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #FF00CC;
-            box-shadow: 0 0 20px rgba(255, 0, 204, 0.5);
+            box-shadow:
+                inset 4px 4px 10px rgba(46, 125, 50, 0.12),
+                inset -4px -4px 10px rgba(255, 255, 255, 0.8);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgba(46, 125, 50, 0.5);
         }
     </style>
     {% block extra_css %}{% endblock %}
