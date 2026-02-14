@@ -13,18 +13,18 @@
 
 ---
 
-## 📖 About SEJFA
+## About SEJFA
 
 SEJFA is a cutting-edge **Agentic DevOps Loop System**, meticulously crafted by **Filippa, Simon, Jonas Ö, Emma, and Annika**. This project is a living demonstration of the future of software development: a fully autonomous workflow where AI Agents (powered by **Claude Code** and **Ralph Wiggum Loops**) take ownership of the entire lifecycle—from picking up a Jira ticket to deploying a production-ready application on Azure.
 
-### 🌟 Ideally Suited For:
+### Ideally Suited For:
 - **Autonomous Development:** Exploring the limits of AI-driven coding.
 - **Enterprise Integration:** Seamlessly connecting Jira, GitHub, and Azure.
 - **Real-Time Monitoring:** Visualizing the agent's thought process and actions.
 
 ---
 
-## 🎨 Chaos vs Clarity
+## Chaos vs Clarity
 
 ![Chaos vs Clarity](static/img/SEJFA-CHAOS-VS-CLARITY.jpeg)
 
@@ -32,20 +32,20 @@ Development can be chaotic. SEJFA brings order through **The Ralph Loop**—a st
 
 ---
 
-## ⚡ Key Features
+## Key Features
 
 | Feature | Description |
 | :--- | :--- |
-| **🤖 Agentic Workflow** | Autonomous task execution with `start-task` and `finish-task` commands, powered by Claude Code. |
-| **🔄 Ralph Loop** | A rigorous TDD cycle: Red -> Green -> Refactor -> Verify. Quality is non-negotiable. |
-| **🔌 Jira Integration** | Direct two-way sync with Jira. Tickets are fetched, updated, and closed automatically. |
-| **☁️ Azure Deployment** | Zero-downtime deployments to **Azure Container Apps** via GitHub Actions. |
-| **📊 Real-Time Monitor** | Watch the agents work in real-time on the [Monitoring Dashboard](https://gruppett.fredlingautomation.dev/static/monitor.html). |
-| **🛡️ Secure & Scalable** | Built on Flask with Gunicorn, Dockerized for portability, and secured with `safety` scans. |
+| **Agentic Workflow** | Autonomous task execution with `start-task` and `finish-task` commands, powered by Claude Code. |
+| **Ralph Loop** | A rigorous TDD cycle: Red -> Green -> Refactor -> Verify. Quality is non-negotiable. |
+| **Jira Integration** | Direct two-way sync with Jira. Tickets are fetched, updated, and closed automatically. |
+| **Azure Deployment** | Zero-downtime deployments to **Azure Container Apps** via GitHub Actions. |
+| **Real-Time Monitor** | Watch the agents work in real-time on the Monitoring Dashboard. |
+| **Secure & Scalable** | Built on Flask with Gunicorn, Dockerized for portability, and secured with `safety` scans. |
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 The SEJFA architecture is designed for resilience and autonomy. The **Claude Code Agent** operates within the **Ralph Loop**, interacting with the codebase, running tests, and managing git operations, all while communicating with **Jira** and **Azure**.
 
@@ -70,7 +70,7 @@ graph TD
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 Follow these steps to set up your own Agentic DevOps environment.
 
@@ -101,7 +101,7 @@ Follow these steps to set up your own Agentic DevOps environment.
     ```
 
 4.  **Configure Environment**
-    Create a `.env` file based on `.env.example` (if available) with your Jira and Azure credentials.
+    Create a `.env` file with your Jira and Azure credentials.
 
 ### Running the Application
 
@@ -115,12 +115,12 @@ Access the application at `http://localhost:5000`.
 
 Verify the system integrity with `pytest`:
 ```bash
-pytest -v
+source venv/bin/activate && pytest -v
 ```
 
 ---
 
-## 🤖 Agentic Development Guide
+## Agentic Development Guide
 
 Unlock the power of autonomous coding with the **Ralph Skills** in `.claude/skills`.
 
@@ -146,35 +146,36 @@ This pushes the changes, creates a PR, and updates the Jira ticket.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
--   **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Detailed guide for deploying to Azure Container Apps.
+-   **[Full Project Documentation](docs/FINAL_DOCUMENTATION.md)** - Comprehensive guide covering architecture, APIs, pipelines, deployment, and more.
 -   **[Jules Playbook](docs/jules-playbook.md)** - Insights into the AI review system.
 -   **[Context Memory](CURRENT_TASK.md)** - The agent's current working memory.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 .
 ├── .claude/                # Agent Configuration & Skills
 │   ├── hooks/              # Git/Loop Hooks (stop-hook)
 │   └── skills/             # Agent Skills (start-task, finish-task)
-├── agent/                  # Agent Prompts & Plans
 ├── app.py                  # Flask Application Entry Point
 ├── CURRENT_TASK.md         # Agent Context Memory
 ├── src/                    # Source Code
-│   └── sejfa/              # Main Package
-│       ├── core/           # Business Logic
-│       ├── integrations/   # External Integrations (Jira)
-│       └── monitor/        # Real-time Monitoring
-└── tests/                  # Test Suite
+│   ├── sejfa/              # Main Package
+│   │   ├── core/           # Business Logic
+│   │   ├── integrations/   # External Integrations (Jira)
+│   │   └── monitor/        # Real-time Monitoring
+│   └── expense_tracker/    # Expense Tracking Module
+├── scripts/                # Pipeline Scripts (Jules, CI)
+└── tests/                  # Test Suite (370+ tests)
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please follow the **Ralph Loop** methodology:
 1.  Fork the repository.
@@ -184,10 +185,10 @@ We welcome contributions! Please follow the **Ralph Loop** methodology:
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-*Built with ❤️ by the SEJFA Team.*
+*Built with love by the SEJFA Team.*
