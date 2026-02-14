@@ -382,8 +382,8 @@ Then **IMMEDIATELY** (in the same response, without stopping):
 The stop-hook will BLOCK you from exiting until you output `<promise>DONE</promise>`.
 You can only output that promise when ALL of these are true:
 - All acceptance criteria in CURRENT_TASK.md are checked off
-- All tests pass: `pytest -xvs`
-- No linting errors: `ruff check .`
+- All tests pass: `source venv/bin/activate && pytest -xvs`
+- No linting errors: `source venv/bin/activate && ruff check .`
 - Changes committed and pushed
 - PR created via `gh pr create`
 - **PR merged** (try `--auto`, fallback to `--admin`, then direct merge)
@@ -449,7 +449,7 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
 2. **Start TDD:** Write a failing test for the FIRST requirement
 3. **Implement** minimal code to pass the test
 4. **Refactor** if needed
-5. **Run tests:** `pytest -xvs`
+5. **Run tests:** `source venv/bin/activate && pytest -xvs`
 6. **Repeat** for each requirement
 7. **When ALL acceptance criteria are met**, execute the COMPLETE delivery process:
    a. Verify tests + lint pass

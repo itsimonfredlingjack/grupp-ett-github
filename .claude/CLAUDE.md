@@ -4,7 +4,7 @@
 
 1. **Las CURRENT_TASK.md forst** - Det ar ditt externa minne
 2. **Uppdatera CURRENT_TASK.md efter varje iteration** - Logga framsteg
-3. **Kor tester efter varje kodandring** - `pytest -xvs`
+3. **Kor tester efter varje kodandring** - `source venv/bin/activate && pytest -xvs`
 4. **Commit-format:** `GE-XXX: [beskrivning]`
 5. **Branch-namngivning:** `feature/GE-XXX-kort-beskrivning`
 6. **PRODUKTION:** https://gruppett.fredlingautomation.dev (Cloudflare Tunnel -> localhost:5000) - Se [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)
@@ -129,6 +129,24 @@ Dependency injection: Services far sitt repository via `__init__`.
 
 ---
 
+## KRITISKT: Aktivera venv INNAN pytest/ruff
+
+**ALLA `pytest` och `ruff` kommandon MASTE prefixas med `source venv/bin/activate &&`.**
+
+```bash
+# RATT:
+source venv/bin/activate && pytest -xvs
+source venv/bin/activate && ruff check .
+
+# FEL (kommer misslyckas med ImportError):
+pytest -xvs
+ruff check .
+```
+
+Utan venv saknas projektets dependencies → agenten slosar en hel iteration pa att debugga ImportError.
+
+---
+
 ## Arbetsflode
 
 ### 1. Starta ny uppgift
@@ -152,8 +170,8 @@ Dependency injection: Services far sitt repository via `__init__`.
 
 ### 3. Avsluta uppgift
 ```
-1. Alla tester passerar (verifiera med `pytest -xvs`)
-2. Linting passerar (verifiera med `ruff check .`)
+1. Alla tester passerar (verifiera med `source venv/bin/activate && pytest -xvs`)
+2. Linting passerar (verifiera med `source venv/bin/activate && ruff check .`)
 3. Alla acceptanskriterier i CURRENT_TASK.md uppfyllda
 4. Pusha: git push -u origin [branch]
 5. Skapa PR: gh pr create --title "GE-XXX: Beskrivning" --body "..."
@@ -317,7 +335,7 @@ Nar du kor i en Ralph loop (`/ralph-loop`):
 ### Vanliga problem:
 | Symptom | Trolig orsak | Losning |
 |---------|--------------|---------|
-| ImportError | Saknad dependency | Kolla requirements.txt |
+| ImportError | venv ej aktiverad / saknad dependency | `source venv/bin/activate` forst! |
 | AssertionError | Test forvantar fel varde | Granska testlogik |
 | TypeError | Fel argumenttyp | Kolla type hints |
 | FileNotFoundError | Fel path | Anvand Path och relativa paths |
@@ -334,11 +352,11 @@ Nar du kor i en Ralph loop (`/ralph-loop`):
 4. **Om fel finns** - atgarda forst
 
 ```bash
-# Verifiera tester
-pytest -xvs
+# Verifiera tester (MASTE aktivera venv forst!)
+source venv/bin/activate && pytest -xvs
 
 # Verifiera linting
-ruff check .
+source venv/bin/activate && ruff check .
 
 # Verifiera att allt ar committat
 git status
@@ -354,12 +372,12 @@ git status
 # Starta nytt arbete
 git checkout -b feature/GE-XXX-beskrivning
 
-# Kor tester
-pytest -xvs
+# Kor tester (ALLTID med venv!)
+source venv/bin/activate && pytest -xvs
 
-# Kor linting
-ruff check .
-ruff check --fix .  # Auto-fix
+# Kor linting (ALLTID med venv!)
+source venv/bin/activate && ruff check .
+source venv/bin/activate && ruff check --fix .  # Auto-fix
 
 # Committa
 git add [filer]
