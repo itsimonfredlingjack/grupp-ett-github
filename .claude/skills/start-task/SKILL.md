@@ -51,8 +51,8 @@ git status --porcelain
 **If git status shows changes:**
 - **STOP immediately**
 - Output: "❌ Working tree is not clean. Commit or stash changes first."
-- Ask user to run: `git add . && git commit -m "WIP: stash before new task"`
-- Or run: `git stash`
+- Ask user to run: `git stash` or `git add -u && git commit -m "WIP: stash before new task"`
+- **NEVER use `git add -A` or `git add .`** — they stage untracked junk files (.fuse_hidden*, SEJFA_Changelog.docx, etc.)
 - **DO NOT PROCEED** with dirty working tree
 
 **Check 2: Currently on main/master branch**
@@ -386,7 +386,7 @@ You can only output that promise when ALL of these are true:
 - No linting errors: `ruff check .`
 - Changes committed and pushed
 - PR created via `gh pr create`
-- **Auto-merge enabled: `gh pr merge --squash --auto "$PR_URL"`**
+- **PR merged** (try `--auto`, fallback to `--admin`, then direct merge)
 - Jira updated
 
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
@@ -423,10 +423,11 @@ This exact format is detected by the stop-hook. Any deviation and exit will be b
 4. [ ] Changes committed
 5. [ ] Branch pushed to remote
 6. [ ] PR created
-7. [ ] **Auto-merge enabled (`gh pr merge --squash --auto`)**
+7. [ ] **PR merged or auto-merge enabled** (try `--auto`, fallback `--admin`, then direct)
+8. [ ] **Verified:** `gh pr view --json state -q '.state'` returns `MERGED`
 9. [ ] Jira status updated
 
-**⚠️ AUTO-MERGE IS MANDATORY. If you output DONE without enabling auto-merge on the PR, the task is NOT complete. Use `gh pr merge --squash --auto` — do NOT use `gh pr checks --watch` (it blocks indefinitely).**
+**⚠️ PR MERGE IS MANDATORY. If the PR is not merged, code never reaches main, deploy never triggers, and the task is NOT done. Try `gh pr merge --squash --auto`, if that fails use `--admin`, if that fails use direct `--squash`. Do NOT use `gh pr checks --watch` (it blocks indefinitely).**
 
 Only then output the promise on its own line.
 
@@ -455,11 +456,12 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
    b. Commit all changes
    c. Push branch to remote
    d. Create PR via `gh pr create`
-   e. **Enable auto-merge: `gh pr merge --squash --auto "$PR_URL"`**
+   e. **Merge PR:** Try `gh pr merge --squash --auto`, fallback `--admin`, then direct `--squash`
+   f. **Verify merge:** `gh pr view --json state -q '.state'` must return `MERGED`
    g. Update Jira status
    h. Output `<promise>DONE</promise>`
 
-**Step e is NON-NEGOTIABLE. Without auto-merge, code never reaches main, deploy never triggers, and the task is NOT done.**
+**Step e+f are NON-NEGOTIABLE. Without a merged PR, code never reaches main, deploy never triggers, and the task is NOT done.**
 
 **DO NOT WAIT FOR /finish-task — it runs automatically as part of this loop.**
 
