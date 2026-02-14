@@ -162,9 +162,7 @@ class TestCreateTasks:
         assert "#42" in call_kwargs["description"]
 
     def test_caps_at_max_tasks(self, mock_client: MagicMock) -> None:
-        findings = [
-            Finding("HIGH", f"f{i}.py:1", f"Bug {i}") for i in range(10)
-        ]
+        findings = [Finding("HIGH", f"f{i}.py:1", f"Bug {i}") for i in range(10)]
 
         keys = create_tasks(mock_client, "GE-35", findings)
 
@@ -193,9 +191,7 @@ class TestCreateTasks:
         from src.sejfa.integrations.jira_client import JiraAPIError
 
         client = MagicMock()
-        client.create_issue.side_effect = JiraAPIError(
-            "Boom", status_code=500
-        )
+        client.create_issue.side_effect = JiraAPIError("Boom", status_code=500)
 
         findings = [Finding("HIGH", "a.py:1", "Bug")]
         keys = create_tasks(client, "GE-35", findings)

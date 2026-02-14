@@ -152,9 +152,7 @@ def create_tasks(
         List of created issue keys
     """
     project_key = extract_project_key(origin_key)
-    high_findings = [
-        f for f in findings if f.severity in ("HIGH", "CRITICAL")
-    ]
+    high_findings = [f for f in findings if f.severity in ("HIGH", "CRITICAL")]
 
     if not high_findings:
         _log("No HIGH/CRITICAL findings — skipping task creation")
@@ -162,10 +160,7 @@ def create_tasks(
 
     to_create = high_findings[:MAX_TASKS]
     if len(high_findings) > MAX_TASKS:
-        _log(
-            f"Found {len(high_findings)} HIGH findings, "
-            f"capping at {MAX_TASKS} tasks"
-        )
+        _log(f"Found {len(high_findings)} HIGH findings, capping at {MAX_TASKS} tasks")
 
     created_keys: list[str] = []
 
