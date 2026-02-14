@@ -84,6 +84,19 @@ SEVERITY_PATTERNS: list[re.Pattern[str]] = [
 ]
 TICKET_KEY_PATTERN = re.compile(r"([A-Z]+-\d+)")
 
+# Indicators that review_body is an error/timeout, not actual findings
+_ERROR_INDICATORS = (
+    "\u23f1\ufe0f",  # ⏱️ timer emoji (timeout)
+    "\u26a0\ufe0f",  # ⚠️ warning emoji (API error)
+    "\u274c",  # ❌ cross emoji (session failed)
+    "timed out",
+    "Session timed out",
+    "Failed to create",
+    "Session failed",
+    "API returned unexpected",
+    "Manual review recommended",
+)
+
 
 @dataclass
 class Finding:
@@ -99,12 +112,7 @@ class Finding:
         return f"[Jules/{self.severity}] {self.location}: {self.description}"[:255]
 
     def body(self, origin_key: str | None = None, pr_number: str = "") -> str:
-        """Generate description body for Jira ticket.
-
-        Args:
-            origin_key: Original Jira ticket key (e.g., GE-35)
-            pr_number: PR number that triggered the review
-        """
+        """Generate description body for Jira ticket."""
         lines = [
             f"Severity: {self.severity}",
             f"Location: {self.location}",
@@ -126,21 +134,70 @@ def _log(msg: str, level: str = "notice") -> None:
     print(f"::{level}::{msg}" if level != "notice" else msg, flush=True)
 
 
+def _is_error_or_timeout(text: str) -> bool:
+    """Check if review body is an error/timeout message, not findings.
+
+    Checks only the first 5 lines to avoid false positives from
+    findings that happen to contain words like "failed".
+    """
+    first_lines = "\n".join(text.splitlines()[:5])
+    return any(indicator in first_lines for indicator in _ERROR_INDICATORS)
+
+
+def _strip_review_wrapper(text: str) -> str:
+    """Strip format_review_body() header/footer wrapper if present.
+
+    The review_body from jules_review_api.py is wrapped with:
+        ## 🔍 Jules Code Review\\n\\n{content}\\n\\n---\\n*footer*
+    This function extracts just the content portion.
+    """
+    if "Jules Code Review" not in text:
+        return text
+
+    lines = text.splitlines()
+    content_lines: list[str] = []
+    in_content = False
+
+    for line in lines:
+        if line.startswith("## ") and "Jules Code Review" in line:
+            in_content = True
+            continue
+        if in_content and line.startswith("---"):
+            break
+        if in_content:
+            content_lines.append(line)
+
+    stripped = "\n".join(content_lines).strip()
+    return stripped if stripped else text
+
+
 def _try_parse_json_findings(review_body: str) -> list[Finding]:
     """Attempt to extract findings from raw JSON in the review body.
 
     Handles the case where extract_review_text() fell through to its
     raw JSON fallback strategy (wrapped in a markdown code block).
+    Also handles the format_review_body() wrapper.
     """
     findings: list[Finding] = []
     severity_words = {"HIGH", "MEDIUM", "LOW", "CRITICAL"}
 
+    # Strip review wrapper first
+    text = _strip_review_wrapper(review_body)
+
+    # Strip "Raw session data:" prefix if present
+    if "Raw session data:" in text:
+        text = text.split("Raw session data:", 1)[1]
+
     # Strip markdown code fences if present
-    text = review_body
     if "```json" in text:
         text = text.split("```json", 1)[1]
         if "```" in text:
             text = text.rsplit("```", 1)[0]
+    elif "```" in text:
+        # Fenced but without json language tag
+        parts = text.split("```")
+        if len(parts) >= 3:
+            text = parts[1]
 
     try:
         data = json.loads(text.strip())
@@ -156,13 +213,23 @@ def _try_parse_json_findings(review_body: str) -> list[Finding]:
                 key_lower = key.lower()
                 if key_lower == "severity" and isinstance(val, str):
                     sev = val.upper()
-                elif key_lower in ("location", "file", "path") and isinstance(val, str):
+                elif key_lower in (
+                    "location",
+                    "file",
+                    "path",
+                    "filename",
+                    "file_path",
+                    "filepath",
+                ) and isinstance(val, str):
                     loc = val
                 elif key_lower in (
                     "description",
                     "message",
                     "detail",
                     "finding",
+                    "text",
+                    "content",
+                    "summary",
                 ) and isinstance(val, str):
                     desc = val
                 elif isinstance(val, (dict, list)):
@@ -253,15 +320,6 @@ def create_tasks(
     Standalone Tasks (not Sub-tasks) avoid the race condition where
     the parent ticket is already Done when Jules finishes its async
     review. The origin ticket is referenced in the description only.
-
-    Args:
-        client: Configured JiraClient
-        origin_key: Origin issue key for reference (e.g., GE-35)
-        findings: List of parsed findings
-        pr_number: PR number for origin reference
-
-    Returns:
-        List of created issue keys
     """
     project_key = extract_project_key(origin_key)
     actionable = ("HIGH", "CRITICAL", "MEDIUM")
@@ -314,7 +372,7 @@ def add_low_findings_as_comment(
 
     lines = ["Jules review — lower-severity findings:\n"]
     for f in low_findings:
-        lines.append(f"• [{f.severity}] {f.location} — {f.description}")
+        lines.append(f"\u2022 [{f.severity}] {f.location} \u2014 {f.description}")
 
     try:
         client.add_comment(parent_key, "\n".join(lines))
@@ -334,6 +392,15 @@ def main() -> int:
         _log("JULES_REVIEW_BODY is empty — nothing to process")
         return 0
 
+    # Early exit: detect timeout/error messages from jules_review_api.py
+    if _is_error_or_timeout(review_body):
+        _log(
+            "Review body is a timeout/error message, not findings — "
+            "skipping Jira processing"
+        )
+        _log(f"First 200 chars: {review_body[:200]}")
+        return 0
+
     parent_key = extract_parent_key(head_ref)
     if not parent_key:
         _log(
@@ -348,6 +415,8 @@ def main() -> int:
     findings = parse_findings(review_body)
     if not findings:
         _log("No structured findings found in Jules review")
+        _log(f"Review body length: {len(review_body)} chars")
+        _log(f"First 300 chars: {review_body[:300]}")
         return 0
 
     task_count = sum(
@@ -356,8 +425,8 @@ def main() -> int:
     low_count = sum(1 for f in findings if f.severity == "LOW")
     _log(
         f"Found {len(findings)} findings: "
-        f"{task_count} HIGH/CRITICAL/MEDIUM (→ tasks), "
-        f"{low_count} LOW (→ comment)"
+        f"{task_count} HIGH/CRITICAL/MEDIUM (\u2192 tasks), "
+        f"{low_count} LOW (\u2192 comment)"
     )
 
     # Initialize Jira client
