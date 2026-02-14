@@ -19,7 +19,7 @@ import urllib.request
 
 JULES_API_BASE = "https://jules.googleapis.com/v1alpha"
 POLL_INTERVAL_SEC = 15
-MAX_POLL_SEC = 540  # 9 min (workflow timeout is 20 min)
+MAX_POLL_SEC = 720  # 12 min (workflow timeout is 20 min)
 REQUEST_TIMEOUT_SEC = 30
 SEVERITY_RE = re.compile(
     r"(?:\[|\*\*)?(?:HIGH|MEDIUM|LOW|CRITICAL)(?:\]|\*\*)?(?:\s|[:\-\u2014]|$)",
@@ -27,6 +27,7 @@ SEVERITY_RE = re.compile(
 )
 # Keys that contain the prompt/config, NOT findings — skip during deep search
 _SKIP_KEYS = frozenset({"title", "prompt", "sourceContext", "automationMode"})
+_SEVERITY_WORDS = frozenset({"HIGH", "MEDIUM", "LOW", "CRITICAL"})
 
 
 def _log(msg: str, level: str = "notice") -> None:
@@ -190,23 +191,116 @@ def _deep_find_texts(
     return hits
 
 
+def _extract_structured_findings(
+    obj: object,
+    *,
+    _depth: int = 0,
+) -> list[str]:
+    """Walk JSON tree and extract dicts that look like structured findings.
+
+    Jules sometimes returns findings as structured objects:
+        {"severity": "HIGH", "file": "foo.py", "description": "..."}
+    rather than pre-formatted text strings.
+
+    Returns formatted strings: [SEVERITY] location \u2014 description
+    """
+    if _depth > 20:
+        return []
+
+    results: list[str] = []
+
+    if isinstance(obj, dict):
+        sev = ""
+        loc = ""
+        desc = ""
+        for key, val in obj.items():
+            if not isinstance(val, str):
+                continue
+            key_lower = key.lower()
+            if key_lower == "severity":
+                sev = val.upper().strip()
+            elif key_lower in (
+                "location", "file", "path", "filename",
+                "file_path", "filepath",
+            ):
+                loc = val.strip()
+            elif key_lower in (
+                "description", "message", "detail",
+                "finding", "text", "content", "summary",
+            ):
+                desc = val.strip()
+
+        if sev in _SEVERITY_WORDS and desc:
+            loc = loc or "unknown"
+            results.append(f"[{sev}] {loc} \u2014 {desc}")
+
+        # Recurse into all values regardless
+        for val in obj.values():
+            if isinstance(val, (dict, list)):
+                results.extend(
+                    _extract_structured_findings(val, _depth=_depth + 1)
+                )
+    elif isinstance(obj, list):
+        for item in obj:
+            results.extend(
+                _extract_structured_findings(item, _depth=_depth + 1)
+            )
+
+    return results
+
+
+def _log_session_structure(session: dict, max_depth: int = 3) -> None:
+    """Log the JSON key structure of a session for debugging."""
+
+    def _keys(obj: object, depth: int = 0) -> str:
+        if depth >= max_depth:
+            return "..."
+        if isinstance(obj, dict):
+            parts = []
+            for k, v in obj.items():
+                child = _keys(v, depth + 1)
+                parts.append(f"{k}: {child}" if child else k)
+            return "{" + ", ".join(parts[:10]) + "}"
+        if isinstance(obj, list):
+            if obj:
+                return f"[{_keys(obj[0], depth + 1)} x{len(obj)}]"
+            return "[]"
+        if isinstance(obj, str):
+            return f"str({len(obj)})"
+        return type(obj).__name__
+
+    _log(f"Session structure: {_keys(session)}")
+
+
 def extract_review_text(session: dict) -> str:
     """Extract readable review text from completed session response.
 
     Strategy (in priority order):
-    1. Deep-search the entire session for strings containing [SEVERITY] markers
-    2. Check known structured fields (outputs, plan, response, etc.)
-    3. Fallback: dump raw JSON (increased limit for debugging)
+    1.  Deep-search for strings containing [SEVERITY] markers
+    1b. Extract structured finding objects (dicts with severity key)
+    2.  Check known structured fields (outputs, plan, response, etc.)
+    2b. Deep-search for ANY substantial text (no severity filter)
+    3.  Fallback: dump raw JSON
     """
     _log(f"Session response keys: {sorted(session.keys())}")
+    _log_session_structure(session)
     parts: list[str] = []
 
-    # --- Strategy 1: Deep recursive search for severity-tagged findings ---
+    # --- Strategy 1: Deep recursive search for severity-tagged strings ---
     severity_texts = _deep_find_texts(session)
     if severity_texts:
         _log(f"Found {len(severity_texts)} text blocks with severity markers")
         parts.extend(severity_texts)
         return "\n\n".join(parts)
+
+    # --- Strategy 1b: Extract structured finding objects ---
+    structured = _extract_structured_findings(session)
+    if structured:
+        _log(
+            f"Found {len(structured)} structured finding objects "
+            "(dict with severity key)"
+        )
+        return "\n\n".join(structured)
 
     # --- Strategy 2: Check known structured fields ---
 
@@ -242,11 +336,15 @@ def extract_review_text(session: dict) -> str:
                 if isinstance(item, str) and item.strip():
                     step_texts.append(f"- {item.strip()}")
                 elif isinstance(item, dict):
-                    desc = item.get("description", item.get("content", ""))
+                    desc = item.get(
+                        "description", item.get("content", "")
+                    )
                     if desc:
                         step_texts.append(f"- {str(desc).strip()}")
             if step_texts:
-                parts.append("**Plan steps:**\n" + "\n".join(step_texts))
+                parts.append(
+                    "**Plan steps:**\n" + "\n".join(step_texts)
+                )
 
     # Check session-level text fields
     for key in ("response", "output", "result", "summary", "review"):
@@ -254,21 +352,24 @@ def extract_review_text(session: dict) -> str:
         if val and isinstance(val, str) and val.strip():
             parts.append(val.strip())
 
-    # --- Strategy 2b: Deep-search for ANY substantial text (no severity) ---
+    # --- Strategy 2b: Deep-search for ANY substantial text ---
     if not parts:
-        # Collect all text blocks > 80 chars that aren't the prompt
-        all_texts = _deep_find_texts(session, pattern=re.compile(r".{80,}", re.DOTALL))
-        # Filter out texts that look like the prompt itself
+        all_texts = _deep_find_texts(
+            session, pattern=re.compile(r".{80,}", re.DOTALL)
+        )
         for text in all_texts:
             if "You are the automated PR reviewer" in text:
                 continue
             if len(text) > 80:
                 parts.append(text)
-                break  # Take the longest non-prompt text
+                break
 
-    # --- Strategy 3: Raw JSON fallback (generous limit for debugging) ---
+    # --- Strategy 3: Raw JSON fallback ---
     if not parts:
-        _log("No structured findings found, using raw session data")
+        _log(
+            "No structured findings found via any strategy, "
+            "using raw session data"
+        )
         raw = json.dumps(session, indent=2, ensure_ascii=False)
         if len(raw) > 15000:
             raw = raw[:15000] + "\n...(truncated)"
@@ -347,7 +448,10 @@ def post_review_comment(
             text=True,
         )
         if fallback.returncode != 0:
-            _log(f"Fallback comment also failed: {fallback.stderr}", "error")
+            _log(
+                f"Fallback comment also failed: {fallback.stderr}",
+                "error",
+            )
             return False
         _log(f"Posted as regular comment on PR #{pr_number}")
         return True
@@ -425,16 +529,19 @@ def main() -> int:
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
         _set_output("review_body", body)
-        # API unavailable = infrastructure failure, don't block merge
         return 0
 
     # Extract session ID (API returns "name": "sessions/abc123")
     session_name = session.get("name", "")
-    session_id = session_name.split("/")[-1] if session_name else session.get("id", "")
+    session_id = (
+        session_name.split("/")[-1] if session_name else session.get("id", "")
+    )
     session_url = session.get("url", "")
 
     if not session_id:
-        _log(f"No session ID in response: {json.dumps(session)}", "error")
+        _log(
+            f"No session ID in response: {json.dumps(session)}", "error"
+        )
         body = (
             "\u26a0\ufe0f **Jules Review** \u2014 API returned unexpected response.\n\n"
             f"```json\n{json.dumps(session, indent=2)[:2000]}\n```"
@@ -442,7 +549,6 @@ def main() -> int:
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
         _set_output("review_body", body)
-        # Unexpected API response = infrastructure failure, don't block merge
         return 0
 
     _log(f"Session created: {session_id}")
@@ -454,16 +560,16 @@ def main() -> int:
     final_session = poll_session(api_key, session_name or session_id)
 
     if final_session is None:
+        timeout_min = MAX_POLL_SEC // 60
         body = (
             "\u23f1\ufe0f **Jules Review** \u2014 "
-            "Session timed out after 9 minutes.\n\n"
+            f"Session timed out after {timeout_min} minutes.\n\n"
             f"Session ID: `{session_id}`\n"
             "Manual review recommended."
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
         _set_output("review_body", body)
-        # Timeout = infrastructure failure, don't block merge
         return 0
 
     state = final_session.get("state", "UNKNOWN").upper()
