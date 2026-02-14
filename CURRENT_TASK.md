@@ -36,9 +36,9 @@ Beskrivning: Gör om hela appens utseende till en tecknad 2D-stil inspirerad av 
 - [x] Layout: Circular visualization in center with dashed lines connecting round nodes
 - [x] All tests pass: `pytest -xvs`
 - [x] No linting errors: `ruff check .`
-- [ ] Changes committed and pushed
-- [ ] PR created and merged
-- [ ] Jira status updated
+- [x] Changes committed and pushed
+- [x] PR created and merged
+- [x] Jira status updated
 
 ## Implementation Plan
 
