@@ -50,6 +50,38 @@ If any check fails, DO NOT proceed. Fix the issues first.
 Review each acceptance criterion in CURRENT_TASK.md.
 All checkboxes must be checked.
 
+### Step 3b: Scope Verification (KRITISKT)
+
+**Denna check forhindrar att du loser FEL uppgift.**
+
+Innan du gar vidare, verifiera att dina andringar matchar ticketens scope:
+
+```bash
+# Lista alla andrade filer i denna branch
+changed_files=$(git diff --name-only main...HEAD)
+echo "=== ANDRADE FILER ==="
+echo "${changed_files}"
+```
+
+**Kontrollera manuellt:**
+
+1. **UI-tickets** ("andra UI", "tema", "design", "frontend"):
+   - MASTE inkludera Flask-templates (se filkarta i CLAUDE.md)
+   - `src/sejfa/newsflash/presentation/templates/` och/eller
+   - `src/expense_tracker/templates/`
+   - Om BARA `static/monitor.html` andrades → **FEL FILER, STOPPA**
+
+2. **Backend-tickets** ("API", "endpoint", "logik"):
+   - MASTE inkludera filer i `src/` (Python-kod)
+   - Om bara templates/HTML andrades → ifrågasätt
+
+3. **Generellt:**
+   - Jamfor andrade filer mot ticketens acceptanskriterier
+   - Om acceptanskriterierna namner produktion/Azure → verifiera att
+     Flask-serverade filer andrades (se filkarta i CLAUDE.md)
+
+**Om scope inte matchar → GA TILLBAKA och andra ratt filer.**
+
 ### Step 4: Final Commit
 
 If there are uncommitted changes:
@@ -97,18 +129,26 @@ Implements {JIRA_ID}
 echo "Created PR: ${pr_url}"
 ```
 
-### Step 7: Wait for CI and Merge
+### Step 7: Enable Auto-Merge and Continue
 
-Only after successful PR creation, wait for CI checks to pass, then merge directly:
+**DO NOT use `gh pr checks --watch`** — it blocks indefinitely waiting
+for slow checks like `jules-review` (5-10+ min), burning context tokens.
+
+Instead, enable auto-merge and let GitHub handle the rest:
 
 ```bash
-gh pr checks "${pr_url}" --watch
-gh pr merge --squash "${pr_url}"
+gh pr merge --squash --auto "${pr_url}" \
+  && echo "✅ Auto-merge enabled — GitHub will merge when checks pass" \
+  || echo "⚠️ Auto-merge not available — manual merge needed"
 ```
 
-**If merge fails** (e.g., review required, branch protection):
+**If auto-merge is not enabled on the repo:**
 - Log warning: `⚠️ Auto-merge failed — manual merge may be needed`
 - **Continue** with Jira update (Step 8) — do not abort
+- The PR is ready; a human can merge after checks pass
+
+**NEVER run `gh pr checks --watch` without a timeout.** If you must
+poll, use: `timeout 120 gh pr checks "${pr_url}" --watch || true`
 
 ### Step 8: Update Jira
 
