@@ -26,6 +26,16 @@ def _log(msg: str, level: str = "notice") -> None:
     print(f"::{level}::{msg}" if level != "notice" else msg, flush=True)
 
 
+def _set_output(name: str, value: str) -> None:
+    """Write a step output to $GITHUB_OUTPUT (multiline-safe)."""
+    path = os.environ.get("GITHUB_OUTPUT", "")
+    if not path:
+        return
+    with open(path, "a") as f:
+        delimiter = "EOF_REVIEW_BODY"
+        f.write(f"{name}<<{delimiter}\n{value}\n{delimiter}\n")
+
+
 def _jules_request(
     path: str,
     *,
@@ -328,6 +338,7 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
+        _set_output("review_body", body)
         # API unavailable = infrastructure failure, don't block merge
         return 0
 
@@ -344,6 +355,7 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
+        _set_output("review_body", body)
         # Unexpected API response = infrastructure failure, don't block merge
         return 0
 
@@ -364,6 +376,7 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
+        _set_output("review_body", body)
         # Timeout = infrastructure failure, don't block merge
         return 0
 
@@ -381,6 +394,7 @@ def main() -> int:
         )
         if head_sha:
             post_review_comment(repo, pr_number, head_sha, body)
+        _set_output("review_body", body)
         return 1
 
     # Step 3: Extract findings from session response
@@ -391,9 +405,11 @@ def main() -> int:
     if not head_sha:
         _log("No HEAD_SHA \u2014 printing review to stdout only")
         print(review_body)
+        _set_output("review_body", review_body)
         return 0
 
     success = post_review_comment(repo, pr_number, head_sha, review_body)
+    _set_output("review_body", review_body)
     return 0 if success else 1
 
 
