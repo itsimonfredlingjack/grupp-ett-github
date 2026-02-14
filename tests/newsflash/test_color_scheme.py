@@ -257,67 +257,69 @@ class TestSimpson2Theme:
     """Test suite for GE-60: Simpson 2 theme - Simpsons Sky/Retro-tech."""
 
     def test_bg_primary_is_sky_blue(self, css_content):
-        """Verify background is sky blue #87CEEB."""
-        assert "--bg-primary: #87ceeb;" in css_content.lower(), (
-            "Background should be sky blue #87CEEB"
+        """Verify background is deep purple #2e003e (Dreamy Synthwave)."""
+        assert "--bg-primary: #2e003e;" in css_content.lower(), (
+            "Background should be deep purple #2e003e for Dreamy Synthwave theme"
         )
 
     def test_accent_primary_is_simpsons_yellow(self, css_content):
-        """Verify primary accent is Simpsons yellow #FFD90F."""
-        assert "--accent-primary: #ffd90f;" in css_content.lower(), (
-            "Primary accent should be Simpsons yellow #FFD90F"
+        """Verify primary accent is Hot Pink #FF00CC (Dreamy Synthwave)."""
+        assert "--accent-primary: #ff00cc;" in css_content.lower(), (
+            "Primary accent should be Hot Pink #FF00CC for Dreamy Synthwave theme"
         )
 
     def test_panel_bg_is_white(self, css_content):
-        """Verify panels use white background #FFFFFF."""
-        assert "--panel-bg: #ffffff;" in css_content.lower(), (
-            "Panels should use white background #FFFFFF"
+        """Verify panels use glassmorphism (semi-transparent white)."""
+        assert "--panel-bg: rgba(255, 255, 255, 0.05);" in css_content.lower(), (
+            "Panels should use semi-transparent glassmorphism background"
         )
 
     def test_text_primary_is_black(self, css_content):
-        """Verify primary text is black #000000."""
-        assert "--text-primary: #000000;" in css_content.lower(), (
-            "Primary text should be black #000000"
+        """Verify primary text is white #fff (Dreamy Synthwave)."""
+        assert "--text-primary: #fff;" in css_content.lower(), (
+            "Primary text should be white #fff for Dreamy Synthwave theme"
         )
 
     def test_border_style_is_thick_black(self, css_content):
-        """Verify borders use thick black strokes."""
-        # Should have thick borders (4-5px) with solid black
-        has_thick_border = re.search(r"border:\s*[4-5]px\s+solid\s+#000", css_content)
-        assert has_thick_border or "--border-width: 5px;" in css_content, (
-            "Should have thick (4-5px) black borders for cartoon style"
+        """Verify borders use subtle chrome/silver style."""
+        # Should have subtle borders (2px) with chrome/silver gradient
+        has_border_var = "--border-width: 2px;" in css_content
+        chrome_color = "--border-color: rgba(192, 192, 192, 0.8);"
+        has_chrome_border = chrome_color in css_content.lower()
+        assert has_border_var or has_chrome_border, (
+            "Should have subtle (2px) chrome/silver borders for Synthwave style"
         )
 
     def test_uses_pixel_art_font(self, css_content):
-        """Verify headers use pixel-art/8-bit font."""
-        # Should reference "Press Start 2P" or similar pixel font
-        assert "Press Start 2P" in css_content or "pixel" in css_content.lower(), (
-            "Headers should use pixel-art font like 'Press Start 2P'"
+        """Verify headers use gothic/fantasy font (Cinzel)."""
+        # Should reference "Cinzel" for gothic/fantasy style
+        assert "Cinzel" in css_content or "fantasy" in css_content.lower(), (
+            "Headers should use gothic/fantasy font like 'Cinzel'"
         )
 
     def test_uses_monospace_font(self, css_content):
-        """Verify body text uses monospace/terminal font."""
-        assert "monospace" in css_content.lower() or "JetBrains Mono" in css_content, (
-            "Body text should use monospace font"
+        """Verify body text uses futuristic monospace font (Orbitron)."""
+        assert "monospace" in css_content.lower() or "Orbitron" in css_content, (
+            "Body text should use futuristic monospace font like 'Orbitron'"
         )
 
     def test_no_soft_shadows(self, css_content):
-        """Verify no soft shadows - only sharp/flat shadows."""
-        # Should NOT have blur radius in box-shadow (sharp shadows only)
-        # Format: box-shadow: 0 6px 0 #000 (no blur = 0 in third position)
+        """Verify soft shadows used for glassmorphism effect."""
+        # Dreamy Synthwave uses soft shadows with blur for glassmorphism
+        # Should have blur radius in box-shadow for depth
         pattern = r"box-shadow:[^;]*\d+px\s+\d+px\s+(\d+)px"
         soft_shadows = re.findall(pattern, css_content)
         blur_values = [int(blur) for blur in soft_shadows if blur]
 
-        # Allow some blur for special effects, but most should be 0 (sharp)
-        sharp_shadows = [b for b in blur_values if b == 0]
+        # For glassmorphism, we want MOST shadows to have blur (soft)
+        soft_count = [b for b in blur_values if b > 0]
         if blur_values:
-            sharp_ratio = len(sharp_shadows) / len(blur_values)
+            soft_ratio = len(soft_count) / len(blur_values)
             msg = (
-                f"At least 50% of shadows should be sharp (no blur), "
-                f"got {sharp_ratio:.0%}"
+                f"At least 50% of shadows should have blur for glassmorphism, "
+                f"got {soft_ratio:.0%}"
             )
-            assert sharp_ratio >= 0.5, msg
+            assert soft_ratio >= 0.5, msg
 
     def test_no_beer_theme_colors_remain(self, css_content):
         """Verify NO beer theme colors remain."""
