@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Parse Jules review findings and create standalone Jira tickets.
 
-One-way async push: Jules → Jira. No AI-to-AI conversation.
-Jira acts as firewall — Claude picks up tickets via normal Ralph Loop
+One-way async push: Jules \u2192 Jira. No AI-to-AI conversation.
+Jira acts as firewall \u2014 Claude picks up tickets via normal Ralph Loop
 without knowing Jules created them.
 
 KEY DESIGN: Tickets are standalone Tasks, NOT sub-tasks. This avoids
@@ -13,14 +13,15 @@ the description only.
 Uses only stdlib + local jira_client. No pip install needed in CI.
 
 Environment variables:
-    JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN — Jira credentials
-    HEAD_REF — Branch name (e.g., feature/GE-35-description)
-    JULES_REVIEW_BODY — Full Jules review comment body (from previous step)
-    PR_NUMBER — PR number for logging
+    JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN \u2014 Jira credentials
+    HEAD_REF \u2014 Branch name (e.g., feature/GE-35-description)
+    JULES_REVIEW_BODY \u2014 Full Jules review comment body (from previous step)
+    PR_NUMBER \u2014 PR number for logging
 """
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
@@ -37,13 +38,50 @@ from src.sejfa.integrations.jira_client import (
 )
 
 MAX_TASKS = 3
-SEVERITY_PATTERN = re.compile(
-    r"\[(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]\s+"
-    r"(?P<location>\S+)"
-    r"\s*[—–-]\s*"
-    r"(?P<description>.+)",
-    re.IGNORECASE,
-)
+# Patterns tried in order \u2014 first match wins per line
+SEVERITY_PATTERNS: list[re.Pattern[str]] = [
+    # Original: [SEVERITY] file:line \u2014 description
+    re.compile(
+        r"\[(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]\s+"
+        r"(?P<location>\S+)"
+        r"\s*[\u2014\u2013\-:]\s*"
+        r"(?P<description>.+)",
+        re.IGNORECASE,
+    ),
+    # Markdown bold: **SEVERITY** file:line \u2014 description
+    re.compile(
+        r"\*\*(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\*\*\s+"
+        r"(?P<location>\S+)"
+        r"\s*[\u2014\u2013\-:]\s*"
+        r"(?P<description>.+)",
+        re.IGNORECASE,
+    ),
+    # Colon-separated: SEVERITY: file:line \u2014 description
+    re.compile(
+        r"(?P<severity>HIGH|MEDIUM|LOW|CRITICAL):\s+"
+        r"(?P<location>\S+)"
+        r"\s*[\u2014\u2013\-:]\s*"
+        r"(?P<description>.+)",
+        re.IGNORECASE,
+    ),
+    # Numbered/bulleted: N. [SEVERITY] or - [SEVERITY] or * [SEVERITY]
+    re.compile(
+        r"(?:\d+\.\s*|[-*]\s+)"
+        r"\[?(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]?\s+"
+        r"(?P<location>\S+)"
+        r"\s*[\u2014\u2013\-:]\s*"
+        r"(?P<description>.+)",
+        re.IGNORECASE,
+    ),
+    # Loose: SEVERITY then file-like path, then description
+    re.compile(
+        r"(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\s*[:\]}\s]+\s*"
+        r"(?P<location>[\w./]+(?::\d+)?)"
+        r"\s*[\u2014\u2013\-:]\s*"
+        r"(?P<description>.+)",
+        re.IGNORECASE,
+    ),
+]
 TICKET_KEY_PATTERN = re.compile(r"([A-Z]+-\d+)")
 
 
@@ -88,27 +126,101 @@ def _log(msg: str, level: str = "notice") -> None:
     print(f"::{level}::{msg}" if level != "notice" else msg, flush=True)
 
 
+def _try_parse_json_findings(review_body: str) -> list[Finding]:
+    """Attempt to extract findings from raw JSON in the review body.
+
+    Handles the case where extract_review_text() fell through to its
+    raw JSON fallback strategy (wrapped in a markdown code block).
+    """
+    findings: list[Finding] = []
+    severity_words = {"HIGH", "MEDIUM", "LOW", "CRITICAL"}
+
+    # Strip markdown code fences if present
+    text = review_body
+    if "```json" in text:
+        text = text.split("```json", 1)[1]
+        if "```" in text:
+            text = text.rsplit("```", 1)[0]
+
+    try:
+        data = json.loads(text.strip())
+    except (json.JSONDecodeError, ValueError):
+        return findings
+
+    def _walk(obj: object) -> None:
+        if isinstance(obj, dict):
+            sev = ""
+            loc = ""
+            desc = ""
+            for key, val in obj.items():
+                key_lower = key.lower()
+                if key_lower == "severity" and isinstance(val, str):
+                    sev = val.upper()
+                elif key_lower in ("location", "file", "path") and isinstance(val, str):
+                    loc = val
+                elif key_lower in (
+                    "description",
+                    "message",
+                    "detail",
+                    "finding",
+                ) and isinstance(val, str):
+                    desc = val
+                elif isinstance(val, (dict, list)):
+                    _walk(val)
+            if sev in severity_words and desc:
+                findings.append(
+                    Finding(
+                        severity=sev,
+                        location=loc or "unknown",
+                        description=desc,
+                    )
+                )
+        elif isinstance(obj, list):
+            for item in obj:
+                _walk(item)
+
+    _walk(data)
+    return findings
+
+
 def parse_findings(review_body: str) -> list[Finding]:
     """Extract structured findings from Jules review text.
 
-    Looks for lines matching: [SEVERITY] file:line — description
+    Tries multiple formats in order:
+    1. Line-based regex patterns (original + markdown/numbered/loose)
+    2. JSON-structured fallback for raw API responses
     """
     findings: list[Finding] = []
+    seen: set[str] = set()
 
     for line in review_body.splitlines():
         line = line.strip()
         if not line:
             continue
 
-        match = SEVERITY_PATTERN.search(line)
-        if match:
-            findings.append(
-                Finding(
-                    severity=match.group("severity").upper(),
-                    location=match.group("location").strip(),
-                    description=match.group("description").strip(),
+        for pattern in SEVERITY_PATTERNS:
+            match = pattern.search(line)
+            if match:
+                key = (
+                    match.group("severity").upper()
+                    + "|"
+                    + match.group("location").strip()
                 )
-            )
+                if key not in seen:
+                    seen.add(key)
+                    findings.append(
+                        Finding(
+                            severity=match.group("severity").upper(),
+                            location=match.group("location").strip(),
+                            description=match.group("description").strip(),
+                        )
+                    )
+                break  # First pattern match wins for this line
+
+    # Fallback: try JSON parsing if no line-based findings
+    if not findings:
+        _log("No line-based findings, trying JSON fallback parser")
+        findings = _try_parse_json_findings(review_body)
 
     return findings
 
@@ -136,7 +248,7 @@ def create_tasks(
     findings: list[Finding],
     pr_number: str = "",
 ) -> list[str]:
-    """Create standalone Jira Tasks for HIGH severity findings.
+    """Create standalone Jira Tasks for HIGH/MEDIUM+ severity findings.
 
     Standalone Tasks (not Sub-tasks) avoid the race condition where
     the parent ticket is already Done when Jules finishes its async
@@ -152,15 +264,19 @@ def create_tasks(
         List of created issue keys
     """
     project_key = extract_project_key(origin_key)
-    high_findings = [f for f in findings if f.severity in ("HIGH", "CRITICAL")]
+    actionable = ("HIGH", "CRITICAL", "MEDIUM")
+    high_findings = [f for f in findings if f.severity in actionable]
 
     if not high_findings:
-        _log("No HIGH/CRITICAL findings — skipping task creation")
+        _log("No HIGH/CRITICAL/MEDIUM findings \u2014 skipping task creation")
         return []
 
     to_create = high_findings[:MAX_TASKS]
     if len(high_findings) > MAX_TASKS:
-        _log(f"Found {len(high_findings)} HIGH findings, capping at {MAX_TASKS} tasks")
+        _log(
+            f"Found {len(high_findings)} actionable findings, "
+            f"capping at {MAX_TASKS} tasks"
+        )
 
     created_keys: list[str] = []
 
@@ -186,19 +302,23 @@ def add_low_findings_as_comment(
     parent_key: str,
     findings: list[Finding],
 ) -> bool:
-    """Add LOW/MEDIUM findings as a comment on the parent ticket."""
-    low_medium = [f for f in findings if f.severity in ("LOW", "MEDIUM")]
+    """Add LOW findings as a comment on the parent ticket.
 
-    if not low_medium:
+    MEDIUM+ findings are now escalated to standalone Tasks.
+    Only LOW severity stays as comments.
+    """
+    low_findings = [f for f in findings if f.severity == "LOW"]
+
+    if not low_findings:
         return False
 
-    lines = ["Jules review — lower-severity findings:\n"]
-    for f in low_medium:
-        lines.append(f"• [{f.severity}] {f.location} — {f.description}")
+    lines = ["Jules review \u2014 lower-severity findings:\n"]
+    for f in low_findings:
+        lines.append(f"\u2022 [{f.severity}] {f.location} \u2014 {f.description}")
 
     try:
         client.add_comment(parent_key, "\n".join(lines))
-        _log(f"Added {len(low_medium)} LOW/MEDIUM findings as comment on {parent_key}")
+        _log(f"Added {len(low_findings)} LOW findings as comment on {parent_key}")
         return True
     except JiraAPIError as exc:
         _log(f"Failed to add comment: {exc}", "warning")
@@ -211,7 +331,7 @@ def main() -> int:
     pr_number = os.environ.get("PR_NUMBER", "")
 
     if not review_body:
-        _log("JULES_REVIEW_BODY is empty — nothing to process")
+        _log("JULES_REVIEW_BODY is empty \u2014 nothing to process")
         return 0
 
     parent_key = extract_parent_key(head_ref)
@@ -230,11 +350,13 @@ def main() -> int:
         _log("No structured findings found in Jules review")
         return 0
 
-    high_count = sum(1 for f in findings if f.severity in ("HIGH", "CRITICAL"))
-    low_count = sum(1 for f in findings if f.severity in ("LOW", "MEDIUM"))
+    task_count = sum(
+        1 for f in findings if f.severity in ("HIGH", "CRITICAL", "MEDIUM")
+    )
+    low_count = sum(1 for f in findings if f.severity == "LOW")
     _log(
         f"Found {len(findings)} findings: "
-        f"{high_count} HIGH/CRITICAL, {low_count} LOW/MEDIUM"
+        f"{task_count} HIGH/CRITICAL/MEDIUM (\u2192 tasks), {low_count} LOW (\u2192 comment)"
     )
 
     # Initialize Jira client
