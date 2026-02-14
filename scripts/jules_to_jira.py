@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Parse Jules review findings and create standalone Jira tickets.
 
-One-way async push: Jules \u2192 Jira. No AI-to-AI conversation.
-Jira acts as firewall \u2014 Claude picks up tickets via normal Ralph Loop
+One-way async push: Jules → Jira. No AI-to-AI conversation.
+Jira acts as firewall — Claude picks up tickets via normal Ralph Loop
 without knowing Jules created them.
 
 KEY DESIGN: Tickets are standalone Tasks, NOT sub-tasks. This avoids
@@ -13,10 +13,10 @@ the description only.
 Uses only stdlib + local jira_client. No pip install needed in CI.
 
 Environment variables:
-    JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN \u2014 Jira credentials
-    HEAD_REF \u2014 Branch name (e.g., feature/GE-35-description)
-    JULES_REVIEW_BODY \u2014 Full Jules review comment body (from previous step)
-    PR_NUMBER \u2014 PR number for logging
+    JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN — Jira credentials
+    HEAD_REF — Branch name (e.g., feature/GE-35-description)
+    JULES_REVIEW_BODY — Full Jules review comment body (from previous step)
+    PR_NUMBER — PR number for logging
 """
 
 from __future__ import annotations
@@ -38,29 +38,29 @@ from src.sejfa.integrations.jira_client import (
 )
 
 MAX_TASKS = 3
-# Patterns tried in order \u2014 first match wins per line
+# Patterns tried in order — first match wins per line
 SEVERITY_PATTERNS: list[re.Pattern[str]] = [
-    # Original: [SEVERITY] file:line \u2014 description
+    # Original: [SEVERITY] file:line — description
     re.compile(
         r"\[(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
-    # Markdown bold: **SEVERITY** file:line \u2014 description
+    # Markdown bold: **SEVERITY** file:line — description
     re.compile(
         r"\*\*(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\*\*\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
-    # Colon-separated: SEVERITY: file:line \u2014 description
+    # Colon-separated: SEVERITY: file:line — description
     re.compile(
         r"(?P<severity>HIGH|MEDIUM|LOW|CRITICAL):\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
@@ -69,7 +69,7 @@ SEVERITY_PATTERNS: list[re.Pattern[str]] = [
         r"(?:\d+\.\s*|[-*]\s+)"
         r"\[?(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]?\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
@@ -77,7 +77,7 @@ SEVERITY_PATTERNS: list[re.Pattern[str]] = [
     re.compile(
         r"(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\s*[:\]}\s]+\s*"
         r"(?P<location>[\w./]+(?::\d+)?)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
@@ -268,7 +268,7 @@ def create_tasks(
     high_findings = [f for f in findings if f.severity in actionable]
 
     if not high_findings:
-        _log("No HIGH/CRITICAL/MEDIUM findings \u2014 skipping task creation")
+        _log("No HIGH/CRITICAL/MEDIUM findings — skipping task creation")
         return []
 
     to_create = high_findings[:MAX_TASKS]
@@ -312,9 +312,9 @@ def add_low_findings_as_comment(
     if not low_findings:
         return False
 
-    lines = ["Jules review \u2014 lower-severity findings:\n"]
+    lines = ["Jules review — lower-severity findings:\n"]
     for f in low_findings:
-        lines.append(f"\u2022 [{f.severity}] {f.location} \u2014 {f.description}")
+        lines.append(f"• [{f.severity}] {f.location} — {f.description}")
 
     try:
         client.add_comment(parent_key, "\n".join(lines))
@@ -331,7 +331,7 @@ def main() -> int:
     pr_number = os.environ.get("PR_NUMBER", "")
 
     if not review_body:
-        _log("JULES_REVIEW_BODY is empty \u2014 nothing to process")
+        _log("JULES_REVIEW_BODY is empty — nothing to process")
         return 0
 
     parent_key = extract_parent_key(head_ref)
@@ -356,7 +356,8 @@ def main() -> int:
     low_count = sum(1 for f in findings if f.severity == "LOW")
     _log(
         f"Found {len(findings)} findings: "
-        f"{task_count} HIGH/CRITICAL/MEDIUM (\u2192 tasks), {low_count} LOW (\u2192 comment)"
+        f"{task_count} HIGH/CRITICAL/MEDIUM (→ tasks), "
+        f"{low_count} LOW (→ comment)"
     )
 
     # Initialize Jira client
@@ -372,7 +373,7 @@ def main() -> int:
     if created:
         _log(f"Created {len(created)} tasks: {', '.join(created)}")
 
-    # Add LOW/MEDIUM as comment
+    # Add LOW findings as comment (MEDIUM+ escalated to tasks above)
     add_low_findings_as_comment(client, parent_key, findings)
 
     # Write output for downstream steps
