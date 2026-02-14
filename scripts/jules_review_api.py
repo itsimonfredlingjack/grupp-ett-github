@@ -202,7 +202,7 @@ def _extract_structured_findings(
         {"severity": "HIGH", "file": "foo.py", "description": "..."}
     rather than pre-formatted text strings.
 
-    Returns formatted strings: [SEVERITY] location \u2014 description
+    Returns formatted strings: [SEVERITY] location — description
     """
     if _depth > 20:
         return []
@@ -220,13 +220,22 @@ def _extract_structured_findings(
             if key_lower == "severity":
                 sev = val.upper().strip()
             elif key_lower in (
-                "location", "file", "path", "filename",
-                "file_path", "filepath",
+                "location",
+                "file",
+                "path",
+                "filename",
+                "file_path",
+                "filepath",
             ):
                 loc = val.strip()
             elif key_lower in (
-                "description", "message", "detail",
-                "finding", "text", "content", "summary",
+                "description",
+                "message",
+                "detail",
+                "finding",
+                "text",
+                "content",
+                "summary",
             ):
                 desc = val.strip()
 
@@ -237,14 +246,10 @@ def _extract_structured_findings(
         # Recurse into all values regardless
         for val in obj.values():
             if isinstance(val, (dict, list)):
-                results.extend(
-                    _extract_structured_findings(val, _depth=_depth + 1)
-                )
+                results.extend(_extract_structured_findings(val, _depth=_depth + 1))
     elif isinstance(obj, list):
         for item in obj:
-            results.extend(
-                _extract_structured_findings(item, _depth=_depth + 1)
-            )
+            results.extend(_extract_structured_findings(item, _depth=_depth + 1))
 
     return results
 
@@ -336,15 +341,11 @@ def extract_review_text(session: dict) -> str:
                 if isinstance(item, str) and item.strip():
                     step_texts.append(f"- {item.strip()}")
                 elif isinstance(item, dict):
-                    desc = item.get(
-                        "description", item.get("content", "")
-                    )
+                    desc = item.get("description", item.get("content", ""))
                     if desc:
                         step_texts.append(f"- {str(desc).strip()}")
             if step_texts:
-                parts.append(
-                    "**Plan steps:**\n" + "\n".join(step_texts)
-                )
+                parts.append("**Plan steps:**\n" + "\n".join(step_texts))
 
     # Check session-level text fields
     for key in ("response", "output", "result", "summary", "review"):
@@ -354,9 +355,7 @@ def extract_review_text(session: dict) -> str:
 
     # --- Strategy 2b: Deep-search for ANY substantial text ---
     if not parts:
-        all_texts = _deep_find_texts(
-            session, pattern=re.compile(r".{80,}", re.DOTALL)
-        )
+        all_texts = _deep_find_texts(session, pattern=re.compile(r".{80,}", re.DOTALL))
         for text in all_texts:
             if "You are the automated PR reviewer" in text:
                 continue
@@ -366,10 +365,7 @@ def extract_review_text(session: dict) -> str:
 
     # --- Strategy 3: Raw JSON fallback ---
     if not parts:
-        _log(
-            "No structured findings found via any strategy, "
-            "using raw session data"
-        )
+        _log("No structured findings found via any strategy, using raw session data")
         raw = json.dumps(session, indent=2, ensure_ascii=False)
         if len(raw) > 15000:
             raw = raw[:15000] + "\n...(truncated)"
@@ -533,15 +529,11 @@ def main() -> int:
 
     # Extract session ID (API returns "name": "sessions/abc123")
     session_name = session.get("name", "")
-    session_id = (
-        session_name.split("/")[-1] if session_name else session.get("id", "")
-    )
+    session_id = session_name.split("/")[-1] if session_name else session.get("id", "")
     session_url = session.get("url", "")
 
     if not session_id:
-        _log(
-            f"No session ID in response: {json.dumps(session)}", "error"
-        )
+        _log(f"No session ID in response: {json.dumps(session)}", "error")
         body = (
             "\u26a0\ufe0f **Jules Review** \u2014 API returned unexpected response.\n\n"
             f"```json\n{json.dumps(session, indent=2)[:2000]}\n```"

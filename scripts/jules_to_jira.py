@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Parse Jules review findings and create standalone Jira tickets.
 
-One-way async push: Jules \u2192 Jira. No AI-to-AI conversation.
-Jira acts as firewall \u2014 Claude picks up tickets via normal Ralph Loop
+One-way async push: Jules → Jira. No AI-to-AI conversation.
+Jira acts as firewall — Claude picks up tickets via normal Ralph Loop
 without knowing Jules created them.
 
 KEY DESIGN: Tickets are standalone Tasks, NOT sub-tasks. This avoids
@@ -13,10 +13,10 @@ the description only.
 Uses only stdlib + local jira_client. No pip install needed in CI.
 
 Environment variables:
-    JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN \u2014 Jira credentials
-    HEAD_REF \u2014 Branch name (e.g., feature/GE-35-description)
-    JULES_REVIEW_BODY \u2014 Full Jules review comment body (from previous step)
-    PR_NUMBER \u2014 PR number for logging
+    JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN — Jira credentials
+    HEAD_REF — Branch name (e.g., feature/GE-35-description)
+    JULES_REVIEW_BODY — Full Jules review comment body (from previous step)
+    PR_NUMBER — PR number for logging
 """
 
 from __future__ import annotations
@@ -38,29 +38,29 @@ from src.sejfa.integrations.jira_client import (
 )
 
 MAX_TASKS = 3
-# Patterns tried in order \u2014 first match wins per line
+# Patterns tried in order — first match wins per line
 SEVERITY_PATTERNS: list[re.Pattern[str]] = [
-    # Original: [SEVERITY] file:line \u2014 description
+    # Original: [SEVERITY] file:line — description
     re.compile(
         r"\[(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
-    # Markdown bold: **SEVERITY** file:line \u2014 description
+    # Markdown bold: **SEVERITY** file:line — description
     re.compile(
         r"\*\*(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\*\*\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
-    # Colon-separated: SEVERITY: file:line \u2014 description
+    # Colon-separated: SEVERITY: file:line — description
     re.compile(
         r"(?P<severity>HIGH|MEDIUM|LOW|CRITICAL):\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
@@ -69,7 +69,7 @@ SEVERITY_PATTERNS: list[re.Pattern[str]] = [
         r"(?:\d+\.\s*|[-*]\s+)"
         r"\[?(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\]?\s+"
         r"(?P<location>\S+)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
@@ -77,7 +77,7 @@ SEVERITY_PATTERNS: list[re.Pattern[str]] = [
     re.compile(
         r"(?P<severity>HIGH|MEDIUM|LOW|CRITICAL)\s*[:\]}\s]+\s*"
         r"(?P<location>[\w./]+(?::\d+)?)"
-        r"\s*[\u2014\u2013\-:]\s*"
+        r"\s*[—–\-:]\s*"
         r"(?P<description>.+)",
         re.IGNORECASE,
     ),
@@ -86,9 +86,9 @@ TICKET_KEY_PATTERN = re.compile(r"([A-Z]+-\d+)")
 
 # Indicators that review_body is an error/timeout, not actual findings
 _ERROR_INDICATORS = (
-    "\u23f1\ufe0f",  # \u23f1\ufe0f timer emoji (timeout)
-    "\u26a0\ufe0f",  # \u26a0\ufe0f warning emoji (API error)
-    "\u274c",         # \u274c cross emoji (session failed)
+    "\u23f1\ufe0f",  # ⏱️ timer emoji (timeout)
+    "\u26a0\ufe0f",  # ⚠️ warning emoji (API error)
+    "\u274c",  # ❌ cross emoji (session failed)
     "timed out",
     "Session timed out",
     "Failed to create",
@@ -111,9 +111,7 @@ class Finding:
         """Generate Jira-friendly summary (max 255 chars)."""
         return f"[Jules/{self.severity}] {self.location}: {self.description}"[:255]
 
-    def body(
-        self, origin_key: str | None = None, pr_number: str = ""
-    ) -> str:
+    def body(self, origin_key: str | None = None, pr_number: str = "") -> str:
         """Generate description body for Jira ticket."""
         lines = [
             f"Severity: {self.severity}",
@@ -140,7 +138,7 @@ def _is_error_or_timeout(text: str) -> bool:
     """Check if review body is an error/timeout message, not findings.
 
     Checks only the first 5 lines to avoid false positives from
-    findings that happen to contain words like \"failed\".
+    findings that happen to contain words like "failed".
     """
     first_lines = "\n".join(text.splitlines()[:5])
     return any(indicator in first_lines for indicator in _ERROR_INDICATORS)
@@ -150,7 +148,7 @@ def _strip_review_wrapper(text: str) -> str:
     """Strip format_review_body() header/footer wrapper if present.
 
     The review_body from jules_review_api.py is wrapped with:
-        ## \U0001f50d Jules Code Review\\n\\n{content}\\n\\n---\\n*footer*
+        ## 🔍 Jules Code Review\\n\\n{content}\\n\\n---\\n*footer*
     This function extracts just the content portion.
     """
     if "Jules Code Review" not in text:
@@ -216,13 +214,22 @@ def _try_parse_json_findings(review_body: str) -> list[Finding]:
                 if key_lower == "severity" and isinstance(val, str):
                     sev = val.upper()
                 elif key_lower in (
-                    "location", "file", "path",
-                    "filename", "file_path", "filepath",
+                    "location",
+                    "file",
+                    "path",
+                    "filename",
+                    "file_path",
+                    "filepath",
                 ) and isinstance(val, str):
                     loc = val
                 elif key_lower in (
-                    "description", "message", "detail",
-                    "finding", "text", "content", "summary",
+                    "description",
+                    "message",
+                    "detail",
+                    "finding",
+                    "text",
+                    "content",
+                    "summary",
                 ) and isinstance(val, str):
                     desc = val
                 elif isinstance(val, (dict, list)):
@@ -319,7 +326,7 @@ def create_tasks(
     high_findings = [f for f in findings if f.severity in actionable]
 
     if not high_findings:
-        _log("No HIGH/CRITICAL/MEDIUM findings \u2014 skipping task creation")
+        _log("No HIGH/CRITICAL/MEDIUM findings — skipping task creation")
         return []
 
     to_create = high_findings[:MAX_TASKS]
@@ -363,16 +370,13 @@ def add_low_findings_as_comment(
     if not low_findings:
         return False
 
-    lines = ["Jules review \u2014 lower-severity findings:\n"]
+    lines = ["Jules review — lower-severity findings:\n"]
     for f in low_findings:
         lines.append(f"\u2022 [{f.severity}] {f.location} \u2014 {f.description}")
 
     try:
         client.add_comment(parent_key, "\n".join(lines))
-        _log(
-            f"Added {len(low_findings)} LOW findings as comment "
-            f"on {parent_key}"
-        )
+        _log(f"Added {len(low_findings)} LOW findings as comment on {parent_key}")
         return True
     except JiraAPIError as exc:
         _log(f"Failed to add comment: {exc}", "warning")
@@ -385,13 +389,13 @@ def main() -> int:
     pr_number = os.environ.get("PR_NUMBER", "")
 
     if not review_body:
-        _log("JULES_REVIEW_BODY is empty \u2014 nothing to process")
+        _log("JULES_REVIEW_BODY is empty — nothing to process")
         return 0
 
     # Early exit: detect timeout/error messages from jules_review_api.py
     if _is_error_or_timeout(review_body):
         _log(
-            "Review body is a timeout/error message, not findings \u2014 "
+            "Review body is a timeout/error message, not findings — "
             "skipping Jira processing"
         )
         _log(f"First 200 chars: {review_body[:200]}")
