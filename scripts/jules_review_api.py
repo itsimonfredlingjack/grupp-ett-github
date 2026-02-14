@@ -21,7 +21,10 @@ JULES_API_BASE = "https://jules.googleapis.com/v1alpha"
 POLL_INTERVAL_SEC = 15
 MAX_POLL_SEC = 540  # 9 min (workflow timeout is 20 min)
 REQUEST_TIMEOUT_SEC = 30
-SEVERITY_RE = re.compile(r"\[(?:HIGH|MEDIUM|LOW|CRITICAL)\]", re.IGNORECASE)
+SEVERITY_RE = re.compile(
+    r"(?:\[|\*\*)?(?:HIGH|MEDIUM|LOW|CRITICAL)(?:\]|\*\*)?(?:\s|[:\-\u2014]|$)",
+    re.IGNORECASE | re.MULTILINE,
+)
 # Keys that contain the prompt/config, NOT findings — skip during deep search
 _SKIP_KEYS = frozenset({"title", "prompt", "sourceContext", "automationMode"})
 
@@ -285,8 +288,8 @@ def format_review_body(
     footer = (
         f"\n\n---\n"
         f"*Automated review via Jules API (session: `{session_id}`)*"
-        f"{' | ' + link if link else ''}\n"
-        f"*Mode: `api_direct_review_comment` — no PRs created*"
+        f"{'  | ' + link if link else ''}\n"
+        f"*Mode: `api_direct_review_comment` \u2014 no PRs created*"
     )
 
     max_body = 60000

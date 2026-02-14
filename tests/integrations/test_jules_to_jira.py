@@ -1,4 +1,4 @@
-"""Tests for jules_to_jira.py — parsing and standalone task creation."""
+"""Tests for jules_to_jira.py \u2014 parsing and standalone task creation."""
 
 from unittest.mock import MagicMock
 
@@ -18,7 +18,7 @@ class TestParseFindingsUnit:
     """Unit tests for finding parser."""
 
     def test_parse_high_severity(self) -> None:
-        body = "[HIGH] app.py:42 — SQL injection risk in query builder"
+        body = "[HIGH] app.py:42 \u2014 SQL injection risk in query builder"
         findings = parse_findings(body)
 
         assert len(findings) == 1
@@ -29,10 +29,10 @@ class TestParseFindingsUnit:
     def test_parse_multiple_severities(self) -> None:
         body = (
             "## Jules Review\n\n"
-            "[HIGH] auth.py:10 — Missing input validation\n"
-            "[MEDIUM] utils.py:5 — Unused import\n"
-            "[LOW] README.md:1 — Typo in heading\n"
-            "[CRITICAL] db.py:99 — Hardcoded credentials\n"
+            "[HIGH] auth.py:10 \u2014 Missing input validation\n"
+            "[MEDIUM] utils.py:5 \u2014 Unused import\n"
+            "[LOW] README.md:1 \u2014 Typo in heading\n"
+            "[CRITICAL] db.py:99 \u2014 Hardcoded credentials\n"
         )
         findings = parse_findings(body)
 
@@ -47,7 +47,7 @@ class TestParseFindingsUnit:
         assert findings == []
 
     def test_parse_with_dash_separator(self) -> None:
-        """Should handle both em-dash (—) and regular dash (-)."""
+        """Should handle both em-dash (\u2014) and regular dash (-)."""
         body = "[HIGH] main.py:1 - Missing error handling"
         findings = parse_findings(body)
 
@@ -55,7 +55,7 @@ class TestParseFindingsUnit:
         assert "Missing error handling" in findings[0].description
 
     def test_parse_with_en_dash(self) -> None:
-        body = "[MEDIUM] route.py:55 – Potential race condition"
+        body = "[MEDIUM] route.py:55 \u2013 Potential race condition"
         findings = parse_findings(body)
 
         assert len(findings) == 1
@@ -137,7 +137,8 @@ class TestCreateTasks:
         client.create_issue.return_value = MagicMock(key="GE-200")
         return client
 
-    def test_creates_only_high_findings(self, mock_client: MagicMock) -> None:
+    def test_creates_actionable_findings(self, mock_client: MagicMock) -> None:
+        """HIGH, CRITICAL, and MEDIUM create tasks; LOW does not."""
         findings = [
             Finding("HIGH", "a.py:1", "Critical bug"),
             Finding("LOW", "b.py:2", "Minor issue"),
@@ -146,8 +147,8 @@ class TestCreateTasks:
 
         keys = create_tasks(mock_client, "GE-35", findings)
 
-        assert len(keys) == 1
-        mock_client.create_issue.assert_called_once()
+        assert len(keys) == 2
+        assert mock_client.create_issue.call_count == 2
         call_kwargs = mock_client.create_issue.call_args.kwargs
         assert call_kwargs["issue_type"] == "Task"
         assert "parent_key" not in call_kwargs
@@ -176,10 +177,11 @@ class TestCreateTasks:
 
         assert len(keys) == 1
 
-    def test_no_high_findings_skips(self, mock_client: MagicMock) -> None:
+    def test_no_actionable_findings_skips(self, mock_client: MagicMock) -> None:
+        """Only LOW findings \u2192 no tasks created."""
         findings = [
             Finding("LOW", "a.py:1", "Minor"),
-            Finding("MEDIUM", "b.py:2", "Moderate"),
+            Finding("LOW", "b.py:2", "Also minor"),
         ]
 
         keys = create_tasks(mock_client, "GE-35", findings)
@@ -210,12 +212,14 @@ class TestCreateTasks:
 class TestAddLowFindingsAsComment:
     """Tests for low-severity comment posting."""
 
-    def test_adds_comment_for_low_medium(self) -> None:
+    def test_adds_comment_for_low_only(self) -> None:
+        """Only LOW findings go to comments; MEDIUM+ are escalated to tasks."""
         client = MagicMock()
         findings = [
             Finding("LOW", "a.py:1", "Minor"),
-            Finding("MEDIUM", "b.py:2", "Moderate"),
-            Finding("HIGH", "c.py:3", "Should be ignored"),
+            Finding("LOW", "b.py:2", "Also minor"),
+            Finding("MEDIUM", "c.py:3", "Escalated to task"),
+            Finding("HIGH", "d.py:4", "Also escalated"),
         ]
 
         result = add_low_findings_as_comment(client, "GE-35", findings)
@@ -224,12 +228,17 @@ class TestAddLowFindingsAsComment:
         client.add_comment.assert_called_once()
         comment_body = client.add_comment.call_args[0][1]
         assert "Minor" in comment_body
-        assert "Moderate" in comment_body
-        assert "Should be ignored" not in comment_body
+        assert "Also minor" in comment_body
+        assert "Escalated to task" not in comment_body
+        assert "Also escalated" not in comment_body
 
-    def test_skips_if_no_low_medium(self) -> None:
+    def test_skips_if_no_low_findings(self) -> None:
+        """No LOW findings \u2192 no comment posted."""
         client = MagicMock()
-        findings = [Finding("HIGH", "a.py:1", "Only high")]
+        findings = [
+            Finding("HIGH", "a.py:1", "Only high"),
+            Finding("MEDIUM", "b.py:2", "Only medium"),
+        ]
 
         result = add_low_findings_as_comment(client, "GE-35", findings)
 
