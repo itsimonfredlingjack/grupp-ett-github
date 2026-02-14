@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import time
 import urllib.error
@@ -20,6 +21,9 @@ JULES_API_BASE = "https://jules.googleapis.com/v1alpha"
 POLL_INTERVAL_SEC = 15
 MAX_POLL_SEC = 540  # 9 min (workflow timeout is 20 min)
 REQUEST_TIMEOUT_SEC = 30
+SEVERITY_RE = re.compile(r"\[(?:HIGH|MEDIUM|LOW|CRITICAL)\]", re.IGNORECASE)
+# Keys that contain the prompt/config, NOT findings — skip during deep search
+_SKIP_KEYS = frozenset({"title", "prompt", "sourceContext", "automationMode"})
 
 
 def _log(msg: str, level: str = "notice") -> None:
@@ -133,9 +137,75 @@ def poll_session(api_key: str, session_name: str) -> dict | None:
     return None
 
 
+def _deep_find_texts(
+    obj: object,
+    *,
+    skip_keys: frozenset[str] = _SKIP_KEYS,
+    pattern: re.Pattern[str] = SEVERITY_RE,
+    _depth: int = 0,
+) -> list[str]:
+    """Recursively walk a JSON structure and collect strings matching *pattern*.
+
+    Skips keys in *skip_keys* (prompt/title contain the instruction, not findings).
+    Returns de-duplicated list of matching strings, longest first.
+    """
+    if _depth > 20:
+        return []
+
+    hits: list[str] = []
+
+    if isinstance(obj, str):
+        if pattern.search(obj):
+            hits.append(obj.strip())
+    elif isinstance(obj, dict):
+        for key, val in obj.items():
+            if key in skip_keys:
+                continue
+            hits.extend(
+                _deep_find_texts(
+                    val, skip_keys=skip_keys, pattern=pattern, _depth=_depth + 1
+                )
+            )
+    elif isinstance(obj, list):
+        for item in obj:
+            hits.extend(
+                _deep_find_texts(
+                    item, skip_keys=skip_keys, pattern=pattern, _depth=_depth + 1
+                )
+            )
+
+    # De-duplicate preserving order, longest first
+    if _depth == 0:
+        seen: set[str] = set()
+        unique: list[str] = []
+        for text in sorted(hits, key=len, reverse=True):
+            if text not in seen:
+                seen.add(text)
+                unique.append(text)
+        return unique
+
+    return hits
+
+
 def extract_review_text(session: dict) -> str:
-    """Extract readable review text from completed session response."""
+    """Extract readable review text from completed session response.
+
+    Strategy (in priority order):
+    1. Deep-search the entire session for strings containing [SEVERITY] markers
+    2. Check known structured fields (outputs, plan, response, etc.)
+    3. Fallback: dump raw JSON (increased limit for debugging)
+    """
+    _log(f"Session response keys: {sorted(session.keys())}")
     parts: list[str] = []
+
+    # --- Strategy 1: Deep recursive search for severity-tagged findings ---
+    severity_texts = _deep_find_texts(session)
+    if severity_texts:
+        _log(f"Found {len(severity_texts)} text blocks with severity markers")
+        parts.extend(severity_texts)
+        return "\n\n".join(parts)
+
+    # --- Strategy 2: Check known structured fields ---
 
     # Check outputs array (completed sessions have this)
     outputs = session.get("outputs", [])
@@ -181,11 +251,24 @@ def extract_review_text(session: dict) -> str:
         if val and isinstance(val, str) and val.strip():
             parts.append(val.strip())
 
+    # --- Strategy 2b: Deep-search for ANY substantial text (no severity) ---
+    if not parts:
+        # Collect all text blocks > 80 chars that aren't the prompt
+        all_texts = _deep_find_texts(session, pattern=re.compile(r".{80,}", re.DOTALL))
+        # Filter out texts that look like the prompt itself
+        for text in all_texts:
+            if "You are the automated PR reviewer" in text:
+                continue
+            if len(text) > 80:
+                parts.append(text)
+                break  # Take the longest non-prompt text
+
+    # --- Strategy 3: Raw JSON fallback (generous limit for debugging) ---
     if not parts:
         _log("No structured findings found, using raw session data")
         raw = json.dumps(session, indent=2, ensure_ascii=False)
-        if len(raw) > 3000:
-            raw = raw[:3000] + "\n...(truncated)"
+        if len(raw) > 15000:
+            raw = raw[:15000] + "\n...(truncated)"
         parts.append(f"Raw session data:\n```json\n{raw}\n```")
 
     return "\n\n".join(parts)
