@@ -68,3 +68,10 @@ instance/
 .claude/.ralph_loop_active
 .claude/.promise_done
 .claude/reviews/
+
+# FUSE mount artifacts (Cowork sandbox)
+.fuse_hidden*
+**/.fuse_hidden*
+
+# Generated docs
+SEJFA_Changelog.docx
