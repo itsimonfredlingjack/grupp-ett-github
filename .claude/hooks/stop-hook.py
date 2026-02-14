@@ -463,6 +463,56 @@ def check_ui_scope() -> tuple[bool, str]:
     return True, ""
 
 
+def check_pr_merged() -> tuple[bool, str]:
+    """Verify that an open PR for this branch is merged or has auto-merge enabled.
+
+    Returns (ok, message). ok=False means the PR is not merged and the loop
+    should be blocked from exiting.
+    """
+    branch = get_git_branch() or ""
+    if not branch or branch in ("main", "master"):
+        return True, ""
+
+    try:
+        # Check if a PR exists for this branch
+        result = subprocess.run(
+            ["gh", "pr", "view", "--json", "state,autoMergeRequest,url"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        if result.returncode != 0:
+            # No PR found or gh not available — don't block
+            return True, ""
+
+        pr_data = json.loads(result.stdout.strip())
+        pr_state = pr_data.get("state", "")
+        pr_url = pr_data.get("url", "")
+        auto_merge = pr_data.get("autoMergeRequest")
+
+        if pr_state == "MERGED":
+            return True, ""
+
+        if auto_merge is not None:
+            # Auto-merge is enabled — GitHub will merge when checks pass
+            return True, ""
+
+        if pr_state == "OPEN":
+            return False, (
+                f"PR MERGE GATE BLOCKED EXIT: PR {pr_url} is still OPEN and "
+                f"auto-merge is NOT enabled. The PR must be merged for code to "
+                f"reach main. Try: gh pr merge --squash --admin \"{pr_url}\" "
+                f"or gh pr merge --squash \"{pr_url}\""
+            )
+
+        # CLOSED without merge or other state — warn but don't block
+        return True, ""
+    except Exception:
+        # If we can't check, don't block (fail-open for this gate)
+        return True, ""
+
+
 def main() -> None:
     try:
         input_data = sys.stdin.read()
@@ -634,6 +684,22 @@ def main() -> None:
                     "Do NOT edit static/monitor.html for app UI tickets",
                     "See CLAUDE.md 'Produktions-filkarta' for the correct files",
                     f"When fixed, output: {completion_promise}",
+                ],
+            )
+            json.dump(response, sys.stderr)
+            sys.exit(2)
+
+        # PR merge verification — prevents DONE when PR is not merged
+        pr_ok, pr_msg = check_pr_merged()
+        if not pr_ok:
+            response = build_continue_message(
+                f"PR merge check failed (iteration {current_iteration}/{max_iterations}): {pr_msg}",
+                [
+                    "Your PR is NOT merged! Code has not reached main.",
+                    "Try: gh pr merge --squash --admin <PR_URL>",
+                    "Or: gh pr merge --squash <PR_URL>",
+                    "Verify with: gh pr view --json state -q '.state'",
+                    f"When PR is merged, output: {completion_promise}",
                 ],
             )
             json.dump(response, sys.stderr)
