@@ -103,7 +103,7 @@ jobs:
         if: steps.health.outputs.healthy == 'true' && steps.jira.outputs.ticket_id != ''
         env:
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL || secrets.JIRA_EMAIL }}
           JIRA_URL: ${{ secrets.JIRA_URL }}
         run: |
           TICKET="${{ steps.jira.outputs.ticket_id }}"
@@ -154,17 +154,26 @@ jobs:
           if [ -n "$PREVIOUS" ]; then
             echo "Rolling back: activating $PREVIOUS, deactivating $CURRENT"
 
+            set +e
             az containerapp revision activate \
               --name "$APP_NAME" \
               --resource-group "$RG" \
-              --revision "$PREVIOUS" || echo "::warning::Failed to activate $PREVIOUS"
+              --revision "$PREVIOUS"
+            activate_rc=$?
+            set -e
 
-            az containerapp revision deactivate \
-              --name "$APP_NAME" \
-              --resource-group "$RG" \
-              --revision "$CURRENT" || true
+            if [ "$activate_rc" -eq 0 ]; then
+              az containerapp revision deactivate \
+                --name "$APP_NAME" \
+                --resource-group "$RG" \
+                --revision "$CURRENT" || true
 
-            echo "previous=$PREVIOUS" >> "$GITHUB_OUTPUT"
+              echo "previous=$PREVIOUS" >> "$GITHUB_OUTPUT"
+            else
+              echo "::warning::Failed to activate $PREVIOUS (exit ${activate_rc}) — keeping $CURRENT active"
+              echo "previous=none" >> "$GITHUB_OUTPUT"
+            fi
+
           else
             echo "::warning::No previous revision — attempting app restart"
             echo "previous=none" >> "$GITHUB_OUTPUT"
@@ -183,7 +192,7 @@ jobs:
         if: steps.health.outputs.healthy == 'false' && steps.jira.outputs.ticket_id != ''
         env:
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL || secrets.JIRA_EMAIL }}
           JIRA_URL: ${{ secrets.JIRA_URL }}
         run: |
           TICKET="${{ steps.jira.outputs.ticket_id }}"
