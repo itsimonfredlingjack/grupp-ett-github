@@ -1,6 +1,6 @@
 # SEJFA — Final Dokumentation
 
-> **Senast uppdaterad:** 2026-02-15
+> **Senast uppdaterad:** 2026-02-15 (PR #403)
 > **Status:** Produktionsklar
 > **URL:** https://gruppett.fredlingautomation.dev
 
@@ -313,11 +313,17 @@ Noder: `jira`, `claude`, `github`, `jules`, `actions`
 ```
 PR skapas → jules_review.yml triggas → jules_review_api.py
     → Skapar Jules session (review-only, INGEN PR-skapning)
-    → Pollar tills session klar (max 9 min)
-    → Extraherar findings med deep search
+    → Pollar tills session klar (max 12 min / 720s)
+    → Extraherar findings med multi-strategy deep search:
+        1. text-via-key strategy (description/review_text/findings)
+        2. structured JSON extraction (Strategy 1b)
+        3. messages[].content fallback
+        4. session-level text fields
     → Postar review-kommentar på PR
 
 jules_to_jira.py triggas med JULES_REVIEW_BODY
+    → Kontrollerar error/timeout FÖRST (_is_error_or_timeout)
+    → Strippar review-wrapper (format_review_body header/footer)
     → Parsar findings (5 regex-patterns + JSON fallback)
     → HIGH/CRITICAL/MEDIUM → Standalone Jira Tasks (max 3)
     → LOW → Kommentar på parent ticket
@@ -334,9 +340,39 @@ jules_to_jira.py triggas med JULES_REVIEW_BODY
 
 **MEDIUM eskaleras till Tasks** — detta var en kritisk buggfix (PR #400).
 
-### 8.3 Parsing
+### 8.3 Extraction & Parsing
 
-Fem regex-mönster testas i ordning (first match wins):
+#### jules_review_api.py — Review Text Extraction
+
+Fyra strategier i ordning (first match wins):
+
+1. **Strategy 1 (text-via-key):** Söker efter kända nycklar (`description`, `review_text`, `findings`, etc.) i sessions-datan
+2. **Strategy 1b (structured JSON):** `_extract_structured_findings()` walkar JSON-trädet rekursivt (max depth 20) och hittar dicts med `severity` + `description`-nycklar. Formaterar som `[SEVERITY] location — description`
+3. **Strategy 2 (messages):** Extraherar `content` från `messages[]`-array
+4. **Strategy 3 (session text):** Fallback — session-level text-fält
+
+**Strategy 1b detaljer:**
+```python
+# Matchar dicts som ser ut som findings:
+{
+    "severity": "HIGH",           # Required: HIGH/MEDIUM/LOW/CRITICAL
+    "file": "src/app.py",         # Optional: location/file/path/filename/file_path/filepath
+    "description": "SQL injection" # Required: description/message/detail/finding/text/content/summary
+}
+# → Formateras som: [HIGH] src/app.py — SQL injection
+```
+
+#### jules_to_jira.py — Finding Parsing
+
+**Error/Timeout Guard:** Innan parsing körs, kollar `_is_error_or_timeout()` de första 5 raderna efter error-indikatorer:
+- Emoji: `⏰`, `❌`, `⚠️`, `🚨`
+- Text: `"timed out"`, `"timeout"`, `"error"`, `"failed to"`, `"could not"`, `"no findings"`, `"no review"`, `"unavailable"`
+
+Om error detekteras → loggar varning + returnerar tidigt (inga ghost-tickets).
+
+**Review Wrapper Stripping:** `_strip_review_wrapper()` tar bort `format_review_body()` header/footer innan JSON-parsing, så att structured data inte bryts av wrapping-text.
+
+**Fem regex-mönster** testas i ordning (first match wins):
 
 1. `[SEVERITY] file:line — description` (original bracket)
 2. `**SEVERITY** file:line — description` (markdown bold)
@@ -344,15 +380,49 @@ Fem regex-mönster testas i ordning (first match wins):
 4. `N. [SEVERITY] file:line — description` (numbered/bulleted)
 5. `SEVERITY file:line — description` (loose)
 
-Om ingen regex matchar → JSON fallback parser.
+Om ingen regex matchar → **JSON fallback parser** (`_try_parse_json_findings()`) som:
+- Strippar review-wrapper
+- Försöker `json.loads()` direkt
+- Söker efter `[...]` eller `{...}` substring
+- Matchar utökade nycklar: `file`, `filepath`, `file_path`, `path`, `filename`, `location`
 
-### 8.4 Nyckelscripts
+### 8.4 Nyckelscripts & Funktioner
 
 | Script | Funktion |
 |--------|----------|
 | `scripts/jules_review_api.py` | Anropar Jules API, extraherar review-text, postar som PR-kommentar |
 | `scripts/jules_to_jira.py` | Parsar findings → skapar Jira Tasks (HIGH/MEDIUM/CRITICAL) + kommentarer (LOW) |
 | `scripts/jules_payload.py` | Bygger budget-medveten context-payload för Jules |
+
+**Nyckelfunktioner i jules_review_api.py:**
+
+| Funktion | Syfte |
+|----------|-------|
+| `extract_review_text()` | Multi-strategy extraction (4 strategier) |
+| `_extract_structured_findings()` | Strategy 1b — walkar JSON-träd för structured dicts |
+| `_log_session_structure()` | Debug-logging av JSON-nyckelstruktur |
+| `poll_session()` | Pollar Jules session (max 720s / 12 min) |
+| `format_review_body()` | Formaterar review-text till markdown |
+
+**Nyckelfunktioner i jules_to_jira.py:**
+
+| Funktion | Syfte |
+|----------|-------|
+| `_is_error_or_timeout()` | Gate — detekterar error/timeout innan parsing |
+| `_strip_review_wrapper()` | Tar bort format_review_body header/footer |
+| `_try_parse_json_findings()` | JSON fallback med utökad nyckel-matching |
+| `parse_findings()` | 5 regex-patterns + JSON fallback |
+| `create_jira_task()` | Skapar standalone Jira Task (HIGH/MEDIUM/CRITICAL) |
+| `add_jira_comment()` | Lägger till kommentar (LOW findings) |
+
+### 8.5 Pipeline-konfiguration
+
+| Parameter | Värde | Beskrivning |
+|-----------|-------|-------------|
+| `MAX_POLL_SEC` | 720 (12 min) | Max väntetid på Jules session |
+| `MAX_JIRA_TICKETS` | 3 | Max antal tickets per review |
+| `SEVERITY_RE` | `HIGH\|MEDIUM\|LOW\|CRITICAL` | Regex för severity-matching |
+| Workflow timeout | 20 min | GitHub Actions timeout |
 
 ---
 
@@ -434,8 +504,8 @@ Kör lint + test med Python 3.12 (ingen fullmatris).
 
 **Trigger:** PR skapad/uppdaterad
 
-1. Kör `jules_review_api.py` — skapar Jules session, pollar, postar review
-2. Kör `jules_to_jira.py` — parsar findings, skapar Jira-tickets
+1. Kör `jules_review_api.py` — skapar Jules session, pollar (max 12 min), postar review
+2. Kör `jules_to_jira.py` — error guard → parsar findings → skapar Jira-tickets
 
 ### 10.5 Övriga workflows
 
@@ -677,3 +747,13 @@ issue = client.get_issue('GE-XXX')
 print(f'{issue.key}: {issue.summary}')
 "
 ```
+
+---
+
+## 19. Ändringslogg
+
+| PR | Datum | Beskrivning |
+|----|-------|-------------|
+| #400 | 2026-02-14 | Fix: SEVERITY_RE broadened, multiple parse patterns + JSON fallback, MEDIUM→Task eskalering, CI branch workflow |
+| #402 | 2026-02-14 | Docs: Städade 9 outdated doc-filer, skapade FINAL_DOCUMENTATION.md |
+| #403 | 2026-02-15 | Fix: Structured JSON extraction (Strategy 1b), error/timeout guard, MAX_POLL_SEC 540→720, review wrapper stripping |
