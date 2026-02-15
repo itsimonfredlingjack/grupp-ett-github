@@ -136,46 +136,70 @@ echo "Created PR: ${pr_url}"
 **FORBJUDET:**
 - `gh pr checks --watch` (blockerar oandligt)
 - `sleep 30` i manuella loopar (brannen context)
+- Vanta pa `jules-review` (ska vara async/informational, INTE merge-gate)
 - Separata `gh pr merge` kommandon (kora blocket nedan som ETT kommando)
 
 **Kopiera och kor detta EXAKT som ett Bash-kommando (byt ut `${pr_url}`):**
 
 ```bash
 PR_URL="${pr_url}" && \
-echo "=== MERGE ATTEMPT ===" && \
-if gh pr merge --squash --auto "${PR_URL}" 2>/dev/null; then
-  echo "✅ Auto-merge enabled"
-else
-  echo "⚠️ Auto-merge unavailable, trying --admin with retries..."
-  MERGED=false
-  for i in 1 2 3 4; do
-    echo "Attempt ${i}/4: waiting 15s for CI..."
-    sleep 15
-    if gh pr merge --squash --admin "${PR_URL}" 2>/dev/null; then
-      echo "✅ PR merged with --admin (attempt ${i})"
-      MERGED=true
-      break
-    fi
-  done
-  if [ "${MERGED}" = false ]; then
-    echo "⚠️ --admin failed, trying direct --squash..."
-    if gh pr merge --squash "${PR_URL}" 2>/dev/null; then
-      echo "✅ PR merged directly"
-      MERGED=true
-    else
-      echo "❌ ALL MERGE ATTEMPTS FAILED — DO NOT SAY DONE"
-    fi
+echo "=== WAIT FOR REQUIRED CHECKS (excludes jules-review) ===" && \
+for i in {1..30}; do
+  gh pr checks --required "${PR_URL}" && break
+  code=$?
+  if [ "${code}" -eq 8 ]; then
+    echo "⏳ Required checks pending (attempt ${i}/30). Sleeping 10s..."
+    sleep 10
+    continue
   fi
+  echo "❌ Required checks failed (exit ${code}). DO NOT MERGE."
+  exit 1
+done && \
+echo "=== WAIT FOR CI Branch CHECK (recommended; also excludes jules-review) ===" && \
+for i in {1..30}; do
+  state="$(gh pr checks "${PR_URL}" --json bucket,workflow --jq \
+    '[.[] | select(.workflow == \"CI Branch\") | .bucket][0] // \"missing\"' \
+    2>/dev/null)"
+  code=$?
+  if [ "${code}" -ne 0 ] && [ -z "${state}" ]; then
+    state="unknown"
+  fi
+  if [ "${state}" = "missing" ]; then
+    echo "ℹ️ CI Branch check not present on this PR; skipping."
+    break
+  fi
+  if [ "${state}" = "pass" ]; then
+    echo "✅ CI Branch passed"
+    break
+  fi
+  if [ "${state}" = "pending" ]; then
+    echo "⏳ CI Branch pending (attempt ${i}/30). Sleeping 10s..."
+    sleep 10
+    continue
+  fi
+  echo "❌ CI Branch not passing (state=${state}). DO NOT MERGE."
+  gh pr checks "${PR_URL}" --json name,bucket,workflow --jq \
+    '.[] | select(.workflow == \"CI Branch\")' || true
+  exit 1
+done && \
+echo "=== MERGE ATTEMPT ===" && \
+if gh pr merge --squash --admin "${PR_URL}" 2>/dev/null; then
+  echo "✅ PR merged with --admin"
+elif gh pr merge --squash "${PR_URL}" 2>/dev/null; then
+  echo "✅ PR merged"
+else
+  echo "❌ Merge failed — DO NOT SAY DONE"
+  exit 1
 fi && \
 echo "=== VERIFY ===" && \
 gh pr view "${PR_URL}" --json state,mergedAt -q '{state: .state, mergedAt: .mergedAt}'
 ```
 
 **Regler:**
-- Max vantetid: 4 retries × 15s = 60s (INTE mer)
+- Max vantetid: 30 retries × 10s = 300s (5 min) for CI (INTE mer)
 - Om alla misslyckas → **DO NOT output `<promise>DONE</promise>`**
-- Auto-merge = GitHub merger nar checks passar, du FAR fortsatta till Step 8
-- Direkt merge = PR ar mergad, fortsatt till Step 8
+- Jules Review ska INTE blocka merge eller skapa CLI-vantan
+- Nar merge lyckas: fortsatt till Step 8
 - Verifiera ALLTID med `gh pr view --json state` efterat
 
 ### Step 8: Update Jira
