@@ -15,6 +15,7 @@ import re
 import subprocess
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 JULES_API_BASE = "https://jules.googleapis.com/v1alpha"
@@ -109,6 +110,123 @@ def create_session(
         },
         api_key=api_key,
     )
+
+
+def _normalize_session_path(session_name: str) -> str:
+    name = session_name.strip()
+    if name.startswith("/"):
+        name = name[1:]
+    if name.startswith("sessions/"):
+        return name
+    return f"sessions/{name}"
+
+
+def list_activities(
+    api_key: str,
+    session_name: str,
+    *,
+    page_size: int = 100,
+    max_pages: int = 10,
+) -> list[dict]:
+    """List activities for a Jules session.
+
+    Jules often puts the agent's actual message content under:
+      /sessions/{id}/activities -> activities[].agentMessaged.agentMessage
+    """
+    session_path = _normalize_session_path(session_name)
+    all_activities: list[dict] = []
+    page_token = ""
+
+    for page in range(max_pages):
+        params: dict[str, str] = {"pageSize": str(page_size)}
+        if page_token:
+            params["pageToken"] = page_token
+        query = urllib.parse.urlencode(params)
+        resp = _jules_request(
+            f"/{session_path}/activities?{query}",
+            api_key=api_key,
+        )
+
+        batch = resp.get("activities", [])
+        if isinstance(batch, list):
+            all_activities.extend([item for item in batch if isinstance(item, dict)])
+
+        token = resp.get("nextPageToken", "")
+        if not isinstance(token, str) or not token.strip():
+            break
+
+        page_token = token.strip()
+        _log(f"Activities pagination: fetching page {page + 2}", "notice")
+
+    return all_activities
+
+
+def _collect_texts(obj: object, *, _depth: int = 0) -> list[str]:
+    if _depth > 20:
+        return []
+    if isinstance(obj, str):
+        return [obj]
+    if isinstance(obj, dict):
+        texts: list[str] = []
+        for val in obj.values():
+            texts.extend(_collect_texts(val, _depth=_depth + 1))
+        return texts
+    if isinstance(obj, list):
+        texts = []
+        for item in obj:
+            texts.extend(_collect_texts(item, _depth=_depth + 1))
+        return texts
+    return []
+
+
+def extract_agent_messages(activities: list[dict]) -> list[str]:
+    """Extract agent message strings from session activities."""
+    messages: list[str] = []
+
+    for activity in activities:
+        agent = activity.get("agentMessaged")
+        if not isinstance(agent, dict):
+            continue
+
+        msg_obj = agent.get("agentMessage")
+        if msg_obj is None:
+            continue
+
+        candidates: list[str] = []
+        if isinstance(msg_obj, str):
+            candidates = [msg_obj]
+        elif isinstance(msg_obj, dict):
+            for key in ("content", "text", "message", "body", "markdown"):
+                val = msg_obj.get(key)
+                if isinstance(val, str) and val.strip():
+                    candidates = [val]
+                    break
+            if not candidates:
+                candidates = _collect_texts(msg_obj)
+        else:
+            candidates = _collect_texts(msg_obj)
+
+        for text in candidates:
+            cleaned = text.strip()
+            if cleaned:
+                messages.append(cleaned)
+
+    return messages
+
+
+def _severity_count(text: str) -> int:
+    return len(SEVERITY_RE.findall(text))
+
+
+def select_best_agent_message(messages: list[str]) -> str | None:
+    if not messages:
+        return None
+
+    severity_messages = [m for m in messages if SEVERITY_RE.search(m)]
+    if severity_messages:
+        return max(severity_messages, key=lambda m: (_severity_count(m), len(m)))
+
+    return messages[-1]
 
 
 def poll_session(api_key: str, session_name: str) -> dict | None:
@@ -285,8 +403,14 @@ def extract_review_text(session: dict) -> str:
     1b. Extract structured finding objects (dicts with severity key)
     2.  Check known structured fields (outputs, plan, response, etc.)
     2b. Deep-search for ANY substantial text (no severity filter)
-    3.  Fallback: dump raw JSON
+    3.  Fallback: short message (raw JSON only when JULES_DEBUG=1)
     """
+    debug_enabled = os.environ.get("JULES_DEBUG", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     _log(f"Session response keys: {sorted(session.keys())}")
     _log_session_structure(session)
     parts: list[str] = []
@@ -365,11 +489,15 @@ def extract_review_text(session: dict) -> str:
 
     # --- Strategy 3: Raw JSON fallback ---
     if not parts:
-        _log("No structured findings found via any strategy, using raw session data")
-        raw = json.dumps(session, indent=2, ensure_ascii=False)
-        if len(raw) > 15000:
-            raw = raw[:15000] + "\n...(truncated)"
-        parts.append(f"Raw session data:\n```json\n{raw}\n```")
+        parts.append(
+            "Jules session completed, but no findings/review text could be extracted "
+            "from the session response."
+        )
+        if debug_enabled:
+            raw = json.dumps(session, indent=2, ensure_ascii=False)
+            if len(raw) > 15000:
+                raw = raw[:15000] + "\n...(truncated)"
+            parts.append(f"Debug raw session data:\n```json\n{raw}\n```")
 
     return "\n\n".join(parts)
 
@@ -583,7 +711,33 @@ def main() -> int:
 
     # Step 3: Extract findings from session response
     _log("Extracting review findings...")
-    review_text = extract_review_text(final_session)
+    review_text = ""
+    agent_messages: list[str] = []
+    try:
+        activities = list_activities(api_key, final_session.get("name", session_id))
+        agent_messages = extract_agent_messages(activities)
+        selected = select_best_agent_message(agent_messages)
+        if selected:
+            review_text = selected
+        else:
+            _log(
+                "No agent messages found in session activities; falling back to "
+                "session response parsing",
+                "warning",
+            )
+    except Exception as exc:
+        _log(f"Failed to fetch activities: {exc}", "warning")
+
+    if not review_text.strip():
+        review_text = extract_review_text(final_session)
+        if (
+            not agent_messages
+            and "no findings/review text could be extracted" in review_text.lower()
+        ):
+            review_text = (
+                "Jules session completed, but no agent message was found in "
+                "`activities` and no findings could be extracted from the session."
+            )
     review_body = format_review_body(review_text, session_id, session_url)
 
     if not head_sha:
