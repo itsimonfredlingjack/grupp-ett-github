@@ -309,6 +309,40 @@ def _deep_find_texts(
     return hits
 
 
+_UNIFIED_DIFF_HEADER = "diff --git"
+_DIFF_FINDING_RE = re.compile(
+    r"^(?:\[|\*\*)?(HIGH|MEDIUM|LOW|CRITICAL)",
+    re.IGNORECASE,
+)
+_MAX_DIFF_FINDINGS = 50
+
+
+def _extract_added_lines_from_unified_diff(text: str) -> list[str]:
+    stripped = text.lstrip()
+    if not stripped.startswith(_UNIFIED_DIFF_HEADER):
+        return []
+
+    added: list[str] = []
+    for line in stripped.splitlines():
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        content = line[1:].strip()
+        if content:
+            added.append(content)
+    return added
+
+
+def _extract_diff_findings(text: str) -> list[str]:
+    added = _extract_added_lines_from_unified_diff(text)
+    findings: list[str] = []
+    for line in added:
+        if _DIFF_FINDING_RE.match(line):
+            findings.append(line)
+        if len(findings) >= _MAX_DIFF_FINDINGS:
+            break
+    return findings
+
+
 def _extract_structured_findings(
     obj: object,
     *,
@@ -419,8 +453,19 @@ def extract_review_text(session: dict) -> str:
     severity_texts = _deep_find_texts(session)
     if severity_texts:
         _log(f"Found {len(severity_texts)} text blocks with severity markers")
-        parts.extend(severity_texts)
-        return "\n\n".join(parts)
+        non_diff = [
+            t for t in severity_texts if not t.lstrip().startswith(_UNIFIED_DIFF_HEADER)
+        ]
+        if non_diff:
+            parts.extend(non_diff)
+            return "\n\n".join(parts)
+
+        diff_findings: list[str] = []
+        for text in severity_texts:
+            diff_findings.extend(_extract_diff_findings(text))
+        if diff_findings:
+            _log(f"Extracted {len(diff_findings)} findings from unified diff output")
+            return "\n".join(diff_findings)
 
     # --- Strategy 1b: Extract structured finding objects ---
     structured = _extract_structured_findings(session)
@@ -439,6 +484,18 @@ def extract_review_text(session: dict) -> str:
         for output in outputs:
             if not isinstance(output, dict):
                 continue
+            change_set = output.get("changeSet")
+            if isinstance(change_set, dict):
+                diff_texts = _deep_find_texts(
+                    change_set,
+                    pattern=re.compile(r"^diff --git", re.MULTILINE),
+                )
+                findings: list[str] = []
+                for diff_text in diff_texts:
+                    findings.extend(_extract_diff_findings(diff_text))
+                if findings:
+                    _log(f"Extracted {len(findings)} findings from outputs[].changeSet")
+                    return "\n".join(findings)
             pr_info = output.get("pullRequest", {})
             if isinstance(pr_info, dict) and pr_info:
                 title = pr_info.get("title", "")
@@ -481,6 +538,8 @@ def extract_review_text(session: dict) -> str:
     if not parts:
         all_texts = _deep_find_texts(session, pattern=re.compile(r".{80,}", re.DOTALL))
         for text in all_texts:
+            if text.lstrip().startswith(_UNIFIED_DIFF_HEADER):
+                continue
             if "You are the automated PR reviewer" in text:
                 continue
             if len(text) > 80:
