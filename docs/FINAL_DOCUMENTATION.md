@@ -740,7 +740,7 @@ gh pr create --title "GE-XXX: Titel" --body "Beskrivning"
 
 # Kolla Jira-ticket
 source venv/bin/activate && python3 -c "
-from dotenv import load_dotenv; load_dotenv()
+from dotenv import load_dotenv; load_dotenv(dotenv_path='.env')
 from src.sejfa.integrations.jira_client import get_jira_client
 client = get_jira_client()
 issue = client.get_issue('GE-XXX')
