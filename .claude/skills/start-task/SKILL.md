@@ -386,7 +386,7 @@ You can only output that promise when ALL of these are true:
 - No linting errors: `source venv/bin/activate && ruff check .`
 - Changes committed and pushed
 - PR created via `gh pr create`
-- **PR merged** (try `--auto`, fallback to `--admin`, then direct merge)
+- **PR merged** (auto-merge is disabled in this repo; merge after required CI checks pass; do NOT wait for `jules-review`)
 - Jira updated
 
 **DO NOT STOP AFTER THIS MESSAGE. START WORKING IMMEDIATELY.**
@@ -423,11 +423,18 @@ This exact format is detected by the stop-hook. Any deviation and exit will be b
 4. [ ] Changes committed
 5. [ ] Branch pushed to remote
 6. [ ] PR created
-7. [ ] **PR merged or auto-merge enabled** (try `--auto`, fallback `--admin`, then direct)
+7. [ ] **PR merged** (auto-merge is disabled; merge after required CI checks pass; do NOT wait for `jules-review`)
 8. [ ] **Verified:** `gh pr view --json state -q '.state'` returns `MERGED`
 9. [ ] Jira status updated
 
-**⚠️ PR MERGE IS MANDATORY. If the PR is not merged, code never reaches main, deploy never triggers, and the task is NOT done. Try `gh pr merge --squash --auto`, if that fails use `--admin`, if that fails use direct `--squash`. Do NOT use `gh pr checks --watch` (it blocks indefinitely).**
+**⚠️ PR MERGE IS MANDATORY. If the PR is not merged, code never reaches main, deploy never triggers, and the task is NOT done.**
+
+**Rules:**
+- Auto-merge is disabled in this repo (do NOT use `gh pr merge --auto`)
+- Do NOT wait for `jules-review` (async/informational)
+- Wait only for required checks: `gh pr checks --required <PR_URL>`
+- Then merge: `gh pr merge --squash --admin <PR_URL>` (fallback: `gh pr merge --squash <PR_URL>`)
+- Do NOT use `gh pr checks --watch` (it blocks indefinitely).
 
 Only then output the promise on its own line.
 
@@ -456,7 +463,7 @@ After Step 10, you are IN the Ralph Loop. You do NOT stop. You IMMEDIATELY:
    b. Commit all changes
    c. Push branch to remote
    d. Create PR via `gh pr create`
-   e. **Merge PR:** Try `gh pr merge --squash --auto`, fallback `--admin`, then direct `--squash`
+   e. **Merge PR:** Wait for required checks (`gh pr checks --required <PR_URL>`) then `gh pr merge --squash --admin <PR_URL>` (fallback: `gh pr merge --squash <PR_URL>`)
    f. **Verify merge:** `gh pr view --json state -q '.state'` must return `MERGED`
    g. Update Jira status
    h. Output `<promise>DONE</promise>`
