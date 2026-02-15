@@ -6,18 +6,17 @@
     <title>{% block title %}News Flash{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Candy Pastel Colors */
-            --clay-pink: #FFB3D9;
-            --clay-purple: #D4A5F9;
-            --clay-mint: #B8F3D8;
-            --clay-blue: #A8D8FF;
-            --clay-yellow: #FFF4A3;
-            --clay-cream: #FFF0F5;
-            --clay-text: #4a4a4a;
-            --clay-text-dark: #6b46c1;
+            /* Government Terminal 2026 - Myndighets-Terminal Colors */
+            --terminal-primary: #2C2C2C;        /* Mörk asfalt - headers, sidebars */
+            --terminal-secondary: #E8DCC4;      /* Institutional Beige - background */
+            --terminal-accent: #C41E3A;         /* Swedish Flag Red - errors, warnings */
+            --terminal-text: #1A1A1A;           /* Nästan svart */
+            --terminal-border: #8B7355;         /* Brun arkivkartong-färg */
+            --terminal-success: #004B87;        /* Swedish Flag Blue - completed ops */
+            --terminal-white: #FFFFFF;          /* Vit text på mörk bakgrund */
         }
 
         * {
@@ -28,12 +27,12 @@
 
         body {
             min-height: 100vh;
-            font-family: 'Nunito', sans-serif;
-            background: var(--clay-cream);
-            color: var(--clay-text);
+            font-family: 'Inter', sans-serif;
+            background: var(--terminal-secondary);
+            color: var(--terminal-text);
             position: relative;
             overflow-x: hidden;
-            font-size: 16px;
+            font-size: 14px;
             line-height: 1.6;
         }
 
@@ -46,14 +45,11 @@
         .header {
             position: relative;
             z-index: 10;
-            background: var(--clay-pink);
-            border-radius: 50px;
+            background: var(--terminal-primary);
+            border: 3px solid var(--terminal-border);
             padding: 20px;
             margin: 20px;
-            box-shadow:
-                0 8px 20px rgba(255, 179, 217, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
         }
 
         .header__container {
@@ -66,11 +62,12 @@
         }
 
         .header__logo {
-            font-family: 'Fredoka One', cursive;
-            font-size: 28px;
-            font-weight: normal;
-            color: var(--clay-text-dark);
-            letter-spacing: 1px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--terminal-white);
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .header__nav {
@@ -79,35 +76,28 @@
         }
 
         .header__link {
-            font-family: 'Nunito', sans-serif;
-            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
             font-weight: 700;
-            color: var(--clay-text-dark);
+            color: var(--terminal-text);
             text-decoration: none;
             padding: 12px 24px;
-            border-radius: 30px;
-            background: var(--clay-yellow);
+            background: var(--terminal-secondary);
+            border: 2px solid var(--terminal-border);
             position: relative;
-            transition: all 0.3s ease;
-            box-shadow:
-                0 4px 15px rgba(255, 244, 163, 0.4),
-                inset 0 2px 8px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 8px rgba(0, 0, 0, 0.1);
+            transition: none;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
         }
 
         .header__link:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                0 8px 25px rgba(255, 244, 163, 0.6),
-                inset 0 2px 10px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.15);
+            background: var(--terminal-accent);
+            color: var(--terminal-white);
+            border-color: var(--terminal-accent);
         }
 
         .header__link:active {
-            transform: translateY(1px);
-            box-shadow:
-                0 2px 10px rgba(255, 244, 163, 0.4),
-                inset 0 2px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
+            transform: translate(1px, 1px);
         }
 
         .main {
@@ -122,14 +112,11 @@
         .footer {
             position: relative;
             z-index: 10;
-            background: var(--clay-blue);
-            border-radius: 50px;
+            background: var(--terminal-primary);
+            border: 3px solid var(--terminal-border);
             padding: 20px;
             margin: 20px;
-            box-shadow:
-                0 8px 20px rgba(168, 216, 255, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
         }
 
         .footer__container {
@@ -139,33 +126,26 @@
         }
 
         .footer__text {
-            font-family: 'Nunito', sans-serif;
+            font-family: 'JetBrains Mono', monospace;
             text-align: center;
-            color: var(--clay-text-dark);
-            font-size: 14px;
-            font-weight: 600;
+            color: var(--terminal-white);
+            font-size: 12px;
+            font-weight: 400;
         }
 
-        /* Global card/panel styling - Soft clay pillows */
+        /* Global card/panel styling - Bureaucratic file folders */
         .card, .panel, [class*="card"], [class*="panel"] {
-            background: var(--clay-purple);
-            border-radius: 40px;
+            background: var(--terminal-secondary);
+            border: 3px solid var(--terminal-border);
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow:
-                0 10px 30px rgba(212, 165, 249, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
             position: relative;
-            transition: all 0.3s ease;
+            transition: none;
         }
 
         .card:hover, .panel:hover, [class*="card"]:hover, [class*="panel"]:hover {
-            transform: translateY(-4px);
-            box-shadow:
-                0 15px 40px rgba(212, 165, 249, 0.6),
-                inset 0 2px 12px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.4);
         }
 
         /* Remove ASCII decorations */
@@ -174,14 +154,15 @@
             display: none;
         }
 
-        /* Headings - Soft and rounded */
+        /* Headings - Heavy and authoritative */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Fredoka One', cursive;
-            font-weight: normal;
-            color: var(--clay-text-dark);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: bold;
+            color: var(--terminal-primary);
             margin-bottom: 20px;
             line-height: 1.3;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         h1 { font-size: 48px; }
@@ -203,69 +184,58 @@
                 inset 0 -2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Button styling - Soft clay buttons */
+        /* Button styling - Heavy bureaucratic buttons */
         button, .button, input[type="submit"] {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 800;
-            background: var(--clay-mint);
-            color: var(--clay-text-dark);
-            border: none;
-            border-radius: 35px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            background: var(--terminal-primary);
+            color: var(--terminal-white);
+            border: 3px solid var(--terminal-border);
             padding: 15px 35px;
             cursor: pointer;
-            font-size: 18px;
-            box-shadow:
-                0 8px 25px rgba(184, 243, 216, 0.5),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            font-size: 16px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            transition: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         button:hover, .button:hover, input[type="submit"]:hover {
-            transform: translateY(-3px);
-            box-shadow:
-                0 12px 35px rgba(184, 243, 216, 0.7),
-                inset 0 2px 12px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 12px rgba(0, 0, 0, 0.15);
+            background: var(--terminal-accent);
+            border-color: var(--terminal-accent);
         }
 
         button:active, .button:active, input[type="submit"]:active {
-            transform: translateY(1px);
-            box-shadow:
-                0 4px 15px rgba(184, 243, 216, 0.5),
-                inset 0 2px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+            transform: translate(2px, 2px);
         }
 
         button:focus, .button:focus, input[type="submit"]:focus {
-            outline: 3px solid var(--clay-purple);
-            outline-offset: 4px;
+            outline: 3px solid var(--terminal-success);
+            outline-offset: 2px;
         }
 
-        /* Input fields - Soft clay inputs */
+        /* Input fields - Bureaucratic form fields */
         input, textarea, select {
-            background: white;
-            border: none;
-            border-radius: 25px;
-            color: var(--clay-text);
+            background: #FFFFFF;
+            border: 2px solid var(--terminal-border);
+            color: var(--terminal-text);
             padding: 15px 20px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            box-shadow:
-                0 6px 20px rgba(0, 0, 0, 0.1),
-                inset 0 2px 8px rgba(0, 0, 0, 0.08);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            background: white;
-            box-shadow:
-                0 8px 30px rgba(107, 70, 193, 0.3),
-                inset 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-color: var(--terminal-success);
+            background: #FFFFFF;
+            box-shadow: 3px 3px 0px rgba(0, 75, 135, 0.3);
         }
 
         input::placeholder, textarea::placeholder {
-            color: rgba(74, 74, 74, 0.4);
+            color: rgba(139, 115, 85, 0.6);
         }
 
         /* Hero section - Soft clay pillow */
