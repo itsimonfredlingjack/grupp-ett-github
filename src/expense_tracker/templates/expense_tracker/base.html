@@ -6,11 +6,12 @@
     <title>{% block title %}ExpenseTracker{% endblock %}</title>
     <style>
         :root {
-            /* 1998 Government Form - Scanned Paper Aesthetic */
-            --form-beige: #E8DCC4;      /* Paper background */
-            --form-black: #000000;      /* Black ink */
-            --form-red: #D32F2F;        /* Aggressive stamp red */
-            --form-white: #FFFFFF;      /* White areas */
+            /* Nordic Assembly / Flat-Pack Instruction Manual */
+            --assembly-white: #FFFFFF;        /* Clean white background */
+            --assembly-cardboard: #D7C4A5;    /* Unbleached cardboard */
+            --assembly-black: #000000;        /* Line art outlines */
+            --instruction-blue: #0051BA;      /* Instruction accents */
+            --warning-yellow: #FFDA1A;        /* Warning markers */
         }
 
         * {
@@ -21,14 +22,15 @@
 
         body {
             min-height: 100vh;
-            font-family: 'Times New Roman', Times, serif;
-            background: var(--form-beige);
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            font-weight: bold;
+            background: var(--assembly-white);
+            color: var(--assembly-black);
             position: relative;
             overflow-x: hidden;
             padding: 20px;
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         /* No effects - pure flat paper */
@@ -43,52 +45,59 @@
             margin-bottom: 20px;
             display: flex;
             gap: 10px;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-bottom: 2px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 10px;
             max-width: 1000px;
             margin: 0 auto 20px;
         }
 
         nav a {
-            font-family: 'Times New Roman', Times, serif;
-            font-weight: normal;
-            color: var(--form-black);
-            text-decoration: underline;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            font-weight: bold;
+            color: var(--assembly-black);
+            text-decoration: none;
             padding: 5px 10px;
-            background: none;
-            border: none;
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             font-size: 11px;
             text-transform: none;
-            letter-spacing: 0px;
+            letter-spacing: 0;
             transition: none;
         }
 
         nav a:hover {
-            background: var(--form-beige);
-            text-decoration: none;
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border-color: var(--instruction-blue);
         }
 
         nav a:active {
-            transform: none;
+            transform: translate(1px, 1px);
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
             margin-bottom: 15px;
             position: relative;
             z-index: 10;
             line-height: 1.2;
-            letter-spacing: 0px;
-            text-transform: uppercase;
+            letter-spacing: 0;
+            text-transform: none;
         }
 
         h1 { font-size: 20px; }
         h2 { font-size: 16px; }
         h3 { font-size: 14px; }
+
+        /* Add numbered circle prefixes for steps */
+        h1::before { content: '① '; color: var(--instruction-blue); }
+        h2::before { content: '② '; color: var(--instruction-blue); }
+        h3::before { content: '③ '; color: var(--instruction-blue); }
 
         .flash-messages {
             position: relative;
@@ -101,34 +110,39 @@
         .flash {
             padding: 15px 20px;
             margin-bottom: 15px;
-            border: 3px solid var(--form-black);
-            font-family: 'Courier New', Courier, monospace;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 12px;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         .flash.error {
-            background: var(--form-red);
-            color: var(--form-white);
-            transform: rotate(-2deg);
+            background: var(--warning-yellow);
+            color: var(--assembly-black);
+            border-width: 3px;
         }
 
         .flash.error::before {
-            content: 'AVSLAG: ';
-            font-weight: bold;
+            content: '⚠ ';
+            font-size: 16px;
+            margin-right: 5px;
         }
 
         .flash.success {
-            background: var(--form-white);
-            color: var(--form-black);
-            border: 2px solid var(--form-black);
+            background: transparent;
+            color: var(--assembly-black);
+            border: 2px solid var(--instruction-blue);
+            box-shadow: 3px 3px 0 0 var(--instruction-blue);
         }
 
         .flash.success::before {
-            content: 'GODKÄND: ';
-            font-weight: bold;
+            content: '✓ ';
+            font-size: 16px;
+            margin-right: 5px;
+            color: var(--instruction-blue);
         }
 
         .expense-list {
@@ -141,8 +155,9 @@
         }
 
         .expense-item {
-            background: var(--form-white);
-            border: 2px dashed var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 15px 20px;
             margin-bottom: 15px;
             display: flex;
@@ -150,51 +165,62 @@
             align-items: center;
             position: relative;
             transition: none;
+            box-shadow: 3px 3px 0 0 var(--assembly-black);
         }
 
         .expense-item:hover {
-            background: var(--form-beige);
+            box-shadow: 4px 4px 0 0 var(--instruction-blue);
+            border-color: var(--instruction-blue);
         }
 
         .expense-item::before {
-            display: none;
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            width: 1px;
+            height: 10px;
+            border-left: 2px dashed var(--assembly-black);
+            opacity: 0.5;
         }
 
         .expense-title {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
             font-size: 12px;
             margin-left: 0;
             text-transform: none;
-            letter-spacing: 0px;
+            letter-spacing: 0;
         }
 
         .expense-category {
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            color: var(--assembly-black);
             font-size: 10px;
             font-weight: normal;
-            font-style: italic;
+            font-style: normal;
             text-transform: none;
         }
 
         .expense-amount {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 14px;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
         }
 
         form {
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 25px;
             margin-bottom: 20px;
             position: relative;
             z-index: 10;
             max-width: 1000px;
             margin: 0 auto 20px;
+            box-shadow: 4px 4px 0 0 var(--assembly-black);
         }
 
         .form-group {
@@ -202,78 +228,84 @@
         }
 
         label {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
             font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0px;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         input, select {
             width: 100%;
             padding: 8px 12px;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-bottom: 2px solid var(--form-black);
-            color: var(--form-black);
-            font-family: 'Times New Roman', Times, serif;
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
+            color: var(--assembly-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 12px;
-            font-weight: normal;
+            font-weight: bold;
         }
 
         input:focus, select:focus {
             outline: none;
-            background: var(--form-beige);
-            border-color: var(--form-black);
+            border-color: var(--instruction-blue);
+            box-shadow: 0 0 0 2px var(--instruction-blue);
         }
 
         input::placeholder {
-            color: rgba(0, 0, 0, 0.4);
-            font-style: italic;
+            color: rgba(0, 0, 0, 0.3);
+            font-style: normal;
+            font-weight: normal;
         }
 
         button {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 10px 25px;
             cursor: pointer;
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-transform: none;
+            letter-spacing: 0;
             transition: none;
+            box-shadow: 2px 2px 0 0 var(--assembly-black);
         }
 
         button:hover {
-            transform: rotate(-1deg);
+            transform: none;
+            box-shadow: 3px 3px 0 0 var(--assembly-black);
         }
 
         button:active, button:focus {
-            transform: rotate(1deg);
-            outline: 1px dotted var(--form-black);
-            outline-offset: 3px;
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 0 var(--assembly-black);
+            outline: 2px solid var(--instruction-blue);
+            outline-offset: 2px;
         }
 
         .total {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 24px;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
             margin: 30px 0;
             text-align: center;
             position: relative;
             z-index: 10;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-top: 2px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 20px;
             max-width: 600px;
             margin: 30px auto;
+            box-shadow: 5px 5px 0 0 var(--instruction-blue);
         }
 
         .total::before,
@@ -282,19 +314,21 @@
         }
 
         .empty-message {
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            color: var(--assembly-black);
             text-align: center;
             font-size: 11px;
             font-weight: normal;
-            font-style: italic;
+            font-style: normal;
             position: relative;
             z-index: 10;
-            background: var(--form-white);
-            border: 2px dashed var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 20px;
             margin: 20px auto;
             max-width: 500px;
+            box-shadow: 3px 3px 0 0 var(--assembly-black);
         }
 
         /* Container for main content */
@@ -305,29 +339,31 @@
             margin: 0 auto;
         }
 
-        /* Links - Simple underlined text */
+        /* Links - Line art buttons */
         a {
-            font-family: 'Times New Roman', Times, serif;
-            font-weight: normal;
-            color: var(--form-black);
-            text-decoration: underline;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            font-weight: bold;
+            color: var(--assembly-black);
+            text-decoration: none;
             padding: 5px 10px;
-            background: none;
-            border: none;
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             display: inline-block;
             text-transform: none;
-            letter-spacing: 0px;
+            letter-spacing: 0;
             font-size: 11px;
             transition: none;
         }
 
         a:hover {
-            background: var(--form-beige);
-            text-decoration: none;
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border-color: var(--instruction-blue);
         }
 
         a:active {
-            transform: none;
+            transform: translate(1px, 1px);
         }
     </style>
 </head>
