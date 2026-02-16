@@ -6,11 +6,12 @@
     <title>{% block title %}News Flash{% endblock %}</title>
     <style>
         :root {
-            /* 1998 Government Form - Scanned Paper Aesthetic */
-            --form-beige: #E8DCC4;      /* Paper background */
-            --form-black: #000000;      /* Black ink */
-            --form-red: #D32F2F;        /* Aggressive stamp red */
-            --form-white: #FFFFFF;      /* White areas */
+            /* Nordic Assembly / Flat-Pack Instruction Manual */
+            --assembly-white: #FFFFFF;        /* Clean white background */
+            --assembly-cardboard: #D7C4A5;    /* Unbleached cardboard */
+            --assembly-black: #000000;        /* Line art outlines */
+            --instruction-blue: #0051BA;      /* Instruction accents */
+            --warning-yellow: #FFDA1A;        /* Warning markers */
         }
 
         * {
@@ -21,13 +22,14 @@
 
         body {
             min-height: 100vh;
-            font-family: 'Times New Roman', Times, serif;
-            background: var(--form-beige);
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            font-weight: bold;
+            background: var(--assembly-white);
+            color: var(--assembly-black);
             position: relative;
             overflow-x: hidden;
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         /* No effects - pure flat paper */
@@ -39,8 +41,9 @@
         .header {
             position: relative;
             z-index: 10;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 15px;
             margin: 20px;
         }
@@ -52,17 +55,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--form-black);
+            border-bottom: 2px solid var(--assembly-black);
             padding-bottom: 10px;
         }
 
         .header__logo {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 18px;
             font-weight: bold;
-            color: var(--form-black);
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            color: var(--assembly-black);
+            letter-spacing: 0;
+            text-transform: none;
         }
 
         .header__nav {
@@ -71,21 +74,23 @@
         }
 
         .header__link {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 11px;
-            font-weight: normal;
-            color: var(--form-black);
-            text-decoration: underline;
+            font-weight: bold;
+            color: var(--assembly-black);
+            text-decoration: none;
             padding: 5px 10px;
-            background: none;
-            border: none;
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             position: relative;
             transition: none;
         }
 
         .header__link:hover {
-            background: var(--form-beige);
-            text-decoration: none;
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border-color: var(--instruction-blue);
         }
 
         .header__link:active {
@@ -104,9 +109,9 @@
         .footer {
             position: relative;
             z-index: 10;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-top: 2px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-top: 2px solid var(--assembly-black);
             padding: 10px;
             margin: 20px;
         }
@@ -118,42 +123,62 @@
         }
 
         .footer__text {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             text-align: center;
-            color: var(--form-black);
+            color: var(--assembly-black);
             font-size: 9px;
-            font-weight: normal;
+            font-weight: bold;
         }
 
-        /* Global card/panel styling - Form boxes with "cut here" dashed borders */
+        /* Global card/panel styling - Isometric 3D boxes with dashed assembly guides */
         .card, .panel, [class*="card"], [class*="panel"] {
-            background: var(--form-white);
-            border: 2px dashed var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 20px;
             margin-bottom: 15px;
             position: relative;
             transition: none;
+            box-shadow: 4px 4px 0 0 var(--assembly-black);
         }
 
         .card:hover, .panel:hover, [class*="card"]:hover, [class*="panel"]:hover {
-            background: var(--form-beige);
+            box-shadow: 6px 6px 0 0 var(--instruction-blue);
+            border-color: var(--instruction-blue);
         }
 
-        /* Remove ASCII decorations */
+        /* Dashed assembly guide lines */
         .card::before, .panel::before,
         .card::after, .panel::after {
-            display: none;
+            content: '';
+            position: absolute;
+            border: 1px dashed var(--assembly-black);
+            opacity: 0.3;
         }
 
-        /* Headings - Typewriter style */
+        .card::before, .panel::before {
+            top: -10px;
+            left: 50%;
+            width: 1px;
+            height: 10px;
+        }
+
+        .card::after, .panel::after {
+            left: -10px;
+            top: 50%;
+            width: 10px;
+            height: 1px;
+        }
+
+        /* Headings - Assembly instruction style with numbered circles */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
             margin-bottom: 15px;
             line-height: 1.2;
-            letter-spacing: 0px;
-            text-transform: uppercase;
+            letter-spacing: 0;
+            text-transform: none;
         }
 
         h1 { font-size: 20px; }
@@ -161,122 +186,141 @@
         h3 { font-size: 14px; }
         h4 { font-size: 12px; }
 
-        /* Code/data - Typewriter monospace */
+        /* Add numbered circle prefixes for steps */
+        h1::before { content: '① '; color: var(--instruction-blue); }
+        h2::before { content: '② '; color: var(--instruction-blue); }
+        h3::before { content: '③ '; color: var(--instruction-blue); }
+
+        /* Code/data - Technical specifications box */
         code, pre, .data, [class*="code"], [class*="data"] {
-            font-family: 'Courier New', Courier, monospace;
-            color: var(--form-black);
-            background: var(--form-white);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            font-weight: bold;
+            color: var(--assembly-black);
+            background: transparent;
             padding: 8px 12px;
-            border: 1px solid var(--form-black);
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             font-size: 10px;
         }
 
-        /* Button styling - Stamp aesthetic */
+        /* Button styling - Instruction step button */
         button, .button, input[type="submit"] {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 10px 25px;
             cursor: pointer;
             font-size: 11px;
             transition: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-transform: none;
+            letter-spacing: 0;
+            box-shadow: 2px 2px 0 0 var(--assembly-black);
         }
 
         button:hover, .button:hover, input[type="submit"]:hover {
-            transform: rotate(-1deg);
+            transform: none;
+            box-shadow: 3px 3px 0 0 var(--assembly-black);
         }
 
         button:active, .button:active, input[type="submit"]:active {
-            transform: rotate(1deg);
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 0 var(--assembly-black);
         }
 
         button:focus, .button:focus, input[type="submit"]:focus {
-            outline: 1px dotted var(--form-black);
-            outline-offset: 3px;
+            outline: 2px solid var(--instruction-blue);
+            outline-offset: 2px;
         }
 
-        /* Input fields - Form boxes */
+        /* Input fields - Technical input boxes */
         input, textarea, select {
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-bottom: 2px solid var(--form-black);
-            color: var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
+            color: var(--assembly-black);
             padding: 8px 12px;
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 12px;
-            font-weight: normal;
+            font-weight: bold;
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--form-black);
-            background: var(--form-beige);
+            border-color: var(--instruction-blue);
+            box-shadow: 0 0 0 2px var(--instruction-blue);
         }
 
         input::placeholder, textarea::placeholder {
-            color: rgba(0, 0, 0, 0.4);
-            font-style: italic;
+            color: rgba(0, 0, 0, 0.3);
+            font-style: normal;
+            font-weight: normal;
         }
 
-        /* Hero section - Bureaucratic announcement */
+        /* Hero section - Main assembly diagram */
         .hero {
             padding: 60px 0;
             text-align: center;
+            position: relative;
         }
 
         .hero__container {
             max-width: 800px;
             margin: 0 auto;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 30px;
+            box-shadow: 6px 6px 0 0 var(--assembly-black);
         }
 
         .hero__heading {
             font-size: 20px;
             margin-bottom: 15px;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--form-black);
+            letter-spacing: 0;
+            border-bottom: 2px solid var(--assembly-black);
             padding-bottom: 10px;
         }
 
         .hero__subtitle {
             font-size: 12px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            color: var(--assembly-black);
             margin-bottom: 20px;
-            line-height: 1.4;
+            line-height: 1.5;
             font-weight: normal;
         }
 
         .hero__button {
             display: inline-block;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 10px 25px;
             text-decoration: none;
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-transform: none;
+            letter-spacing: 0;
             transition: none;
+            box-shadow: 2px 2px 0 0 var(--assembly-black);
         }
 
         .hero__button:hover {
-            transform: rotate(-1deg);
+            transform: none;
+            box-shadow: 3px 3px 0 0 var(--assembly-black);
         }
 
         .hero__button:active {
-            transform: rotate(1deg);
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 0 var(--assembly-black);
         }
 
-        /* Features section - Bureaucratic file cards */
+        /* Features section - Assembly part diagrams */
         .features {
             padding: 60px 0;
         }
@@ -290,42 +334,52 @@
         }
 
         .features__card {
-            background: var(--form-white);
-            border: 2px dashed var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 20px;
             position: relative;
             transition: none;
+            box-shadow: 4px 4px 0 0 var(--assembly-black);
         }
 
         .features__card:hover {
-            background: var(--form-beige);
+            box-shadow: 5px 5px 0 0 var(--instruction-blue);
+            border-color: var(--instruction-blue);
         }
 
         .features__card::before {
-            display: none;
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            width: 1px;
+            height: 15px;
+            border-left: 2px dashed var(--assembly-black);
+            opacity: 0.5;
         }
 
         .features__title {
             font-size: 14px;
             font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             margin-bottom: 10px;
-            color: var(--form-black);
-            text-transform: uppercase;
-            letter-spacing: 0px;
-            border-bottom: 1px solid var(--form-black);
+            color: var(--assembly-black);
+            text-transform: none;
+            letter-spacing: 0;
+            border-bottom: 2px solid var(--assembly-black);
             padding-bottom: 5px;
         }
 
         .features__text {
             font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
-            line-height: 1.4;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            color: var(--assembly-black);
+            line-height: 1.5;
             font-weight: normal;
         }
 
-        /* Subscribe section - 1998 form */
+        /* Subscribe section - Assembly form */
         .subscribe {
             padding: 40px 0;
         }
@@ -343,17 +397,19 @@
 
         .subscribe__subtitle {
             font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            color: var(--assembly-black);
             margin-bottom: 20px;
             text-align: center;
             font-weight: normal;
         }
 
         .subscribe__form {
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 25px;
+            box-shadow: 4px 4px 0 0 var(--assembly-black);
         }
 
         .form__group {
@@ -362,13 +418,13 @@
 
         .form__label {
             display: block;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 10px;
             font-weight: bold;
-            color: var(--form-black);
+            color: var(--assembly-black);
             margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0px;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         .form__input {
@@ -376,8 +432,8 @@
         }
 
         .form__input--error {
-            border-color: var(--form-red);
-            background: #FFE5E5;
+            border-color: var(--warning-yellow);
+            box-shadow: 0 0 0 2px var(--warning-yellow);
         }
 
         .form__button {
@@ -386,41 +442,47 @@
             font-size: 11px;
         }
 
-        /* Error and flash messages - Red stamps */
+        /* Error and flash messages - Warning icons */
         .error-banner, .flash-message {
             padding: 15px 20px;
             margin-bottom: 20px;
-            border: 3px solid var(--form-black);
-            font-family: 'Courier New', Courier, monospace;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-size: 12px;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            text-transform: none;
+            letter-spacing: 0;
+            position: relative;
         }
 
         .error-banner, .flash-message.error {
-            background: var(--form-red);
-            color: var(--form-white);
-            transform: rotate(-2deg);
+            background: var(--warning-yellow);
+            color: var(--assembly-black);
+            border-width: 3px;
         }
 
         .flash-message.success {
-            background: var(--form-white);
-            color: var(--form-black);
-            border: 2px solid var(--form-black);
+            background: transparent;
+            color: var(--assembly-black);
+            border: 2px solid var(--instruction-blue);
+            box-shadow: 3px 3px 0 0 var(--instruction-blue);
         }
 
         .error-banner::before, .flash-message.error::before {
-            content: 'AVSLAG: ';
-            font-weight: bold;
+            content: '⚠ ';
+            font-size: 16px;
+            margin-right: 5px;
         }
 
         .flash-message.success::before {
-            content: 'GODKÄND: ';
-            font-weight: bold;
+            content: '✓ ';
+            font-size: 16px;
+            margin-right: 5px;
+            color: var(--instruction-blue);
         }
 
-        /* Thank you section - Approved stamp */
+        /* Thank you section - Completed assembly */
         .thank-you {
             padding: 40px 0;
         }
@@ -429,55 +491,61 @@
             max-width: 700px;
             margin: 0 auto;
             text-align: center;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
+            background: transparent;
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 30px;
+            box-shadow: 5px 5px 0 0 var(--instruction-blue);
         }
 
         .thank-you__heading {
             font-size: 18px;
             margin-bottom: 20px;
-            color: var(--form-black);
-            border-bottom: 1px solid var(--form-black);
+            color: var(--assembly-black);
+            border-bottom: 2px solid var(--assembly-black);
             padding-bottom: 10px;
         }
 
         .thank-you__text {
             font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
+            color: var(--assembly-black);
             margin-bottom: 15px;
-            line-height: 1.4;
+            line-height: 1.5;
             font-weight: normal;
         }
 
         .thank-you__text strong {
-            color: var(--form-black);
+            color: var(--assembly-black);
             font-weight: bold;
         }
 
         .thank-you__button {
             display: inline-block;
             margin-top: 20px;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Verdana', 'Noto Sans', Arial, sans-serif;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
+            background: var(--instruction-blue);
+            color: var(--assembly-white);
+            border: 2px solid var(--assembly-black);
+            border-radius: 0;
             padding: 10px 25px;
             text-decoration: none;
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            text-transform: none;
+            letter-spacing: 0;
             transition: none;
+            box-shadow: 2px 2px 0 0 var(--assembly-black);
         }
 
         .thank-you__button:hover {
-            transform: rotate(-1deg);
+            transform: none;
+            box-shadow: 3px 3px 0 0 var(--assembly-black);
         }
 
         .thank-you__button:active {
-            transform: rotate(1deg);
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 0 var(--assembly-black);
         }
     </style>
     {% block extra_css %}{% endblock %}
