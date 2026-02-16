@@ -170,18 +170,15 @@
         h3 { font-size: 28px; }
         h4 { font-size: 22px; }
 
-        /* Code/data - Soft clay blocks */
+        /* Code/data - Bureaucratic terminal text */
         code, pre, .data, [class*="code"], [class*="data"] {
-            font-family: 'Nunito', sans-serif;
-            color: var(--clay-text);
-            background: var(--clay-yellow);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            box-shadow:
-                0 4px 15px rgba(255, 244, 163, 0.4),
-                inset 0 2px 8px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 8px rgba(0, 0, 0, 0.1);
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--terminal-text);
+            background: #FFFFFF;
+            padding: 12px 20px;
+            border: 2px solid var(--terminal-border);
+            font-size: 12px;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
         }
 
         /* Button styling - Heavy bureaucratic buttons */
@@ -238,7 +235,7 @@
             color: rgba(139, 115, 85, 0.6);
         }
 
-        /* Hero section - Soft clay pillow */
+        /* Hero section - Bureaucratic announcement */
         .hero {
             padding: 60px 0;
             text-align: center;
@@ -247,63 +244,54 @@
         .hero__container {
             max-width: 800px;
             margin: 0 auto;
-            background: var(--clay-purple);
-            border-radius: 50px;
+            background: var(--terminal-secondary);
+            border: 3px solid var(--terminal-border);
             padding: 50px;
-            box-shadow:
-                0 15px 50px rgba(212, 165, 249, 0.5),
-                inset 0 3px 15px rgba(255, 255, 255, 0.5),
-                inset 0 -3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
         }
 
         .hero__heading {
-            font-size: 56px;
+            font-size: 48px;
             margin-bottom: 25px;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
         .hero__subtitle {
-            font-size: 20px;
-            color: var(--clay-text);
+            font-size: 18px;
+            font-family: 'Inter', sans-serif;
+            color: var(--terminal-text);
             margin-bottom: 35px;
             line-height: 1.6;
-            font-weight: 600;
+            font-weight: 400;
         }
 
         .hero__button {
             display: inline-block;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 800;
-            background: var(--clay-yellow);
-            color: var(--clay-text-dark);
-            border: none;
-            border-radius: 35px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            background: var(--terminal-primary);
+            color: var(--terminal-white);
+            border: 3px solid var(--terminal-border);
             padding: 18px 40px;
             text-decoration: none;
-            font-size: 20px;
-            box-shadow:
-                0 8px 30px rgba(255, 244, 163, 0.5),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            transition: none;
         }
 
         .hero__button:hover {
-            transform: translateY(-4px);
-            box-shadow:
-                0 12px 40px rgba(255, 244, 163, 0.7),
-                inset 0 2px 12px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 12px rgba(0, 0, 0, 0.15);
+            background: var(--terminal-accent);
+            border-color: var(--terminal-accent);
         }
 
         .hero__button:active {
-            transform: translateY(1px);
-            box-shadow:
-                0 4px 20px rgba(255, 244, 163, 0.5),
-                inset 0 2px 10px rgba(0, 0, 0, 0.15);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
         }
 
-        /* Features section - Clay pillows */
+        /* Features section - Bureaucratic file cards */
         .features {
             padding: 60px 0;
         }
@@ -317,23 +305,16 @@
         }
 
         .features__card {
-            background: var(--clay-mint);
-            border-radius: 40px;
+            background: var(--terminal-secondary);
+            border: 3px solid var(--terminal-border);
             padding: 35px;
-            box-shadow:
-                0 10px 35px rgba(184, 243, 216, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
             position: relative;
-            transition: all 0.3s ease;
+            transition: none;
         }
 
         .features__card:hover {
-            transform: translateY(-6px);
-            box-shadow:
-                0 15px 45px rgba(184, 243, 216, 0.6),
-                inset 0 2px 12px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.4);
         }
 
         .features__card::before {
@@ -341,21 +322,24 @@
         }
 
         .features__title {
-            font-size: 24px;
-            font-weight: normal;
-            font-family: 'Fredoka One', cursive;
+            font-size: 22px;
+            font-weight: bold;
+            font-family: 'IBM Plex Mono', monospace;
             margin-bottom: 15px;
-            color: var(--clay-text-dark);
+            color: var(--terminal-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .features__text {
-            font-size: 16px;
-            color: var(--clay-text);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            color: var(--terminal-text);
             line-height: 1.6;
-            font-weight: 600;
+            font-weight: 400;
         }
 
-        /* Subscribe section - Clay form */
+        /* Subscribe section - Bureaucratic form */
         .subscribe {
             padding: 60px 0;
         }
@@ -366,27 +350,25 @@
         }
 
         .subscribe__heading {
-            font-size: 40px;
+            font-size: 36px;
             margin-bottom: 20px;
             text-align: center;
         }
 
         .subscribe__subtitle {
-            font-size: 18px;
-            color: var(--clay-text);
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            color: var(--terminal-text);
             margin-bottom: 35px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 400;
         }
 
         .subscribe__form {
-            background: var(--clay-blue);
-            border-radius: 45px;
+            background: var(--terminal-secondary);
+            border: 3px solid var(--terminal-border);
             padding: 40px;
-            box-shadow:
-                0 12px 40px rgba(168, 216, 255, 0.4),
-                inset 0 3px 15px rgba(255, 255, 255, 0.5),
-                inset 0 -3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
         }
 
         .form__group {
@@ -395,11 +377,13 @@
 
         .form__label {
             display: block;
-            font-family: 'Nunito', sans-serif;
-            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
             font-weight: 700;
-            color: var(--clay-text-dark);
+            color: var(--terminal-primary);
             margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form__input {
@@ -407,55 +391,52 @@
         }
 
         .form__input--error {
-            outline: 3px solid var(--clay-pink);
-            outline-offset: 2px;
+            border-color: var(--terminal-accent);
+            box-shadow: 3px 3px 0px rgba(196, 30, 58, 0.3);
         }
 
         .form__button {
             width: 100%;
             padding: 18px 30px;
-            font-size: 18px;
+            font-size: 16px;
         }
 
-        /* Error and flash messages - Clay alerts */
+        /* Error and flash messages - Government alerts */
         .error-banner, .flash-message {
             padding: 20px 25px;
             margin-bottom: 25px;
-            border-radius: 30px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 16px;
+            border: 3px solid var(--terminal-border);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
             font-weight: 700;
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
         }
 
         .error-banner, .flash-message.error {
-            background: var(--clay-pink);
-            color: var(--clay-text-dark);
-            box-shadow:
-                0 8px 25px rgba(255, 179, 217, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            background: #FFFFFF;
+            color: var(--terminal-accent);
+            border-color: var(--terminal-accent);
         }
 
         .flash-message.success {
-            background: var(--clay-mint);
-            color: var(--clay-text-dark);
-            box-shadow:
-                0 8px 25px rgba(184, 243, 216, 0.4),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            background: #FFFFFF;
+            color: var(--terminal-success);
+            border-color: var(--terminal-success);
         }
 
         .error-banner::before, .flash-message.error::before {
-            content: '⚠ ';
+            content: '⚠️ VARNING: ';
             font-weight: bold;
+            font-family: 'IBM Plex Mono', monospace;
         }
 
         .flash-message.success::before {
-            content: '✓ ';
+            content: '✓ BEKRÄFTAT: ';
             font-weight: bold;
+            font-family: 'IBM Plex Mono', monospace;
         }
 
-        /* Thank you section - Clay confirmation */
+        /* Thank you section - Government confirmation */
         .thank-you {
             padding: 60px 0;
         }
@@ -464,65 +445,57 @@
             max-width: 700px;
             margin: 0 auto;
             text-align: center;
-            background: var(--clay-yellow);
-            border-radius: 50px;
+            background: var(--terminal-secondary);
+            border: 3px solid var(--terminal-success);
             padding: 50px;
-            box-shadow:
-                0 15px 50px rgba(255, 244, 163, 0.5),
-                inset 0 3px 15px rgba(255, 255, 255, 0.5),
-                inset 0 -3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 0px rgba(0, 75, 135, 0.3);
         }
 
         .thank-you__heading {
-            font-size: 48px;
+            font-size: 40px;
             margin-bottom: 30px;
+            color: var(--terminal-success);
         }
 
         .thank-you__text {
-            font-size: 18px;
-            color: var(--clay-text);
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            color: var(--terminal-text);
             margin-bottom: 20px;
             line-height: 1.6;
-            font-weight: 600;
+            font-weight: 400;
         }
 
         .thank-you__text strong {
-            color: var(--clay-text-dark);
-            font-weight: 800;
+            color: var(--terminal-primary);
+            font-weight: 700;
         }
 
         .thank-you__button {
             display: inline-block;
             margin-top: 30px;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 800;
-            background: var(--clay-purple);
-            color: var(--clay-text-dark);
-            border: none;
-            border-radius: 35px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            background: var(--terminal-primary);
+            color: var(--terminal-white);
+            border: 3px solid var(--terminal-border);
             padding: 18px 40px;
             text-decoration: none;
-            font-size: 18px;
-            box-shadow:
-                0 8px 30px rgba(212, 165, 249, 0.5),
-                inset 0 2px 10px rgba(255, 255, 255, 0.5),
-                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            transition: none;
         }
 
         .thank-you__button:hover {
-            transform: translateY(-4px);
-            box-shadow:
-                0 12px 40px rgba(212, 165, 249, 0.7),
-                inset 0 2px 12px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 12px rgba(0, 0, 0, 0.15);
+            background: var(--terminal-accent);
+            border-color: var(--terminal-accent);
         }
 
         .thank-you__button:active {
-            transform: translateY(1px);
-            box-shadow:
-                0 4px 20px rgba(212, 165, 249, 0.5),
-                inset 0 2px 10px rgba(0, 0, 0, 0.15);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
         }
     </style>
     {% block extra_css %}{% endblock %}
