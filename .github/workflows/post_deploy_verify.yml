@@ -90,9 +90,10 @@ jobs:
 
       - name: Extract Jira ticket from commit
         id: jira
+        env:
+          COMMIT_MSG: ${{ github.event.workflow_run.head_commit.message || '' }}
         run: |
-          COMMIT_MSG="${{ github.event.workflow_run.head_commit.message || '' }}"
-          TICKET_ID=$(echo "$COMMIT_MSG" | grep -oP 'GE-\d+' | head -1 || true)
+          TICKET_ID="$(printf '%s\n' "$COMMIT_MSG" | grep -oP 'GE-\d+' | head -1 || true)"
           if [ -z "$TICKET_ID" ]; then
             echo "No GE-ticket found in commit message — skipping Jira comment"
           fi
