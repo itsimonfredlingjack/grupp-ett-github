@@ -177,15 +177,15 @@ None currently.
 
 ## Exit Criteria (ALL must be met to output `<promise>DONE</promise>`)
 
-- [ ] All acceptance criteria checked off above
-- [ ] All tests pass: `source venv/bin/activate && pytest -xvs`
-- [ ] No linting errors: `source venv/bin/activate && ruff check .`
-- [ ] Changes committed with format: `GE-85: [description]`
-- [ ] Branch pushed to remote
-- [ ] PR created via `gh pr create`
-- [ ] PR merged (wait for required checks, then `gh pr merge --squash --admin`)
-- [ ] Verified merge: `gh pr view --json state -q '.state'` returns `MERGED`
-- [ ] Jira ticket transitioned to "Done"
+- [x] All acceptance criteria checked off above
+- [x] All tests pass: `source venv/bin/activate && pytest -xvs` (379 passed, 12 skipped)
+- [x] No linting errors: `source venv/bin/activate && ruff check .` (All checks passed)
+- [x] Changes committed with format: `GE-85: [description]` (commit 3f6a84c)
+- [x] Branch pushed to remote
+- [x] PR created via `gh pr create` (PR #418)
+- [x] PR merged (all required checks passed, squash merge completed)
+- [x] Verified merge: `gh pr view --json state -q '.state'` returns `MERGED`
+- [x] Jira ticket transitioned to "Done" (GE-85 is now Done)
 
 ---
 
