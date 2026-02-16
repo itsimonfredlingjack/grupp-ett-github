@@ -4,19 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}News Flash{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Government Terminal 2026 - Myndighets-Terminal Colors */
-            --terminal-primary: #2C2C2C;        /* Mörk asfalt - headers, sidebars */
-            --terminal-secondary: #E8DCC4;      /* Institutional Beige - background */
-            --terminal-accent: #C41E3A;         /* Swedish Flag Red - errors, warnings */
-            --terminal-text: #1A1A1A;           /* Nästan svart */
-            --terminal-border: #8B7355;         /* Brun arkivkartong-färg */
-            --terminal-success: #004B87;        /* Swedish Flag Blue - completed ops */
-            --terminal-white: #FFFFFF;          /* Vit text på mörk bakgrund */
+            /* 1998 Government Form - Scanned Paper Aesthetic */
+            --form-beige: #E8DCC4;      /* Paper background */
+            --form-black: #000000;      /* Black ink */
+            --form-red: #D32F2F;        /* Aggressive stamp red */
+            --form-white: #FFFFFF;      /* White areas */
         }
 
         * {
@@ -27,16 +21,16 @@
 
         body {
             min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            background: var(--terminal-secondary);
-            color: var(--terminal-text);
+            font-family: 'Times New Roman', Times, serif;
+            background: var(--form-beige);
+            color: var(--form-black);
             position: relative;
             overflow-x: hidden;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 12px;
+            line-height: 1.4;
         }
 
-        /* Remove old CRT effects - replaced with soft clay aesthetic */
+        /* No effects - pure flat paper */
         body::before,
         body::after {
             display: none;
@@ -45,11 +39,10 @@
         .header {
             position: relative;
             z-index: 10;
-            background: var(--terminal-primary);
-            border: 3px solid var(--terminal-border);
-            padding: 20px;
+            background: var(--form-white);
+            border: 1px solid var(--form-black);
+            padding: 15px;
             margin: 20px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
         }
 
         .header__container {
@@ -59,45 +52,44 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--form-black);
+            padding-bottom: 10px;
         }
 
         .header__logo {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 24px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
             font-weight: bold;
-            color: var(--terminal-white);
-            letter-spacing: 2px;
+            color: var(--form-black);
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .header__nav {
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
 
         .header__link {
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--terminal-text);
-            text-decoration: none;
-            padding: 12px 24px;
-            background: var(--terminal-secondary);
-            border: 2px solid var(--terminal-border);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11px;
+            font-weight: normal;
+            color: var(--form-black);
+            text-decoration: underline;
+            padding: 5px 10px;
+            background: none;
+            border: none;
             position: relative;
             transition: none;
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
         }
 
         .header__link:hover {
-            background: var(--terminal-accent);
-            color: var(--terminal-white);
-            border-color: var(--terminal-accent);
+            background: var(--form-beige);
+            text-decoration: none;
         }
 
         .header__link:active {
-            box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
-            transform: translate(1px, 1px);
+            transform: none;
         }
 
         .main {
@@ -112,11 +104,11 @@
         .footer {
             position: relative;
             z-index: 10;
-            background: var(--terminal-primary);
-            border: 3px solid var(--terminal-border);
-            padding: 20px;
+            background: var(--form-white);
+            border: 1px solid var(--form-black);
+            border-top: 2px solid var(--form-black);
+            padding: 10px;
             margin: 20px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
         }
 
         .footer__container {
@@ -126,26 +118,25 @@
         }
 
         .footer__text {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Courier New', Courier, monospace;
             text-align: center;
-            color: var(--terminal-white);
-            font-size: 12px;
-            font-weight: 400;
+            color: var(--form-black);
+            font-size: 9px;
+            font-weight: normal;
         }
 
-        /* Global card/panel styling - Bureaucratic file folders */
+        /* Global card/panel styling - Form boxes with "cut here" dashed borders */
         .card, .panel, [class*="card"], [class*="panel"] {
-            background: var(--terminal-secondary);
-            border: 3px solid var(--terminal-border);
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            background: var(--form-white);
+            border: 2px dashed var(--form-black);
+            padding: 20px;
+            margin-bottom: 15px;
             position: relative;
             transition: none;
         }
 
         .card:hover, .panel:hover, [class*="card"]:hover, [class*="panel"]:hover {
-            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.4);
+            background: var(--form-beige);
         }
 
         /* Remove ASCII decorations */
@@ -154,85 +145,81 @@
             display: none;
         }
 
-        /* Headings - Heavy and authoritative */
+        /* Headings - Typewriter style */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            color: var(--terminal-primary);
-            margin-bottom: 20px;
-            line-height: 1.3;
-            letter-spacing: 1px;
+            color: var(--form-black);
+            margin-bottom: 15px;
+            line-height: 1.2;
+            letter-spacing: 0px;
             text-transform: uppercase;
         }
 
-        h1 { font-size: 48px; }
-        h2 { font-size: 36px; }
-        h3 { font-size: 28px; }
-        h4 { font-size: 22px; }
+        h1 { font-size: 20px; }
+        h2 { font-size: 16px; }
+        h3 { font-size: 14px; }
+        h4 { font-size: 12px; }
 
-        /* Code/data - Bureaucratic terminal text */
+        /* Code/data - Typewriter monospace */
         code, pre, .data, [class*="code"], [class*="data"] {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--terminal-text);
-            background: #FFFFFF;
-            padding: 12px 20px;
-            border: 2px solid var(--terminal-border);
-            font-size: 12px;
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--form-black);
+            background: var(--form-white);
+            padding: 8px 12px;
+            border: 1px solid var(--form-black);
+            font-size: 10px;
         }
 
-        /* Button styling - Heavy bureaucratic buttons */
+        /* Button styling - Stamp aesthetic */
         button, .button, input[type="submit"] {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            background: var(--terminal-primary);
-            color: var(--terminal-white);
-            border: 3px solid var(--terminal-border);
-            padding: 15px 35px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            background: var(--form-red);
+            color: var(--form-white);
+            border: 2px solid var(--form-black);
+            padding: 10px 25px;
             cursor: pointer;
-            font-size: 16px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            font-size: 11px;
             transition: none;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
         button:hover, .button:hover, input[type="submit"]:hover {
-            background: var(--terminal-accent);
-            border-color: var(--terminal-accent);
+            transform: rotate(-1deg);
         }
 
         button:active, .button:active, input[type="submit"]:active {
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
-            transform: translate(2px, 2px);
+            transform: rotate(1deg);
         }
 
         button:focus, .button:focus, input[type="submit"]:focus {
-            outline: 3px solid var(--terminal-success);
-            outline-offset: 2px;
+            outline: 1px dotted var(--form-black);
+            outline-offset: 3px;
         }
 
-        /* Input fields - Bureaucratic form fields */
+        /* Input fields - Form boxes */
         input, textarea, select {
-            background: #FFFFFF;
-            border: 2px solid var(--terminal-border);
-            color: var(--terminal-text);
-            padding: 15px 20px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 400;
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+            background: var(--form-white);
+            border: 1px solid var(--form-black);
+            border-bottom: 2px solid var(--form-black);
+            color: var(--form-black);
+            padding: 8px 12px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12px;
+            font-weight: normal;
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--terminal-success);
-            background: #FFFFFF;
-            box-shadow: 3px 3px 0px rgba(0, 75, 135, 0.3);
+            border-color: var(--form-black);
+            background: var(--form-beige);
         }
 
         input::placeholder, textarea::placeholder {
-            color: rgba(139, 115, 85, 0.6);
+            color: rgba(0, 0, 0, 0.4);
+            font-style: italic;
         }
 
         /* Hero section - Bureaucratic announcement */
@@ -244,51 +231,49 @@
         .hero__container {
             max-width: 800px;
             margin: 0 auto;
-            background: var(--terminal-secondary);
-            border: 3px solid var(--terminal-border);
-            padding: 50px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            background: var(--form-white);
+            border: 1px solid var(--form-black);
+            padding: 30px;
         }
 
         .hero__heading {
-            font-size: 48px;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
+            font-size: 20px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--form-black);
+            padding-bottom: 10px;
         }
 
         .hero__subtitle {
-            font-size: 18px;
-            font-family: 'Inter', sans-serif;
-            color: var(--terminal-text);
-            margin-bottom: 35px;
-            line-height: 1.6;
-            font-weight: 400;
+            font-size: 12px;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--form-black);
+            margin-bottom: 20px;
+            line-height: 1.4;
+            font-weight: normal;
         }
 
         .hero__button {
             display: inline-block;
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            background: var(--terminal-primary);
-            color: var(--terminal-white);
-            border: 3px solid var(--terminal-border);
-            padding: 18px 40px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            background: var(--form-red);
+            color: var(--form-white);
+            border: 2px solid var(--form-black);
+            padding: 10px 25px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
             transition: none;
         }
 
         .hero__button:hover {
-            background: var(--terminal-accent);
-            border-color: var(--terminal-accent);
+            transform: rotate(-1deg);
         }
 
         .hero__button:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+            transform: rotate(1deg);
         }
 
         /* Features section - Bureaucratic file cards */
@@ -305,16 +290,15 @@
         }
 
         .features__card {
-            background: var(--terminal-secondary);
-            border: 3px solid var(--terminal-border);
-            padding: 35px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            background: var(--form-white);
+            border: 2px dashed var(--form-black);
+            padding: 20px;
             position: relative;
             transition: none;
         }
 
         .features__card:hover {
-            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.4);
+            background: var(--form-beige);
         }
 
         .features__card::before {
@@ -322,26 +306,28 @@
         }
 
         .features__title {
-            font-size: 22px;
+            font-size: 14px;
             font-weight: bold;
-            font-family: 'IBM Plex Mono', monospace;
-            margin-bottom: 15px;
-            color: var(--terminal-primary);
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 10px;
+            color: var(--form-black);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0px;
+            border-bottom: 1px solid var(--form-black);
+            padding-bottom: 5px;
         }
 
         .features__text {
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            color: var(--terminal-text);
-            line-height: 1.6;
-            font-weight: 400;
+            font-size: 11px;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--form-black);
+            line-height: 1.4;
+            font-weight: normal;
         }
 
-        /* Subscribe section - Bureaucratic form */
+        /* Subscribe section - 1998 form */
         .subscribe {
-            padding: 60px 0;
+            padding: 40px 0;
         }
 
         .subscribe__container {
@@ -350,40 +336,39 @@
         }
 
         .subscribe__heading {
-            font-size: 36px;
-            margin-bottom: 20px;
+            font-size: 18px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
         .subscribe__subtitle {
-            font-size: 16px;
-            font-family: 'Inter', sans-serif;
-            color: var(--terminal-text);
-            margin-bottom: 35px;
+            font-size: 11px;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--form-black);
+            margin-bottom: 20px;
             text-align: center;
-            font-weight: 400;
+            font-weight: normal;
         }
 
         .subscribe__form {
-            background: var(--terminal-secondary);
-            border: 3px solid var(--terminal-border);
-            padding: 40px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            background: var(--form-white);
+            border: 1px solid var(--form-black);
+            padding: 25px;
         }
 
         .form__group {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         .form__label {
             display: block;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--terminal-primary);
-            margin-bottom: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--form-black);
+            margin-bottom: 5px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0px;
         }
 
         .form__input {
@@ -391,111 +376,108 @@
         }
 
         .form__input--error {
-            border-color: var(--terminal-accent);
-            box-shadow: 3px 3px 0px rgba(196, 30, 58, 0.3);
+            border-color: var(--form-red);
+            background: #FFE5E5;
         }
 
         .form__button {
             width: 100%;
-            padding: 18px 30px;
-            font-size: 16px;
+            padding: 10px 20px;
+            font-size: 11px;
         }
 
-        /* Error and flash messages - Government alerts */
+        /* Error and flash messages - Red stamps */
         .error-banner, .flash-message {
-            padding: 20px 25px;
-            margin-bottom: 25px;
-            border: 3px solid var(--terminal-border);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 3px solid var(--form-black);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .error-banner, .flash-message.error {
-            background: #FFFFFF;
-            color: var(--terminal-accent);
-            border-color: var(--terminal-accent);
+            background: var(--form-red);
+            color: var(--form-white);
+            transform: rotate(-2deg);
         }
 
         .flash-message.success {
-            background: #FFFFFF;
-            color: var(--terminal-success);
-            border-color: var(--terminal-success);
+            background: var(--form-white);
+            color: var(--form-black);
+            border: 2px solid var(--form-black);
         }
 
         .error-banner::before, .flash-message.error::before {
-            content: '⚠️ VARNING: ';
+            content: 'AVSLAG: ';
             font-weight: bold;
-            font-family: 'IBM Plex Mono', monospace;
         }
 
         .flash-message.success::before {
-            content: '✓ BEKRÄFTAT: ';
+            content: 'GODKÄND: ';
             font-weight: bold;
-            font-family: 'IBM Plex Mono', monospace;
         }
 
-        /* Thank you section - Government confirmation */
+        /* Thank you section - Approved stamp */
         .thank-you {
-            padding: 60px 0;
+            padding: 40px 0;
         }
 
         .thank-you__container {
             max-width: 700px;
             margin: 0 auto;
             text-align: center;
-            background: var(--terminal-secondary);
-            border: 3px solid var(--terminal-success);
-            padding: 50px;
-            box-shadow: 4px 4px 0px rgba(0, 75, 135, 0.3);
+            background: var(--form-white);
+            border: 1px solid var(--form-black);
+            padding: 30px;
         }
 
         .thank-you__heading {
-            font-size: 40px;
-            margin-bottom: 30px;
-            color: var(--terminal-success);
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--form-black);
+            border-bottom: 1px solid var(--form-black);
+            padding-bottom: 10px;
         }
 
         .thank-you__text {
-            font-size: 16px;
-            font-family: 'Inter', sans-serif;
-            color: var(--terminal-text);
-            margin-bottom: 20px;
-            line-height: 1.6;
-            font-weight: 400;
+            font-size: 11px;
+            font-family: 'Times New Roman', Times, serif;
+            color: var(--form-black);
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-weight: normal;
         }
 
         .thank-you__text strong {
-            color: var(--terminal-primary);
-            font-weight: 700;
+            color: var(--form-black);
+            font-weight: bold;
         }
 
         .thank-you__button {
             display: inline-block;
-            margin-top: 30px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            background: var(--terminal-primary);
-            color: var(--terminal-white);
-            border: 3px solid var(--terminal-border);
-            padding: 18px 40px;
+            margin-top: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            background: var(--form-red);
+            color: var(--form-white);
+            border: 2px solid var(--form-black);
+            padding: 10px 25px;
             text-decoration: none;
-            font-size: 16px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
             transition: none;
         }
 
         .thank-you__button:hover {
-            background: var(--terminal-accent);
-            border-color: var(--terminal-accent);
+            transform: rotate(-1deg);
         }
 
         .thank-you__button:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+            transform: rotate(1deg);
         }
     </style>
     {% block extra_css %}{% endblock %}
