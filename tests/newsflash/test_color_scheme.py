@@ -175,12 +175,8 @@ class TestNordicAssemblyTheme:
 
     def test_form_styles_present(self, newsflash_styles):
         """Verify form styling is present in inline styles."""
-        assert ".form__input" in newsflash_styles, (
-            "Form input styles should exist"
-        )
-        assert ".form__button" in newsflash_styles, (
-            "Form button styles should exist"
-        )
+        assert ".form__input" in newsflash_styles, "Form input styles should exist"
+        assert ".form__button" in newsflash_styles, "Form button styles should exist"
         assert ".subscribe__" in newsflash_styles, (
             "Subscribe section styles should exist"
         )
