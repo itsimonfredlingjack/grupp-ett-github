@@ -6,6 +6,7 @@ and test infrastructure of the project.
 """
 
 import os
+import secrets
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
@@ -32,6 +33,19 @@ from src.sejfa.newsflash.presentation.routes import create_newsflash_blueprint
 socketio = None
 
 
+def _resolve_secret_key(config: dict[str, Any] | None) -> str:
+    if config:
+        key = config.get("SECRET_KEY")
+        if isinstance(key, str) and key.strip():
+            return key
+    env_key = os.environ.get("SECRET_KEY", "").strip()
+    if env_key and env_key != "your-secret-key-here":
+        return env_key
+    if config and config.get("TESTING"):
+        return "test-secret-key"
+    return secrets.token_urlsafe(48)
+
+
 def create_app(config: dict | None = None) -> Flask:
     """Create and configure the Flask application.
 
@@ -44,7 +58,6 @@ def create_app(config: dict | None = None) -> Flask:
     global socketio
 
     app = Flask(__name__)
-    app.secret_key = "dev-secret-key"  # In production, use environment variable
 
     # Database configuration: DATABASE_URL env var, fallback to SQLite
     default_db_uri = os.environ.get("DATABASE_URL", "sqlite:///newsflash.db")
@@ -54,6 +67,7 @@ def create_app(config: dict | None = None) -> Flask:
     # Apply config overrides
     if config:
         app.config.update(config)
+    app.secret_key = _resolve_secret_key(app.config)
 
     # Ensure instance directory exists for file-based SQLite
     os.makedirs(app.instance_path, exist_ok=True)

@@ -1,6 +1,9 @@
 """Admin authentication module."""
 
+import os
+import secrets
 from dataclasses import dataclass
+from hmac import compare_digest
 
 
 @dataclass
@@ -14,8 +17,15 @@ class AdminCredentials:
 class AdminAuthService:
     """Service for handling admin authentication."""
 
-    # Simple hardcoded admin for MVP (in production, use database)
-    VALID_ADMIN = {"username": "admin", "password": "admin123"}
+    _active_tokens: set[str] = set()
+
+    @staticmethod
+    def _get_admin_credentials() -> AdminCredentials | None:
+        username = os.getenv("ADMIN_USERNAME", "").strip()
+        password = os.getenv("ADMIN_PASSWORD", "").strip()
+        if not username or not password:
+            return None
+        return AdminCredentials(username=username, password=password)
 
     @staticmethod
     def authenticate(username: str, password: str) -> bool:
@@ -28,9 +38,11 @@ class AdminAuthService:
         Returns:
             bool: True if credentials are valid.
         """
-        return (
-            username == AdminAuthService.VALID_ADMIN["username"]
-            and password == AdminAuthService.VALID_ADMIN["password"]
+        credentials = AdminAuthService._get_admin_credentials()
+        if credentials is None:
+            return False
+        return compare_digest(username, credentials.username) and compare_digest(
+            password, credentials.password
         )
 
     @staticmethod
@@ -43,8 +55,9 @@ class AdminAuthService:
         Returns:
             str: Session token.
         """
-        # Simple token generation (in production, use JWT or secure sessions)
-        return f"token_{username}_{hash(username) % 10000}"
+        token = f"token_{secrets.token_urlsafe(24)}"
+        AdminAuthService._active_tokens.add(token)
+        return token
 
     @staticmethod
     def validate_session_token(token: str | None) -> bool:
@@ -56,4 +69,4 @@ class AdminAuthService:
         Returns:
             bool: True if token is valid.
         """
-        return token is not None and token.startswith("token_")
+        return token is not None and token in AdminAuthService._active_tokens
