@@ -6,11 +6,15 @@
     <title>{% block title %}News Flash{% endblock %}</title>
     <style>
         :root {
-            /* 1998 Government Form - Scanned Paper Aesthetic */
-            --form-beige: #E8DCC4;      /* Paper background */
-            --form-black: #000000;      /* Black ink */
-            --form-red: #D32F2F;        /* Aggressive stamp red */
-            --form-white: #FFFFFF;      /* White areas */
+            /* GPU Overheat / Cyber-Glitch Theme */
+            --glitch-bg-dark: #1a1a1a;        /* Dark gray base */
+            --glitch-neon-green: #00FF00;     /* Terminal text */
+            --glitch-thermal-purple: #8B00FF; /* Cool zones */
+            --glitch-thermal-red: #FF0000;    /* Hot zones */
+            --glitch-thermal-yellow: #FFFF00; /* Very hot */
+            --glitch-thermal-white: #FFFFFF;  /* Critical heat */
+            --glitch-glass: rgba(255, 255, 255, 0.1); /* Glass panels */
+            --glitch-glass-border: rgba(0, 255, 255, 0.3); /* Cyan glass edge */
         }
 
         * {
@@ -19,30 +23,97 @@
             box-sizing: border-box;
         }
 
-        body {
-            min-height: 100vh;
-            font-family: 'Times New Roman', Times, serif;
-            background: var(--form-beige);
-            color: var(--form-black);
-            position: relative;
-            overflow-x: hidden;
-            font-size: 12px;
-            line-height: 1.4;
+        /* Glitch shake animation */
+        @keyframes glitch-shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, -1px); }
         }
 
-        /* No effects - pure flat paper */
-        body::before,
+        /* Chromatic aberration pulse */
+        @keyframes chroma-pulse {
+            0%, 100% {
+                text-shadow: -2px 0 0 #FF0000, 2px 0 0 #00FFFF;
+            }
+            50% {
+                text-shadow: -3px 0 0 #FF0000, 3px 0 0 #00FFFF;
+            }
+        }
+
+        /* Heatmap glow animation */
+        @keyframes heatmap-glow {
+            0%, 100% {
+                background-position: 50% 50%;
+                opacity: 0.3;
+            }
+            50% {
+                background-position: 52% 48%;
+                opacity: 0.4;
+            }
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--glitch-bg-dark);
+            color: var(--glitch-neon-green);
+            position: relative;
+            overflow-x: hidden;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.03) 2px,
+                    rgba(255, 255, 255, 0.03) 4px
+                );
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        /* Heatmap gradient background */
         body::after {
-            display: none;
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(255, 140, 0, 0.35) 0%,     /* Orange center (hot) */
+                rgba(255, 0, 0, 0.25) 30%,      /* Red middle */
+                rgba(139, 0, 255, 0.2) 70%,     /* Purple outer */
+                rgba(0, 0, 139, 0.3) 100%       /* Dark blue edges (cool) */
+            );
+            pointer-events: none;
+            z-index: 0;
+            animation: heatmap-glow 4s ease-in-out infinite;
         }
 
         .header {
             position: relative;
             z-index: 10;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
+            background: var(--glitch-glass);
+            border: 1px solid var(--glitch-glass-border);
+            backdrop-filter: blur(10px);
             padding: 15px;
             margin: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
         }
 
         .header__container {
@@ -52,7 +123,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--form-black);
+            border-bottom: 1px solid var(--glitch-glass-border);
             padding-bottom: 10px;
         }
 
@@ -60,36 +131,40 @@
             font-family: 'Courier New', Courier, monospace;
             font-size: 18px;
             font-weight: bold;
-            color: var(--form-black);
-            letter-spacing: 1px;
+            color: var(--glitch-neon-green);
+            letter-spacing: 2px;
             text-transform: uppercase;
+            text-shadow: -2px 0 0 #FF0000, 2px 0 0 #00FFFF, 0 0 10px var(--glitch-neon-green);
+            animation: chroma-pulse 3s ease-in-out infinite;
         }
 
         .header__nav {
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
         .header__link {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 11px;
-            font-weight: normal;
-            color: var(--form-black);
-            text-decoration: underline;
-            padding: 5px 10px;
-            background: none;
-            border: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--glitch-neon-green);
+            text-decoration: none;
+            padding: 8px 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--glitch-neon-green);
             position: relative;
-            transition: none;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
         }
 
         .header__link:hover {
-            background: var(--form-beige);
-            text-decoration: none;
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            animation: glitch-shake 0.3s ease-in-out infinite;
         }
 
         .header__link:active {
-            transform: none;
+            transform: scale(0.95);
         }
 
         .main {
@@ -104,11 +179,13 @@
         .footer {
             position: relative;
             z-index: 10;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-top: 2px solid var(--form-black);
+            background: var(--glitch-glass);
+            border: 1px solid var(--glitch-glass-border);
+            border-top: 2px solid var(--glitch-thermal-red);
+            backdrop-filter: blur(10px);
             padding: 10px;
             margin: 20px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
         }
 
         .footer__container {
@@ -120,109 +197,180 @@
         .footer__text {
             font-family: 'Courier New', Courier, monospace;
             text-align: center;
-            color: var(--form-black);
-            font-size: 9px;
+            color: var(--glitch-neon-green);
+            font-size: 10px;
             font-weight: normal;
+            opacity: 0.7;
         }
 
-        /* Global card/panel styling - Form boxes with "cut here" dashed borders */
+        /* Global card/panel styling - Cracked glass panels */
         .card, .panel, [class*="card"], [class*="panel"] {
-            background: var(--form-white);
-            border: 2px dashed var(--form-black);
+            background: var(--glitch-glass);
+            border: 2px solid var(--glitch-glass-border);
+            backdrop-filter: blur(10px);
             padding: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             position: relative;
-            transition: none;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 0 20px rgba(0, 255, 255, 0.1),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
         }
 
         .card:hover, .panel:hover, [class*="card"]:hover, [class*="panel"]:hover {
-            background: var(--form-beige);
+            border-color: var(--glitch-neon-green);
+            box-shadow:
+                0 0 30px rgba(0, 255, 0, 0.3),
+                inset 0 0 20px rgba(0, 255, 0, 0.1);
+            animation: glitch-shake 0.5s ease-in-out infinite;
         }
 
-        /* Remove ASCII decorations */
+        /* Crack effect on panels */
         .card::before, .panel::before,
-        .card::after, .panel::after {
-            display: none;
+        [class*="card"]::before, [class*="panel"]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                transparent 30%,
+                rgba(0, 255, 255, 0.1) 31%,
+                transparent 32%,
+                transparent 48%,
+                rgba(255, 0, 0, 0.1) 49%,
+                transparent 50%
+            );
+            pointer-events: none;
         }
 
-        /* Headings - Typewriter style */
+        /* Color bleed at edges */
+        .card::after, .panel::after,
+        [class*="card"]::after, [class*="panel"]::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(
+                45deg,
+                var(--glitch-thermal-purple) 0%,
+                transparent 20%,
+                transparent 80%,
+                var(--glitch-thermal-red) 100%
+            );
+            opacity: 0.3;
+            z-index: -1;
+            filter: blur(10px);
+        }
+
+        /* Headings - Glitched terminal style */
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            color: var(--form-black);
-            margin-bottom: 15px;
-            line-height: 1.2;
-            letter-spacing: 0px;
+            color: var(--glitch-neon-green);
+            margin-bottom: 20px;
+            line-height: 1.3;
+            letter-spacing: 3px;
             text-transform: uppercase;
+            text-shadow:
+                -2px 0 0 #FF0000,
+                2px 0 0 #00FFFF,
+                0 0 15px var(--glitch-neon-green);
         }
 
-        h1 { font-size: 20px; }
-        h2 { font-size: 16px; }
-        h3 { font-size: 14px; }
-        h4 { font-size: 12px; }
+        h1 { font-size: 24px; }
+        h2 { font-size: 20px; }
+        h3 { font-size: 16px; }
+        h4 { font-size: 14px; }
 
-        /* Code/data - Typewriter monospace */
+        /* Code/data - Terminal monospace with glow */
         code, pre, .data, [class*="code"], [class*="data"] {
             font-family: 'Courier New', Courier, monospace;
-            color: var(--form-black);
-            background: var(--form-white);
-            padding: 8px 12px;
-            border: 1px solid var(--form-black);
-            font-size: 10px;
+            color: var(--glitch-neon-green);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border: 1px solid var(--glitch-neon-green);
+            font-size: 12px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            text-shadow: 0 0 5px var(--glitch-neon-green);
         }
 
-        /* Button styling - Stamp aesthetic */
+        /* Button styling - Glitch/thermal scan effect */
         button, .button, input[type="submit"] {
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
-            padding: 10px 25px;
+            background: linear-gradient(
+                135deg,
+                var(--glitch-thermal-red) 0%,
+                var(--glitch-thermal-yellow) 50%,
+                var(--glitch-thermal-white) 100%
+            );
+            color: #000000;
+            border: 2px solid var(--glitch-thermal-red);
+            padding: 12px 30px;
             cursor: pointer;
-            font-size: 11px;
-            transition: none;
+            font-size: 12px;
+            transition: all 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
+            position: relative;
+            box-shadow:
+                0 0 20px rgba(255, 0, 0, 0.5),
+                inset 0 0 10px rgba(255, 255, 255, 0.3);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         button:hover, .button:hover, input[type="submit"]:hover {
-            transform: rotate(-1deg);
+            animation: glitch-shake 0.3s ease-in-out infinite;
+            box-shadow:
+                0 0 30px rgba(255, 255, 0, 0.7),
+                inset 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
         button:active, .button:active, input[type="submit"]:active {
-            transform: rotate(1deg);
+            transform: scale(0.95);
+            box-shadow:
+                0 0 10px rgba(255, 0, 0, 0.3),
+                inset 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         button:focus, .button:focus, input[type="submit"]:focus {
-            outline: 1px dotted var(--form-black);
+            outline: 2px solid var(--glitch-thermal-yellow);
             outline-offset: 3px;
         }
 
-        /* Input fields - Form boxes */
+        /* Input fields - Terminal style with glow */
         input, textarea, select {
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            border-bottom: 2px solid var(--form-black);
-            color: var(--form-black);
-            padding: 8px 12px;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--glitch-neon-green);
+            border-bottom: 2px solid var(--glitch-neon-green);
+            color: var(--glitch-neon-green);
+            padding: 10px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
             font-weight: normal;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+            text-shadow: 0 0 3px var(--glitch-neon-green);
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--form-black);
-            background: var(--form-beige);
+            border-color: var(--glitch-thermal-yellow);
+            background: rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+            animation: glitch-shake 0.5s ease-in-out infinite;
         }
 
         input::placeholder, textarea::placeholder {
-            color: rgba(0, 0, 0, 0.4);
+            color: rgba(0, 255, 0, 0.4);
             font-style: italic;
         }
 
-        /* Hero section - Bureaucratic announcement */
+        /* Hero section - Critical system alert */
         .hero {
             padding: 60px 0;
             text-align: center;
@@ -231,101 +379,131 @@
         .hero__container {
             max-width: 800px;
             margin: 0 auto;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            padding: 30px;
+            background: var(--glitch-glass);
+            border: 2px solid var(--glitch-thermal-red);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            box-shadow:
+                0 0 40px rgba(255, 0, 0, 0.3),
+                inset 0 0 30px rgba(255, 140, 0, 0.2);
         }
 
         .hero__heading {
-            font-size: 20px;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--form-black);
-            padding-bottom: 10px;
+            font-size: 28px;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            border-bottom: 2px solid var(--glitch-thermal-red);
+            padding-bottom: 15px;
+            animation: chroma-pulse 2s ease-in-out infinite;
         }
 
         .hero__subtitle {
-            font-size: 12px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
-            margin-bottom: 20px;
-            line-height: 1.4;
+            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--glitch-thermal-yellow);
+            margin-bottom: 30px;
+            line-height: 1.6;
             font-weight: normal;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
         }
 
         .hero__button {
             display: inline-block;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
-            padding: 10px 25px;
+            background: linear-gradient(
+                135deg,
+                var(--glitch-thermal-red) 0%,
+                var(--glitch-thermal-yellow) 50%,
+                var(--glitch-thermal-white) 100%
+            );
+            color: #000000;
+            border: 2px solid var(--glitch-thermal-red);
+            padding: 15px 35px;
             text-decoration: none;
-            font-size: 11px;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: none;
+            letter-spacing: 3px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
         }
 
         .hero__button:hover {
-            transform: rotate(-1deg);
+            animation: glitch-shake 0.3s ease-in-out infinite;
+            box-shadow: 0 0 40px rgba(255, 255, 0, 0.7);
         }
 
         .hero__button:active {
-            transform: rotate(1deg);
+            transform: scale(0.95);
         }
 
-        /* Features section - Bureaucratic file cards */
+        /* Features section - Glitched data panels */
         .features {
             padding: 60px 0;
         }
 
         .features__container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
             max-width: 1000px;
             margin: 0 auto;
         }
 
         .features__card {
-            background: var(--form-white);
-            border: 2px dashed var(--form-black);
-            padding: 20px;
+            background: var(--glitch-glass);
+            border: 2px solid var(--glitch-glass-border);
+            backdrop-filter: blur(10px);
+            padding: 25px;
             position: relative;
-            transition: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
         }
 
         .features__card:hover {
-            background: var(--form-beige);
+            border-color: var(--glitch-neon-green);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            animation: glitch-shake 0.5s ease-in-out infinite;
         }
 
         .features__card::before {
-            display: none;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                45deg,
+                rgba(139, 0, 255, 0.1) 0%,
+                transparent 50%,
+                rgba(255, 0, 0, 0.1) 100%
+            );
+            pointer-events: none;
         }
 
         .features__title {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             font-family: 'Courier New', Courier, monospace;
-            margin-bottom: 10px;
-            color: var(--form-black);
+            margin-bottom: 15px;
+            color: var(--glitch-neon-green);
             text-transform: uppercase;
-            letter-spacing: 0px;
-            border-bottom: 1px solid var(--form-black);
-            padding-bottom: 5px;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--glitch-glass-border);
+            padding-bottom: 10px;
+            text-shadow: 0 0 10px var(--glitch-neon-green);
         }
 
         .features__text {
-            font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
-            line-height: 1.4;
+            font-size: 13px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--glitch-thermal-yellow);
+            line-height: 1.6;
             font-weight: normal;
         }
 
-        /* Subscribe section - 1998 form */
+        /* Subscribe section - Critical data input terminal */
         .subscribe {
             padding: 40px 0;
         }
@@ -336,39 +514,46 @@
         }
 
         .subscribe__heading {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: 22px;
+            margin-bottom: 20px;
             text-align: center;
+            text-shadow:
+                -2px 0 0 #FF0000,
+                2px 0 0 #00FFFF,
+                0 0 15px var(--glitch-neon-green);
         }
 
         .subscribe__subtitle {
-            font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
-            margin-bottom: 20px;
+            font-size: 13px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--glitch-thermal-yellow);
+            margin-bottom: 25px;
             text-align: center;
             font-weight: normal;
         }
 
         .subscribe__form {
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            padding: 25px;
+            background: var(--glitch-glass);
+            border: 2px solid var(--glitch-glass-border);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
         }
 
         .form__group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form__label {
             display: block;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: bold;
-            color: var(--form-black);
-            margin-bottom: 5px;
+            color: var(--glitch-neon-green);
+            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px var(--glitch-neon-green);
         }
 
         .form__input {
@@ -376,51 +561,69 @@
         }
 
         .form__input--error {
-            border-color: var(--form-red);
-            background: #FFE5E5;
+            border-color: var(--glitch-thermal-red);
+            background: rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
         }
 
         .form__button {
             width: 100%;
-            padding: 10px 20px;
-            font-size: 11px;
+            padding: 15px 20px;
+            font-size: 14px;
         }
 
-        /* Error and flash messages - Red stamps */
+        /* Error and flash messages - Critical thermal alerts */
         .error-banner, .flash-message {
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border: 3px solid var(--form-black);
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            border: 3px solid var(--glitch-thermal-red);
             font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 3px;
+            position: relative;
         }
 
         .error-banner, .flash-message.error {
-            background: var(--form-red);
-            color: var(--form-white);
+            background: linear-gradient(
+                135deg,
+                rgba(255, 0, 0, 0.3) 0%,
+                rgba(255, 140, 0, 0.3) 100%
+            );
+            color: var(--glitch-thermal-white);
+            border-color: var(--glitch-thermal-red);
             transform: rotate(-2deg);
+            box-shadow:
+                0 0 30px rgba(255, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 0, 0, 0.2);
+            animation: glitch-shake 0.5s ease-in-out infinite;
+            backdrop-filter: blur(5px);
         }
 
         .flash-message.success {
-            background: var(--form-white);
-            color: var(--form-black);
-            border: 2px solid var(--form-black);
+            background: linear-gradient(
+                135deg,
+                rgba(0, 255, 0, 0.2) 0%,
+                rgba(0, 255, 255, 0.2) 100%
+            );
+            color: var(--glitch-neon-green);
+            border: 2px solid var(--glitch-neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            backdrop-filter: blur(5px);
         }
 
         .error-banner::before, .flash-message.error::before {
-            content: 'AVSLAG: ';
+            content: '⚠ CRITICAL: ';
             font-weight: bold;
         }
 
         .flash-message.success::before {
-            content: 'GODKÄND: ';
+            content: '✓ SYSTEM OK: ';
             font-weight: bold;
         }
 
-        /* Thank you section - Approved stamp */
+        /* Thank you section - System confirmation */
         .thank-you {
             padding: 40px 0;
         }
@@ -429,55 +632,71 @@
             max-width: 700px;
             margin: 0 auto;
             text-align: center;
-            background: var(--form-white);
-            border: 1px solid var(--form-black);
-            padding: 30px;
+            background: var(--glitch-glass);
+            border: 2px solid var(--glitch-neon-green);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            box-shadow:
+                0 0 40px rgba(0, 255, 0, 0.3),
+                inset 0 0 30px rgba(0, 255, 0, 0.1);
         }
 
         .thank-you__heading {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: var(--form-black);
-            border-bottom: 1px solid var(--form-black);
-            padding-bottom: 10px;
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: var(--glitch-neon-green);
+            border-bottom: 2px solid var(--glitch-neon-green);
+            padding-bottom: 15px;
+            text-shadow:
+                -2px 0 0 #FF0000,
+                2px 0 0 #00FFFF,
+                0 0 20px var(--glitch-neon-green);
         }
 
         .thank-you__text {
-            font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-            color: var(--form-black);
-            margin-bottom: 15px;
-            line-height: 1.4;
+            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--glitch-thermal-yellow);
+            margin-bottom: 20px;
+            line-height: 1.6;
             font-weight: normal;
         }
 
         .thank-you__text strong {
-            color: var(--form-black);
+            color: var(--glitch-neon-green);
             font-weight: bold;
+            text-shadow: 0 0 10px var(--glitch-neon-green);
         }
 
         .thank-you__button {
             display: inline-block;
-            margin-top: 20px;
+            margin-top: 25px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            background: var(--form-red);
-            color: var(--form-white);
-            border: 2px solid var(--form-black);
-            padding: 10px 25px;
+            background: linear-gradient(
+                135deg,
+                var(--glitch-thermal-red) 0%,
+                var(--glitch-thermal-yellow) 50%,
+                var(--glitch-thermal-white) 100%
+            );
+            color: #000000;
+            border: 2px solid var(--glitch-thermal-red);
+            padding: 15px 35px;
             text-decoration: none;
-            font-size: 11px;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: none;
+            letter-spacing: 3px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
         }
 
         .thank-you__button:hover {
-            transform: rotate(-1deg);
+            animation: glitch-shake 0.3s ease-in-out infinite;
+            box-shadow: 0 0 40px rgba(255, 255, 0, 0.7);
         }
 
         .thank-you__button:active {
-            transform: rotate(1deg);
+            transform: scale(0.95);
         }
     </style>
     {% block extra_css %}{% endblock %}
