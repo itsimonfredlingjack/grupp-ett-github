@@ -39,18 +39,18 @@ As a result:
 
 ## Acceptance Criteria
 
-- [ ] Investigate `tests/newsflash/test_color_scheme.py` to understand what it's testing
-- [ ] Check if `style.css` file exists and if it's still being used
-- [ ] If `style.css` is unused, remove it
-- [ ] Update or rewrite the test to validate the **inline styles** in `base.html` and `expense_tracker/base.html`
-- [ ] Ensure tests verify the current theme (Nordic Assembly / Flat-Pack Manual)
-- [ ] Tests should validate:
+- [x] Investigate `tests/newsflash/test_color_scheme.py` to understand what it's testing
+- [x] Check if `style.css` file exists and if it's still being used
+- [x] If `style.css` is unused, remove it
+- [x] Update or rewrite the test to validate the **inline styles** in `base.html` and `expense_tracker/base.html`
+- [x] Ensure tests verify the current theme (Nordic Assembly / Flat-Pack Manual)
+- [x] Tests should validate:
   - CSS variables exist and have correct values
   - Color scheme is correct (white/cardboard, instruction blue, warning yellow)
   - Typography (Verdana/Noto Sans)
   - Line art style (borders, no fills)
-- [ ] All tests pass: `source venv/bin/activate && pytest -xvs`
-- [ ] Linting passes: `source venv/bin/activate && ruff check .`
+- [x] All tests pass: `source venv/bin/activate && pytest -xvs`
+- [x] Linting passes: `source venv/bin/activate && ruff check .`
 - [ ] Ändringar committade och pushade
 - [ ] PR skapad via `gh pr create`
 - [ ] PR mergad eller auto-merge aktiverat
@@ -81,6 +81,7 @@ As a result:
 | Iteration | Action | Result | Tests Status | Next Steps |
 |-----------|--------|--------|--------------|------------|
 | 1 | Task initialized | Branch created, CURRENT_TASK.md populated | N/A | Investigate test file |
+| 2 | Fixed test coverage | Deleted unused style.css, rewrote tests for inline styles | ✅ 378 passed | Commit and deploy |
 
 ## Misslyckade Försök
 
