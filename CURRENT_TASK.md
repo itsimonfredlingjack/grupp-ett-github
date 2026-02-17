@@ -45,10 +45,10 @@ Description: Reimagine the app as a playful, 3D interface made of soft clay or m
 - [x] Gentle animations (float, bounce) instead of glitch/shake
 - [x] All tests pass: `source venv/bin/activate && pytest -xvs` (383 passed)
 - [x] Linting passes: `source venv/bin/activate && ruff check .`
-- [ ] Ändringar committade och pushade
-- [ ] PR skapad via `gh pr create`
-- [ ] PR mergad eller auto-merge aktiverat
-- [ ] Jira-status uppdaterad
+- [x] Ändringar committade och pushade
+- [x] PR skapad via `gh pr create` (PR #426)
+- [x] PR mergad eller auto-merge aktiverat (auto-merge enabled)
+- [x] Jira-status uppdaterad (In Progress)
 
 ## Implementation Plan
 
