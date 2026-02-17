@@ -6,25 +6,27 @@
     <title>{% block title %}ExpenseTracker{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Soft Clay / 3D Playground Theme */
-            --clay-bg: #E3F2FD;              /* Baby Blue */
-            --clay-surface: #FFFFFF;
-            --clay-pink: #FFB3C6;            /* Bubblegum Pink */
-            --clay-mint: #B5EAD7;            /* Mint Green */
-            --clay-yellow: #FFEAA7;          /* Banana Yellow */
-            --clay-peach: #FFD4B2;           /* Soft Peach */
-            --clay-lavender: #D4C5F9;        /* Soft Lavender */
-            --clay-blue-light: #C7E3FF;      /* Light Blue */
-            --clay-text: #2D3436;            /* Dark gray - never pure black */
-            --clay-text-muted: #636E72;      /* Muted gray */
-            --clay-text-light: #B2BEC3;      /* Light gray */
-            --clay-radius: 20px;
-            --clay-radius-pill: 50px;
-            --clay-radius-sm: 12px;
-            --clay-radius-lg: 32px;
+            /* Napkin Sketch / Hand-Drawn Blueprint Theme */
+            --ink: #00008B;
+            --ink-75: rgba(0, 0, 139, 0.75);
+            --ink-40: rgba(0, 0, 139, 0.40);
+            --ink-20: rgba(0, 0, 139, 0.20);
+            --ink-10: rgba(0, 0, 139, 0.10);
+            --ink-06: rgba(0, 0, 139, 0.06);
+            --ink-03: rgba(0, 0, 139, 0.03);
+            --paper: #FFF9F0;
+            --paper-card: #FFFEF8;
+            --margin-red: rgba(210, 60, 60, 0.35);
+        }
+
+        .sketch-filter-defs {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
         }
 
         * {
@@ -33,131 +35,133 @@
             box-sizing: border-box;
         }
 
-        /* Gentle float animation */
-        @keyframes clay-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+        @keyframes sketch-jitter {
+            0%, 100% { transform: rotate(0deg) translateY(0); }
+            25% { transform: rotate(0.4deg) translateY(-1px); }
+            75% { transform: rotate(-0.3deg) translateY(1px); }
         }
 
-        /* Soft bounce */
-        @keyframes clay-bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-
-        /* Gentle pop-in */
-        @keyframes clay-pop {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            60% { transform: scale(1.03); }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes sketch-pop {
+            0% { transform: scale(0.97) rotate(-1deg); opacity: 0.7; }
+            60% { transform: scale(1.02) rotate(0.5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
         body {
             min-height: 100vh;
-            font-family: 'Nunito', 'Segoe UI', sans-serif;
-            background-color: var(--clay-bg);
-            color: var(--clay-text);
+            font-family: 'Architects Daughter', 'Comic Sans MS', cursive;
+            background-color: var(--paper);
+            background-image:
+                /* Red margin line */
+                linear-gradient(90deg,
+                    transparent 62px,
+                    var(--margin-red) 62px,
+                    var(--margin-red) 64px,
+                    transparent 64px
+                ),
+                /* Horizontal ruled lines */
+                repeating-linear-gradient(
+                    transparent,
+                    transparent 27px,
+                    var(--ink-10) 27px,
+                    var(--ink-10) 28px
+                );
+            background-attachment: local;
+            color: var(--ink);
             position: relative;
             overflow-x: hidden;
             padding: 0;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        /* Decorative blob - top right */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -120px;
-            right: -120px;
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, var(--clay-yellow) 0%, transparent 65%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.5;
-        }
-
-        /* Decorative blob - bottom left */
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -180px;
-            left: -130px;
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, var(--clay-peach) 0%, transparent 65%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.5;
-        }
-
-        nav {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            gap: 12px;
-            background: var(--clay-mint);
-            border-radius: 0 0 var(--clay-radius-lg) var(--clay-radius-lg);
-            padding: 16px 30px;
-            max-width: 100%;
-            margin: 0 0 30px 0;
-            box-shadow:
-                inset 2px 2px 6px rgba(255, 255, 255, 0.75),
-                0 6px 20px rgba(45, 52, 54, 0.12);
-        }
-
-        nav a {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            color: var(--clay-text);
-            text-decoration: none;
-            padding: 10px 24px;
-            background: var(--clay-yellow);
-            border-radius: var(--clay-radius-pill);
-            font-size: 14px;
-            text-transform: none;
-            letter-spacing: 0;
-            transition: all 0.2s ease;
-            display: inline-block;
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.85),
-                3px 4px 10px rgba(45, 52, 54, 0.14);
-        }
-
-        nav a:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.85),
-                5px 7px 16px rgba(45, 52, 54, 0.2);
-        }
-
-        nav a:active {
-            transform: translateY(1px) scale(0.97);
-            box-shadow:
-                inset 4px 4px 8px rgba(45, 52, 54, 0.12),
-                1px 1px 3px rgba(255, 255, 255, 0.85);
+            font-size: 16px;
+            line-height: 1.7;
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 800;
-            color: var(--clay-text);
+            font-family: 'Architects Daughter', cursive;
+            font-weight: normal;
+            color: var(--ink);
             margin-bottom: 20px;
             position: relative;
             z-index: 10;
             line-height: 1.3;
-            letter-spacing: 0;
-            text-transform: none;
-            text-shadow: none;
+            letter-spacing: 0.5px;
         }
 
-        h1 { font-size: 28px; }
-        h2 { font-size: 22px; }
-        h3 { font-size: 18px; }
+        h1::after, h2::after {
+            content: '';
+            display: block;
+            height: 2px;
+            background: var(--ink-40);
+            border-radius: 2px 4px 1px 3px;
+            margin-top: 6px;
+            transform: rotate(-0.3deg);
+        }
 
+        h1 { font-size: 30px; }
+        h2 { font-size: 24px; }
+        h3 { font-size: 19px; }
+
+        /* ─── NAV ─── */
+        nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            background: var(--paper);
+            border-bottom: 3px solid var(--ink);
+            box-shadow: 0 3px 0 var(--ink-20), 0 5px 0 var(--ink-10);
+            padding: 16px 30px;
+            max-width: 100%;
+            margin: 0 0 30px 0;
+        }
+
+        nav::before {
+            content: '📋 ';
+            font-size: 18px;
+            margin-right: 4px;
+        }
+
+        nav a {
+            font-family: 'Architects Daughter', cursive;
+            font-weight: normal;
+            color: var(--ink);
+            text-decoration: none;
+            padding: 8px 20px;
+            border: 2px solid var(--ink);
+            border-radius: 255px 8px 225px 8px / 8px 225px 8px 255px;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+            transition: all 0.15s ease;
+            display: inline-block;
+            background: transparent;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border: 1px solid var(--ink-20);
+            border-radius: 255px 8px 225px 8px / 8px 225px 8px 255px;
+            pointer-events: none;
+        }
+
+        nav a:hover {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 4px,
+                var(--ink-06) 4px,
+                var(--ink-06) 5px
+            );
+            transform: translateY(-1px) rotate(0.4deg);
+        }
+
+        nav a:active {
+            transform: translateY(1px) rotate(-0.3deg);
+        }
+
+        /* ─── FLASH MESSAGES ─── */
         .flash-messages {
             position: relative;
             z-index: 10;
@@ -166,47 +170,42 @@
         }
 
         .flash {
-            padding: 18px 24px;
+            padding: 16px 22px;
             margin-bottom: 16px;
-            border-radius: var(--clay-radius);
-            font-family: 'Nunito', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0;
-            text-transform: none;
+            border: 2px solid var(--ink);
+            border-radius: 4px 8px 4px 6px / 6px 4px 8px 4px;
+            font-family: 'Architects Daughter', cursive;
+            font-size: 15px;
+            letter-spacing: 0.3px;
             position: relative;
-            border: none;
-            animation: clay-pop 0.3s ease-out;
+            animation: sketch-pop 0.3s ease-out;
+            background-color: var(--paper-card);
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 6px,
+                var(--ink-06) 6px, var(--ink-06) 7px
+            );
         }
 
         .flash.error {
-            background: var(--clay-pink);
-            color: var(--clay-text);
-            transform: none;
-            box-shadow:
-                inset 2px 2px 6px rgba(255, 255, 255, 0.75),
-                4px 5px 14px rgba(45, 52, 54, 0.14);
-        }
-
-        .flash.error::before {
-            content: '😬 ';
-            font-weight: 800;
+            border-style: dashed;
         }
 
         .flash.success {
-            background: var(--clay-mint);
-            color: var(--clay-text);
-            border: none;
-            box-shadow:
-                inset 2px 2px 6px rgba(255, 255, 255, 0.75),
-                4px 5px 14px rgba(45, 52, 54, 0.1);
+            border-style: solid;
+        }
+
+        .flash.error::before {
+            content: '⚠ ';
+            font-weight: bold;
         }
 
         .flash.success::before {
-            content: '🎉 ';
-            font-weight: 800;
+            content: '✓ ';
+            font-weight: bold;
         }
 
+        /* ─── EXPENSE LIST ─── */
         .expense-list {
             list-style: none;
             padding: 0;
@@ -217,77 +216,97 @@
         }
 
         .expense-item {
-            background: var(--clay-surface);
-            border-radius: var(--clay-radius);
-            padding: 18px 24px;
-            margin-bottom: 16px;
+            background-color: var(--paper-card);
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 9px,
+                var(--ink-03) 9px, var(--ink-03) 10px
+            );
+            border: 2px solid var(--ink);
+            border-radius: 4px 8px 4px 6px / 6px 4px 8px 4px;
+            padding: 16px 22px;
+            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: relative;
-            transition: all 0.25s ease;
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.9),
-                5px 6px 16px rgba(45, 52, 54, 0.1);
-            border: none;
+            transition: transform 0.15s ease;
         }
 
+        .expense-item:nth-child(odd) { transform: rotate(-0.2deg); }
+        .expense-item:nth-child(even) { transform: rotate(0.2deg); }
+
         .expense-item:hover {
-            transform: translateY(-3px);
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.9),
-                7px 10px 22px rgba(45, 52, 54, 0.16);
+            transform: translateY(-2px) rotate(0deg);
         }
 
         .expense-item::before {
-            display: none;
+            content: '─ ';
+            color: var(--ink-40);
+            font-size: 12px;
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .expense-title {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            color: var(--clay-text);
-            font-size: 15px;
-            text-transform: none;
-            letter-spacing: 0;
-            text-shadow: none;
+            font-family: 'Architects Daughter', cursive;
+            font-weight: normal;
+            color: var(--ink);
+            font-size: 16px;
+            letter-spacing: 0.3px;
         }
 
         .expense-category {
-            font-family: 'Nunito', sans-serif;
-            color: var(--clay-text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            font-style: normal;
+            font-family: 'Architects Daughter', cursive;
+            color: var(--ink-75);
+            font-size: 14px;
+            font-style: italic;
+            margin-left: 6px;
         }
 
         .expense-amount {
-            font-family: 'Nunito', sans-serif;
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--clay-text);
-            background: var(--clay-yellow);
-            padding: 6px 16px;
-            border-radius: var(--clay-radius-pill);
-            box-shadow:
-                inset 1px 1px 4px rgba(255, 255, 255, 0.8),
-                2px 3px 8px rgba(45, 52, 54, 0.12);
-            text-shadow: none;
+            font-family: 'Architects Daughter', cursive;
+            font-size: 17px;
+            font-weight: normal;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            padding: 4px 14px;
+            border-radius: 255px 6px 225px 6px / 6px 225px 6px 255px;
+            background: transparent;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 5px,
+                var(--ink-06) 5px, var(--ink-06) 6px
+            );
         }
 
+        /* ─── FORM ─── */
         form {
-            background: var(--clay-surface);
-            border-radius: var(--clay-radius-lg);
-            padding: 30px;
+            background-color: var(--paper-card);
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 9px,
+                var(--ink-03) 9px, var(--ink-03) 10px
+            );
+            border: 2px solid var(--ink);
+            border-radius: 255px 12px 225px 12px / 12px 225px 12px 255px;
+            padding: 32px 30px;
             margin-bottom: 25px;
             position: relative;
             z-index: 10;
             max-width: 1000px;
             margin: 0 auto 30px;
-            box-shadow:
-                inset 3px 3px 8px rgba(255, 255, 255, 0.9),
-                8px 10px 25px rgba(45, 52, 54, 0.1);
-            border: none;
+        }
+
+        form::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px solid var(--ink-20);
+            border-radius: 255px 12px 225px 12px / 12px 225px 12px 255px;
+            pointer-events: none;
         }
 
         .form-group {
@@ -295,130 +314,164 @@
         }
 
         label {
-            font-family: 'Nunito', sans-serif;
+            font-family: 'Architects Daughter', cursive;
             display: block;
             margin-bottom: 8px;
-            font-weight: 700;
-            color: var(--clay-text-muted);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: none;
+            font-weight: normal;
+            color: var(--ink);
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        label::before {
+            content: '> ';
+            color: var(--ink-40);
         }
 
         input, select {
             width: 100%;
-            padding: 12px 18px;
-            background: var(--clay-surface);
-            border: none;
-            border-radius: var(--clay-radius-sm);
-            color: var(--clay-text);
-            font-family: 'Nunito', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow:
-                inset 3px 3px 8px rgba(45, 52, 54, 0.1),
-                inset -2px -2px 6px rgba(255, 255, 255, 0.9);
-            text-shadow: none;
-            transition: all 0.2s ease;
+            padding: 10px 14px;
+            background: var(--paper);
+            border: 2px solid var(--ink-75);
+            border-radius: 4px 6px 4px 5px / 5px 4px 6px 4px;
+            color: var(--ink);
+            font-family: 'Architects Daughter', cursive;
+            font-size: 15px;
+            transition: border-color 0.15s ease;
         }
 
         input:focus, select:focus {
             outline: none;
-            box-shadow:
-                inset 3px 3px 8px rgba(45, 52, 54, 0.1),
-                inset -2px -2px 6px rgba(255, 255, 255, 0.9),
-                0 0 0 3px var(--clay-yellow);
+            border-color: var(--ink);
+            border-width: 2px;
+            box-shadow: 3px 3px 0 var(--ink-20);
         }
 
         input::placeholder {
-            color: var(--clay-text-light);
-            font-style: normal;
+            color: var(--ink-40);
+            font-style: italic;
         }
 
         button {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            background: var(--clay-mint);
-            color: var(--clay-text);
-            border: none;
-            padding: 12px 32px;
-            border-radius: var(--clay-radius-pill);
+            font-family: 'Architects Daughter', cursive;
+            font-weight: normal;
+            background: transparent;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 5px,
+                var(--ink-06) 5px, var(--ink-06) 6px
+            );
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            padding: 10px 32px;
+            border-radius: 255px 8px 225px 8px / 8px 225px 8px 255px;
             cursor: pointer;
-            font-size: 14px;
-            text-transform: none;
-            letter-spacing: 0.2px;
-            transition: all 0.2s ease;
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.85),
-                4px 5px 14px rgba(45, 52, 54, 0.15);
-            text-shadow: none;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid var(--ink-20);
+            border-radius: 255px 8px 225px 8px / 8px 225px 8px 255px;
+            pointer-events: none;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.85),
-                6px 8px 20px rgba(45, 52, 54, 0.22);
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent 0px, transparent 4px,
+                var(--ink-10) 4px, var(--ink-10) 5px
+            ),
+            repeating-linear-gradient(
+                45deg,
+                transparent 0px, transparent 4px,
+                var(--ink-10) 4px, var(--ink-10) 5px
+            );
+            transform: translateY(-1px) rotate(0.5deg);
         }
 
         button:active, button:focus {
-            transform: translateY(1px) scale(0.97);
-            box-shadow:
-                inset 4px 4px 10px rgba(45, 52, 54, 0.12),
-                1px 1px 4px rgba(255, 255, 255, 0.85);
-            outline: 3px solid var(--clay-yellow);
-            outline-offset: 3px;
+            transform: translateY(1px) rotate(-0.3deg);
+            outline: 2px dashed var(--ink);
+            outline-offset: 4px;
         }
 
+        /* ─── TOTAL DISPLAY ─── */
         .total {
-            font-family: 'Nunito', sans-serif;
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--clay-text);
+            font-family: 'Architects Daughter', cursive;
+            font-size: 28px;
+            font-weight: normal;
+            color: var(--ink);
             margin: 40px 0;
             text-align: center;
             position: relative;
             z-index: 10;
-            background: var(--clay-yellow);
-            border-radius: var(--clay-radius-lg);
+            background-color: var(--paper-card);
+            background-image:
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent 0px, transparent 9px,
+                    var(--ink-03) 9px, var(--ink-03) 10px
+                ),
+                repeating-linear-gradient(
+                    45deg,
+                    transparent 0px, transparent 9px,
+                    var(--ink-03) 9px, var(--ink-03) 10px
+                );
+            border: 3px solid var(--ink);
+            border-radius: 255px 12px 225px 12px / 12px 225px 12px 255px;
             padding: 30px;
             max-width: 600px;
             margin: 40px auto;
-            box-shadow:
-                inset 3px 3px 8px rgba(255, 255, 255, 0.85),
-                8px 12px 28px rgba(45, 52, 54, 0.15);
-            text-shadow: none;
-            letter-spacing: 0;
-            animation: clay-float 4s ease-in-out infinite;
+            letter-spacing: 0.5px;
+            animation: sketch-jitter 7s ease-in-out infinite;
         }
 
-        .total::before,
+        .total::before {
+            content: '∑ ';
+            font-size: 20px;
+            color: var(--ink-40);
+        }
+
         .total::after {
-            display: none;
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px solid var(--ink-20);
+            border-radius: 255px 12px 225px 12px / 12px 225px 12px 255px;
+            pointer-events: none;
         }
 
+        /* ─── EMPTY MESSAGE ─── */
         .empty-message {
-            font-family: 'Nunito', sans-serif;
-            color: var(--clay-text-muted);
+            font-family: 'Architects Daughter', cursive;
+            color: var(--ink-75);
             text-align: center;
-            font-size: 15px;
-            font-weight: 600;
-            font-style: normal;
+            font-size: 16px;
+            font-style: italic;
             position: relative;
             z-index: 10;
-            background: var(--clay-surface);
-            border-radius: var(--clay-radius);
-            border: 3px dashed var(--clay-lavender);
+            background: var(--paper-card);
+            border: 2px dashed var(--ink-40);
+            border-radius: 4px 8px 4px 6px;
             padding: 28px;
             margin: 25px auto;
             max-width: 500px;
-            box-shadow:
-                inset 2px 2px 6px rgba(255, 255, 255, 0.8),
-                4px 5px 14px rgba(45, 52, 54, 0.08);
         }
 
-        /* Container for main content */
+        .empty-message::before {
+            content: '( ';
+        }
+        .empty-message::after {
+            content: ' )';
+        }
+
+        /* ─── CONTAINER ─── */
         .container {
             position: relative;
             z-index: 10;
@@ -427,41 +480,44 @@
             padding: 0 20px 40px;
         }
 
-        /* Links */
+        /* ─── LINKS ─── */
         a {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            color: var(--clay-text);
-            text-decoration: none;
-            padding: 10px 24px;
-            background: var(--clay-blue-light);
-            border-radius: var(--clay-radius-pill);
-            display: inline-block;
-            text-transform: none;
-            letter-spacing: 0;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.85),
-                3px 4px 10px rgba(45, 52, 54, 0.12);
+            font-family: 'Architects Daughter', cursive;
+            font-weight: normal;
+            color: var(--ink);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+            padding: 0;
+            background: transparent;
+            display: inline;
+            letter-spacing: 0.3px;
+            font-size: inherit;
+            transition: text-decoration-style 0.15s ease;
         }
 
         a:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                inset 2px 2px 5px rgba(255, 255, 255, 0.85),
-                5px 7px 16px rgba(45, 52, 54, 0.2);
+            text-decoration-style: solid;
         }
 
-        a:active {
-            transform: translateY(1px) scale(0.97);
-            box-shadow:
-                inset 4px 4px 8px rgba(45, 52, 54, 0.12),
-                1px 1px 3px rgba(255, 255, 255, 0.85);
+        /* Nav links styled differently */
+        nav a {
+            text-decoration: none;
+            padding: 8px 20px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
+    <svg class="sketch-filter-defs" aria-hidden="true">
+        <defs>
+            <filter id="sketchy-border" x="-5%" y="-5%" width="110%" height="110%">
+                <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="4" seed="5" result="noise"/>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+        </defs>
+    </svg>
+
     <nav>
         <a href="{{ url_for('expense_tracker.index') }}">Utgifter</a>
         <a href="{{ url_for('expense_tracker.summary') }}">Sammanfattning</a>
