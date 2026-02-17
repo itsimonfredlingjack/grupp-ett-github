@@ -1,66 +1,52 @@
-# CURRENT_TASK: GE-93 — The "Napkin Sketch" / Wireframe
+# CURRENT TASK: GE-98
 
 ## Ticket Info
-
-- **Jira ID:** GE-93
-- **Summary:** The "Napkin Sketch" / Wireframe
+- **Jira ID:** GE-98
+- **Branch:** feature/GE-98-green-organic
 - **Type:** Task
 - **Priority:** Medium
-- **Branch:** `feature/GE-93-the-napkin-sketch-wireframe`
 - **Status:** In Progress
+
+## Summary
+Green & Organic - "Botanical Garden / Organic Zen" Theme
 
 ## Description
 
 <ticket>
-Ett "Low-fidelity" utseende som är väldigt charmigt. Det ser ut som en idé skissad på en servett på ett kafé.
+This is the "Wow factor" theme. It shows the AI understands texture and mood. It should feel like a digital greenhouse.
 
-**Maximal Change Title:** Reskin to "Hand-Drawn Sketch / Blueprint" theme
+**Maximal Change Title:** Reskin to "Botanical Garden / Organic Zen" theme
 
-**Description:** Make the entire app look like a rough sketch drawn with a blue ballpoint pen on a paper napkin.
+**Description:** Transform the interface into a lush, organic environment. It should feel less like software and more like a living terrarium.
 
-- **Background:** A texture of a white paper napkin or wrinkled notebook paper.
-- **Style/Feel:** Lo-Fi / Sketchy. Wobbly lines (scribble effect). Incomplete borders. It should look unfinished and brainstorming-friendly.
-- **Colors:** Ink Blue (#00008B) for all lines and text. No other colors, just shading with cross-hatching (streck) for depth.
-- **Fonts:** A messy Handwritten font (like *Architects Daughter* or *Permanent Marker*).
-- **Cards &amp; Panels:** Look like rough rectangles drawn by hand. Fill backgrounds with a "scribble" fill instead of solid colors.
-- **Layout:** Arrows should look hand-drawn with loops and uneven heads.
+- **Background:** A soft, pale sage green (#F1F8E9). Overlay a subtle "dappled sunlight" shadow effect (as if light is filtering through leaves).
+- **Style/Feel:** Biophilic Design. Soft, natural, and tactile. Avoid sharp digital edges.
+- **Colors:** A palette of deep forest greens (#2E7D32) for text, earthy terracotta (#D84315) for alerts, and soft fern green for success states.
+- **Fonts:** Serif for headers (e.g., Merriweather or Playfair Display) to give an elegant, editorial look. Clean, rounded Sans-Serif for data.
+- **Cards & Panels:** Cards should look like high-quality, thick paper or cardstock. Use soft, diffused drop shadows to lift them off the background. Rounded corners (20px radius).
+- **Layout:** Connecting lines should be organic curves (bezier curves), resembling vines or stems. Use small leaf icons 🍃 instead of standard dots for nodes.
 </ticket>
 
 ## Acceptance Criteria
+- [ ] Background: soft pale sage green (#F1F8E9) with dappled sunlight shadow overlay effect
+- [ ] Colors: deep forest green (#2E7D32) for text, terracotta (#D84315) for alerts, fern green for success
+- [ ] Fonts: Serif (Merriweather/Playfair Display) for headers, rounded sans-serif for data
+- [ ] Cards: paper/cardstock feel, soft diffused shadows, 20px border-radius
+- [ ] Layout: bezier curve organic connecting lines, leaf 🍃 icons instead of dots for nodes
+- [ ] Biophilic aesthetic: feels like a living terrarium/digital greenhouse
+- [ ] All tests pass
+- [ ] Linting passes
 
-- [x] App has a paper napkin / wrinkled notebook paper background texture (CSS ruled lines + red margin line)
-- [x] All text uses a handwritten font (Architects Daughter from Google Fonts)
-- [x] Primary color is Ink Blue (#00008B) — no other colors
-- [x] Borders/lines look wobbly/sketchy (border-radius: 255px trick, SVG feTurbulence filter defined)
-- [x] Cards/panels have rough hand-drawn rectangle appearance with cross-hatch fill (repeating-linear-gradient)
-- [x] The theme applies to all Flask-rendered templates (base.html, newsflash/index.html, subscribe.html, thank_you.html, expense_tracker/base.html, expense_tracker/index.html, expense_tracker/summary.html)
-- [x] All existing tests pass (383 passed, 12 skipped)
-- [x] Linting passes (ruff)
+## Progress Log
+
+| Iteration | Date | Action | Result |
+|-----------|------|--------|--------|
+| 1 | 2026-02-17 | Branch created, ticket fetched | ✅ |
 
 ## Files to Modify
-
-Per CLAUDE.md production file map:
-- `src/sejfa/newsflash/presentation/templates/base.html` (main base template)
-- `src/sejfa/newsflash/presentation/templates/newsflash/index.html`
-- `src/sejfa/newsflash/presentation/templates/newsflash/subscribe.html`
-- `src/sejfa/newsflash/presentation/templates/newsflash/thank_you.html`
-- `src/expense_tracker/templates/expense_tracker/base.html`
-- `src/expense_tracker/templates/expense_tracker/index.html`
-- `src/expense_tracker/templates/expense_tracker/summary.html`
-
-## Progress
-
-| # | Iteration | Action | Result |
-|---|-----------|--------|--------|
-| 1 | 2026-02-17 | Task initialized, branch created | ✅ |
-| 2 | 2026-02-17 | Implemented Napkin Sketch theme in both base templates | ✅ |
-| 3 | 2026-02-17 | All 383 tests pass, ruff lint clean | ✅ |
+- `src/sejfa/newsflash/presentation/templates/base.html` (main app base)
+- `src/expense_tracker/templates/expense_tracker/base.html` (expense tracker base)
 
 ## Notes
-
-- Theme: Hand-Drawn Sketch / Blueprint ("Napkin Sketch")
-- Same pattern as GE-86 (GPU overheat) and GE-91 (Claymorphism) — visual theme reskin
-- Reference: GE-91 branch `feature/GE-91-the-playful-tactile-3d` for pattern
-- Google Fonts to use: `Architects Daughter` (primary) or `Permanent Marker`
-- Cross-hatching can be done with CSS `repeating-linear-gradient` patterns
-- Wobbly borders: use `border-radius` with irregular values or SVG `feTurbulence` filter
+- This is a theme/UI ticket - modifying Flask templates
+- Similar pattern to GE-86 (cyber-glitch), GE-91 (claymorphism), GE-93 (napkin sketch)
