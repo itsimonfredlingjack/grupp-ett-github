@@ -1,194 +1,417 @@
-# SEJFA - Secure Enterprise Jira Flask Agent
+<div align="center">
 
-![SEJFA Header](static/img/SEJFA-AGENTIC-DEVOPS-LOOP-MAIN-PICTURE.jpeg)
+# SEJFA
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+### Secure Enterprise Jira Flask Agent
+
+**From Jira Ticket to Production — Untouched by Human Hands.**
+
+[![Python](https://img.shields.io/badge/Python-3.10_%7C_3.11_%7C_3.12_%7C_3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Azure](https://img.shields.io/badge/Azure-Container%20Apps-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/)
-[![Jira](https://img.shields.io/badge/Jira-Integration-0052CC?style=for-the-badge&logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
-[![Agentic](https://img.shields.io/badge/Agentic-DevOps%20Loop-FF9900?style=for-the-badge&logo=robotframework&logoColor=white)](https://github.com/your-org/sejfa)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Jira](https://img.shields.io/badge/Jira-Cloud%20API-0052CC?style=for-the-badge&logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
 
-> **"From Jira Ticket to Production — Untouched by Human Hands."**
-
----
-
-## About SEJFA
-
-SEJFA is a cutting-edge **Agentic DevOps Loop System**, meticulously crafted by **Filippa, Simon, Jonas Ö, Emma, and Annika**. This project is a living demonstration of the future of software development: a fully autonomous workflow where AI Agents (powered by **Claude Code** and **Ralph Wiggum Loops**) take ownership of the entire lifecycle—from picking up a Jira ticket to deploying a production-ready application on Azure.
-
-### Ideally Suited For:
-- **Autonomous Development:** Exploring the limits of AI-driven coding.
-- **Enterprise Integration:** Seamlessly connecting Jira, GitHub, and Azure.
-- **Real-Time Monitoring:** Visualizing the agent's thought process and actions.
+[![Tests](https://img.shields.io/badge/Tests-370%2B-brightgreen?style=flat-square&logo=pytest&logoColor=white)](#test-suite)
+[![Coverage](https://img.shields.io/badge/Coverage-80%25%2B-brightgreen?style=flat-square&logo=codecov&logoColor=white)](#test-suite)
+[![Code Style](https://img.shields.io/badge/Code%20Style-Ruff-D7FF64?style=flat-square&logo=ruff&logoColor=black)](https://docs.astral.sh/ruff/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 ---
 
-## Chaos vs Clarity
+*An autonomous DevOps loop system where AI agents own the entire lifecycle — from Jira ticket to production deployment — powered by Claude Code and the Ralph Loop.*
 
-![Chaos vs Clarity](static/img/SEJFA-CHAOS-VS-CLARITY.jpeg)
+[Getting Started](#getting-started) · [Architecture](#architecture) · [API Reference](#api-reference) · [Documentation](#documentation)
 
-Development can be chaotic. SEJFA brings order through **The Ralph Loop**—a structured, test-driven development cycle that ensures quality at every step. By enforcing strict gates (linting, testing, security scanning) before a task is even considered "complete," SEJFA transforms the unpredictable nature of coding into a streamlined, predictable pipeline.
+</div>
 
 ---
 
-## Key Features
+## What is SEJFA?
 
-| Feature | Description |
-| :--- | :--- |
-| **Agentic Workflow** | Autonomous task execution with `start-task` and `finish-task` commands, powered by Claude Code. |
-| **Ralph Loop** | A rigorous TDD cycle: Red -> Green -> Refactor -> Verify. Quality is non-negotiable. |
-| **Jira Integration** | Direct two-way sync with Jira. Tickets are fetched, updated, and closed automatically. |
-| **Azure Deployment** | Zero-downtime deployments to **Azure Container Apps** via GitHub Actions. |
-| **Real-Time Monitor** | Watch the agents work in real-time on the Monitoring Dashboard. |
-| **Secure & Scalable** | Built on Flask with Gunicorn, Dockerized for portability, and secured with `safety` scans. |
+SEJFA is an **Agentic DevOps Loop System** built by **Filippa, Simon, Jonas O, Emma, and Annika**. It demonstrates a fully autonomous software development workflow where an AI agent (powered by **Claude Code**) picks up Jira tickets, writes tests, implements features, passes quality gates, creates pull requests, and triggers deployment to Azure — all without manual intervention.
+
+The system is built on a clean 3-layer Flask architecture and includes a newsletter subscription service, an expense tracker, admin management, and real-time agent monitoring.
+
+### Why SEJFA?
+
+| Problem | SEJFA's Solution |
+|:--------|:-----------------|
+| Manual ticket-to-code workflow | Autonomous Jira-to-PR pipeline via agent skills |
+| Inconsistent code quality | Enforced TDD cycle with automated quality gates |
+| Slow feedback loops | Real-time monitoring dashboard for agent activity |
+| Risky deployments | SHA-tagged Docker images with CI/CD and health checks |
+
+---
+
+## The Ralph Loop
+
+The **Ralph Loop** is the core engine that drives autonomous development. It enforces a strict **Test-Driven Development** cycle that every task must pass before reaching production.
+
+```
+   +-------+       +-------+       +----------+       +--------+
+   |  RED  | ----> | GREEN | ----> | REFACTOR | ----> | VERIFY |
+   | Write |       | Pass  |       | Optimize |       | Lint + |
+   | Test  |       | Test  |       | Code     |       | Test   |
+   +-------+       +-------+       +----------+       +--------+
+       ^                                                   |
+       |                                                   |
+       +------- Loop until all criteria met <--------------+
+```
+
+### Quality Gates (Stop-Hook)
+
+Before any task can be marked complete, the stop-hook enforces:
+
+- **pytest** — All tests must pass (370+ test suite)
+- **ruff check** — Zero linting warnings allowed
+- **ruff format** — Code must be properly formatted
+- **UI scope guard** — UI tickets must modify the correct Flask templates
+- **PR merge gate** — Blocks until PR is merged or auto-merge is enabled
+- **Max iterations** — Auto-creates a WIP draft PR after 25 iterations
 
 ---
 
 ## Architecture
 
-The SEJFA architecture is designed for resilience and autonomy. The **Claude Code Agent** operates within the **Ralph Loop**, interacting with the codebase, running tests, and managing git operations, all while communicating with **Jira** and **Azure**.
+SEJFA follows a **clean 3-layer architecture** with dependency injection across all modules:
+
+```
+ Presentation (Flask Blueprints + Templates)
+         |
+   Business Logic (Services with validation)
+         |
+     Data Layer (Models + Repositories)
+```
+
+Every module — Newsflash, Expense Tracker, Admin, Monitor — follows this pattern. Services receive their repositories via constructor injection, keeping layers decoupled and testable.
 
 ```mermaid
 graph TD
-    User[Product Owner] -->|Creates Ticket| Jira[Jira]
-    Jira -->|Fetches Task| Agent[Claude Code Agent]
-    subgraph "The Ralph Loop (Development)"
-        Agent -->|Writes Code| Code[Source Code]
-        Code -->|Triggers| Tests[Local Tests]
-        Tests -->|Pass/Fail| Agent
-        Agent -->|Refines| Code
+    PO[Product Owner] -->|Creates Ticket| Jira[Jira Cloud]
+    Jira -->|/start-task| Agent[Claude Code Agent]
+
+    subgraph "The Ralph Loop"
+        Agent -->|1. Write failing test| Red[Red]
+        Red -->|2. Implement code| Green[Green]
+        Green -->|3. Optimize| Refactor[Refactor]
+        Refactor -->|4. Lint + Test| Verify[Verify]
+        Verify -->|Fail| Red
     end
-    Tests -->|Success| PR[Pull Request]
-    PR -->|Triggers| CI[GitHub Actions CI]
-    CI -->|Lint/Test/Security| Verify[Verification]
-    Verify -->|Merge to Main| Deploy[deploy.yml]
-    Deploy -->|Docker Build & Push| ACR[Azure Container Registry]
-    ACR -->|Auto-deploy| Azure[Azure Container Apps]
-    Azure -->|Live App| EndUser[End User]
+
+    Verify -->|Pass| Finish[/finish-task]
+    Finish -->|Push + PR| GH[GitHub]
+    GH -->|CI Pipeline| CI[GitHub Actions]
+    CI -->|Test + Lint + Security| Gate{Pass?}
+    Gate -->|Yes| Merge[Merge to main]
+    Gate -->|No| Agent
+    Merge -->|deploy.yml| ACR[Azure Container Registry]
+    ACR -->|Deploy| ACA[Azure Container Apps]
+    ACA -->|Live| Prod[gruppett.fredlingautomation.dev]
 ```
+
+---
+
+## Key Features
+
+### Agentic Workflow
+
+| Skill | Description |
+|:------|:------------|
+| `/start-task` | Fetches Jira ticket, creates feature branch, initializes `CURRENT_TASK.md` with context |
+| `/finish-task` | Verifies quality, commits, pushes, creates PR, and updates Jira status |
+| `/preflight` | Validates the system is ready for a new task |
+
+### Application Modules
+
+| Module | Description |
+|:-------|:------------|
+| **Newsflash** | Newsletter subscription service with email validation, subscriber management, and a public-facing landing page |
+| **Expense Tracker** | Track and categorize expenses with summary views, built on clean 3-layer architecture |
+| **Admin Panel** | Token-based authentication, subscriber CRUD, statistics dashboard, search, and CSV export |
+| **Monitor** | Real-time WebSocket dashboard tracking agent loop iterations, status, and performance |
+| **Jira Integration** | Full REST client — ticket fetching, JQL search, comments (Atlassian Document Format), status transitions, sub-task creation |
 
 ---
 
 ## Getting Started
 
-Follow these steps to set up your own Agentic DevOps environment.
-
 ### Prerequisites
 
--   **Python 3.10+**
--   **Docker** (for local container testing)
--   **Jira Account** (API token required for agent integration)
--   **Azure Account** (for deployment)
+- **Python 3.10+**
+- **Docker** (optional, for container testing)
+- **Jira Account** with API token (for agent integration)
+- **Azure Account** (for deployment)
 
 ### Installation
 
-1.  **Clone the Repository**
-    ```bash
-    gh repo clone itsimonfredlingjack/grupp-ett-github
-    cd grupp-ett-github
-    ```
+```bash
+# Clone the repository
+gh repo clone itsimonfredlingjack/grupp-ett-github
+cd grupp-ett-github
 
-2.  **Set Up Virtual Environment**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # Windows: venv\Scripts\activate
-    ```
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate    # Windows: venv\Scripts\activate
 
-3.  **Install Dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
+# Install dependencies
+pip install -r requirements.txt
+```
 
-4.  **Configure Environment**
-    Create a `.env` file with your Jira and Azure credentials.
+### Configuration
 
-### Running the Application
+Create a `.env` file in the project root:
 
-Start the Flask development server:
+```env
+DATABASE_URL=sqlite:///newsflash.db
+JIRA_URL=https://your-org.atlassian.net
+JIRA_EMAIL=your-email@example.com
+JIRA_API_TOKEN=your-api-token
+```
+
+### Run the Application
+
 ```bash
 python app.py
 ```
-Access the application at `http://localhost:5000`.
 
-### Running Tests
+The app will be available at `http://localhost:5000`.
 
-Verify the system integrity with `pytest`:
+### Run Tests
+
 ```bash
-source venv/bin/activate && pytest -v
+source venv/bin/activate && pytest -xvs
+```
+
+### Run Linting
+
+```bash
+source venv/bin/activate && ruff check .
 ```
 
 ---
 
-## Agentic Development Guide
+## CI/CD Pipeline
 
-Unlock the power of autonomous coding with the **Ralph Skills** in `.claude/skills`.
+The CI/CD pipeline ensures no code reaches production without passing rigorous quality controls.
 
-### 1. Start a Task
-Initialize a new task from a Jira ticket. This sets up the branch and context.
-```bash
-claude -i start-task <JIRA-ID>
-```
+### Continuous Integration
 
-### 2. The Ralph Loop
-The agent enters the loop:
-- **Red:** Write a failing test.
-- **Green:** Implement the solution.
-- **Refactor:** Optimize code.
-- **Verify:** Run linting and security checks.
+Triggered on every push to `main` and on pull requests. Tests run across **4 Python versions** in parallel:
 
-### 3. Finish Task
-Once the loop is complete and all checks pass:
-```bash
-claude -i finish-task
-```
-This pushes the changes, creates a PR, and updates the Jira ticket.
+| Job | What it does | Gate |
+|:----|:-------------|:-----|
+| **Test** | `pytest` with coverage report | 80% minimum coverage |
+| **Lint** | `ruff check` + `ruff format` | Zero warnings |
+| **Security** | `safety check` | Reports vulnerabilities |
+
+Coverage is uploaded to **Codecov** for the Python 3.12 run.
+
+### Continuous Deployment
+
+On merge to `main`:
+
+1. Authenticate to Azure via **OIDC** (no stored passwords)
+2. Build Docker image tagged with **git SHA** for traceability
+3. Push image to **Azure Container Registry**
+4. Deploy to **Azure Container Apps**
+
+Every deployment is traceable via the `/version` endpoint which returns the current git SHA.
 
 ---
 
-## Documentation
+## API Reference
 
--   **[Full Project Documentation](docs/FINAL_DOCUMENTATION.md)** - Comprehensive guide covering architecture, APIs, pipelines, deployment, and more.
--   **[Jules Playbook](docs/jules-playbook.md)** - Insights into the AI review system.
--   **[Context Memory](CURRENT_TASK.md)** - The agent's current working memory.
+<details>
+<summary><strong>Public Endpoints</strong></summary>
+
+| Endpoint | Method | Description |
+|:---------|:-------|:------------|
+| `/` | GET | Landing page (Newsflash) |
+| `/subscribe` | POST | Register a subscriber |
+| `/thank-you` | GET | Confirmation page |
+| `/api` | GET | API greeting |
+| `/health` | GET | Health check with timestamp |
+| `/version` | GET | Deployed git SHA |
+| `/expenses/` | GET | Expense tracker |
+| `/expenses/summary` | GET | Expense summary |
+
+</details>
+
+<details>
+<summary><strong>Admin Endpoints (Token Required)</strong></summary>
+
+| Endpoint | Method | Description |
+|:---------|:-------|:------------|
+| `/admin/login` | POST | Admin login (returns JWT) |
+| `/admin` | GET | Admin dashboard |
+| `/admin/statistics` | GET | Subscriber statistics |
+| `/admin/subscribers` | GET | List all subscribers |
+| `/admin/subscribers` | POST | Create subscriber |
+| `/admin/subscribers/<id>` | GET | Get subscriber |
+| `/admin/subscribers/<id>` | PUT | Update subscriber |
+| `/admin/subscribers/<id>` | DELETE | Delete subscriber |
+| `/admin/subscribers/search` | GET | Search subscribers |
+| `/admin/subscribers/export` | GET | Export CSV |
+
+</details>
+
+<details>
+<summary><strong>Monitor Endpoints</strong></summary>
+
+| Endpoint | Method | Description |
+|:---------|:-------|:------------|
+| `/api/monitor/state` | GET | Get monitor state |
+| `/api/monitor/state` | POST | Update monitor state |
+| `/api/monitor/reset` | POST | Reset monitor |
+
+</details>
+
+---
+
+## Test Suite
+
+SEJFA has a comprehensive test suite with **370+ tests** covering all modules.
+
+| Test Directory | Coverage | Test Files |
+|:---------------|:---------|:-----------|
+| `tests/agent/` | Ralph Loop, stop-hook, prevent-push | 5 |
+| `tests/core/` | Admin auth, subscriber management, statistics | 5 |
+| `tests/expense_tracker/` | ExpenseService, repository, routes | 3 |
+| `tests/integrations/` | Jira client, Jules review system | 4 |
+| `tests/newsflash/` | Subscription flow, validation, data layer | 5 |
+| `tests/utils/` | Health check, security | 2 |
+
+### Test Markers
+
+```python
+@pytest.mark.unit          # Isolated unit tests
+@pytest.mark.integration   # Tests with database dependencies
+@pytest.mark.e2e           # End-to-end workflow tests
+@pytest.mark.slow          # Long-running tests (excluded in quick runs)
+```
+
+### Code Quality Tools
+
+| Tool | Purpose | Config |
+|:-----|:--------|:-------|
+| **Ruff** | Linting & formatting | 88 chars/line, Python 3.10 target |
+| **pytest-cov** | Code coverage | 80% minimum, branch coverage |
+| **safety** | Dependency vulnerabilities | Reports in CI |
+| **Codecov** | Coverage tracking | Published on Python 3.12 |
+
+---
+
+## Deployment
+
+### Docker
+
+The application is containerized using **Python 3.12-slim** with **Gunicorn** (4 workers) on port 5000. The container runs as a non-root user (`appuser`) and includes a built-in health check.
+
+```bash
+# Build
+docker build --build-arg GIT_SHA=$(git rev-parse HEAD) -t sejfa .
+
+# Run
+docker run -p 5000:5000 sejfa
+```
+
+### Azure Container Apps
+
+Production is hosted on **Azure Container Apps** with automatic scaling. Images are stored in **Azure Container Registry** and deployments are managed via **GitHub Actions** with OIDC authentication. The application is accessible via **Cloudflare Tunnel** at [gruppett.fredlingautomation.dev](https://gruppett.fredlingautomation.dev).
 
 ---
 
 ## Project Structure
 
 ```
-.
-├── .claude/                # Agent Configuration & Skills
-│   ├── hooks/              # Git/Loop Hooks (stop-hook)
-│   └── skills/             # Agent Skills (start-task, finish-task)
-├── app.py                  # Flask Application Entry Point
-├── CURRENT_TASK.md         # Agent Context Memory
-├── src/                    # Source Code
-│   ├── sejfa/              # Main Package
-│   │   ├── core/           # Business Logic
-│   │   ├── integrations/   # External Integrations (Jira)
-│   │   └── monitor/        # Real-time Monitoring
-│   └── expense_tracker/    # Expense Tracking Module
-├── scripts/                # Pipeline Scripts (Jules, CI)
-└── tests/                  # Test Suite (370+ tests)
+grupp-ett-github/
+├── app.py                          # Flask entry point (create_app factory)
+├── requirements.txt                # Python dependencies
+├── pyproject.toml                  # Ruff, pytest, coverage config
+├── Dockerfile                      # Production image (Python 3.12-slim)
+│
+├── src/
+│   ├── sejfa/                      # Main package
+│   │   ├── core/                   # Admin auth, subscriber service
+│   │   ├── integrations/           # Jira API client
+│   │   ├── monitor/                # Real-time monitoring (WebSocket)
+│   │   ├── newsflash/              # Newsletter subscription module
+│   │   │   ├── data/               # Models + repository
+│   │   │   ├── business/           # Subscription service
+│   │   │   └── presentation/       # Blueprint + templates
+│   │   └── utils/                  # Health check, security
+│   └── expense_tracker/            # Expense tracking module
+│       ├── data/                   # Expense model + repository
+│       ├── business/               # ExpenseService
+│       └── presentation/           # Blueprint + templates
+│
+├── tests/                          # Test suite (370+ tests)
+├── .claude/                        # Agent configuration
+│   ├── hooks/                      # Quality gate hooks
+│   └── skills/                     # Agent skills (start-task, finish-task)
+├── .github/workflows/              # CI/CD pipelines
+└── docs/                           # Documentation
 ```
+
+---
+
+## Agentic Development Guide
+
+### Complete Workflow
+
+| Step | Component | What Happens |
+|:-----|:----------|:-------------|
+| 1 | **Jira** | Product owner creates a ticket with requirements and acceptance criteria |
+| 2 | **`/start-task`** | Agent fetches ticket, creates feature branch, initializes `CURRENT_TASK.md` |
+| 3 | **Ralph Loop** | TDD cycle: Red -> Green -> Refactor -> Verify (repeats until all criteria met) |
+| 4 | **Stop-Hook** | Quality gate validates pytest, ruff, and UI scope — blocks if anything fails |
+| 5 | **`/finish-task`** | Agent commits, pushes, and creates a pull request |
+| 6 | **GitHub Actions** | Automated tests, linting, and security scanning across 4 Python versions |
+| 7 | **Deploy** | On merge to main: Docker build and deploy to Azure Container Apps |
+| 8 | **Production** | Application is live at `gruppett.fredlingautomation.dev` |
+
+### Using the Agent
+
+```bash
+# Start a new task from Jira
+claude /start-task GE-123
+
+# The agent enters the Ralph Loop automatically
+# Red -> Green -> Refactor -> Verify
+
+# Finish the task when all criteria are met
+claude /finish-task
+```
+
+---
+
+## Documentation
+
+- **[Full Project Documentation](docs/FINAL_DOCUMENTATION.md)** — Architecture, APIs, pipelines, and deployment
+- **[Jules Playbook](docs/jules-playbook.md)** — AI review system insights
 
 ---
 
 ## Contributing
 
-We welcome contributions! Please follow the **Ralph Loop** methodology:
-1.  Fork the repository.
-2.  Create a feature branch (`feature/issue-description`).
-3.  Ensure all tests pass.
-4.  Submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch (`feature/GE-XXX-description`)
+3. Follow the Ralph Loop methodology (write tests first)
+4. Ensure all tests pass and linting is clean
+5. Submit a Pull Request
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-*Built with love by the SEJFA Team.*
+<div align="center">
+
+*Built by the SEJFA Team — Filippa, Simon, Jonas O, Emma & Annika*
+
+</div>
