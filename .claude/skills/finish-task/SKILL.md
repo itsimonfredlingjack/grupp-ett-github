@@ -208,6 +208,38 @@ except Exception as e:
 "
 ```
 
+Transition to "Done" when review is approved (PR merged):
+
+```bash
+source venv/bin/activate && python3 -c "
+import json
+import subprocess
+from dotenv import load_dotenv
+load_dotenv()
+from src.sejfa.integrations.jira_client import get_jira_client
+
+pr_state = 'OPEN'
+try:
+    raw = subprocess.check_output(
+        ['gh', 'pr', 'view', '{pr_url}', '--json', 'state'],
+        text=True,
+    )
+    pr_state = json.loads(raw).get('state', 'OPEN')
+except Exception as e:
+    print(f'⚠️ Could not read PR state: {e}')
+
+if pr_state == 'MERGED':
+    client = get_jira_client()
+    try:
+        client.transition_issue('{JIRA_ID}', 'Done')
+        print('✅ Transitioned to Done')
+    except Exception as e:
+        print(f'⚠️ Could not transition to Done: {e}')
+else:
+    print('ℹ️ PR not merged yet; keep Jira in In Review')
+"
+```
+
 ### Step 9: Update CURRENT_TASK.md
 
 Mark task as complete:
@@ -216,7 +248,7 @@ Mark task as complete:
 ## Active Task
 
 **Jira ID:** {JIRA_ID}
-**Status:** ✅ Complete - In Review
+**Status:** ✅ Complete - In Review (or Done if PR is already merged)
 **Branch:** {branch_name}
 **PR:** {pr_url}
 **Completed:** {timestamp}
@@ -231,6 +263,11 @@ After merge to main, `deploy.yml` triggers automatically, followed by `post_depl
 4. On failure → rolls back to previous revision + comments Jira "❌ Rolled back"
 
 **The agent does NOT need to verify deployment manually.** The pipeline handles this end-to-end.
+
+Required status order for this project:
+- `transition_issue('{JIRA_ID}', 'In Progress')` when work starts
+- `transition_issue('{JIRA_ID}', 'In Review')` when implementation is complete and awaiting review
+- `transition_issue('{JIRA_ID}', 'Done')` when review is approved
 
 ### Step 10: Output Completion Promise
 
