@@ -328,6 +328,11 @@ except Exception as e:
 
 Note: Continue even if transition fails - it's not critical.
 
+Required status order for this project:
+- `transition_issue('{JIRA_ID}', 'In Progress')` when work starts
+- `transition_issue('{JIRA_ID}', 'In Review')` when implementation is complete and awaiting review
+- `transition_issue('{JIRA_ID}', 'Done')` when review is approved
+
 ### Step 8: Add Jira Comment
 
 Log that the agent has started work using the direct API via Bash:
