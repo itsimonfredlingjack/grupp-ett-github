@@ -184,11 +184,10 @@ grupp-ett-github/
 │   ├── FINAL_DOCUMENTATION.md       # ← DENNA FIL (single source of truth)
 │   └── jules-playbook.md
 │
-├── CURRENT_TASK.md                  # Agentens externa minne (aktiv ticket)
 ├── README.md
 ├── CONTRIBUTING.md
 ├── AGENTS.md
-└── AGENTS.override.md
+└── .claude/AGENTS.override.md       # Agent autopilot-konfiguration
 ```
 
 ---
