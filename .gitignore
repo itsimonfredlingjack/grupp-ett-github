@@ -68,6 +68,7 @@ instance/
 .claude/.ralph_loop_active
 .claude/.promise_done
 .claude/reviews/
+CURRENT_TASK.md
 
 # FUSE mount artifacts (Cowork sandbox)
 .fuse_hidden*

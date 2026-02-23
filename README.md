@@ -150,8 +150,6 @@ This pushes the changes, creates a PR, and updates the Jira ticket.
 
 -   **[Full Project Documentation](docs/FINAL_DOCUMENTATION.md)** - Comprehensive guide covering architecture, APIs, pipelines, deployment, and more.
 -   **[Jules Playbook](docs/jules-playbook.md)** - Insights into the AI review system.
--   **[Context Memory](CURRENT_TASK.md)** - The agent's current working memory.
-
 ---
 
 ## Project Structure
@@ -162,7 +160,6 @@ This pushes the changes, creates a PR, and updates the Jira ticket.
 │   ├── hooks/              # Git/Loop Hooks (stop-hook)
 │   └── skills/             # Agent Skills (start-task, finish-task)
 ├── app.py                  # Flask Application Entry Point
-├── CURRENT_TASK.md         # Agent Context Memory
 ├── src/                    # Source Code
 │   ├── sejfa/              # Main Package
 │   │   ├── core/           # Business Logic

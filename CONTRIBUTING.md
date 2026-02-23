@@ -31,5 +31,5 @@ Mirror the source structure in `tests/`.
 
 ## Guidelines
 
-- Keep the root directory clean. Only `app.py`, `CURRENT_TASK.md` (agent memory), and config files should be here.
+- Keep the root directory clean. Only `app.py` and config files should be here.
 - Do not modify `.claude/` unless necessary for agent configuration.
