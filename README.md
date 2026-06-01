@@ -150,6 +150,7 @@ This pushes the changes, creates a PR, and updates the Jira ticket.
 
 -   **[Full Project Documentation](docs/FINAL_DOCUMENTATION.md)** - Comprehensive guide covering architecture, APIs, pipelines, deployment, and more.
 -   **[Jules Playbook](docs/jules-playbook.md)** - Insights into the AI review system.
+-   **[Grok Build Repository Research](docs/GROK_BUILD_REPOSITORY_RESEARCH.md)** - Curated OSS repositories for subagents, prompts, skills, MCPs, and plugins.
 ---
 
 ## Project Structure
